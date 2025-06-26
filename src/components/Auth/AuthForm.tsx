@@ -91,7 +91,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             <div className="mt-4 text-center text-sm text-gray-600">
                 {type === "login" && (
                     <>
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Link href="/auth/register" className="text-blue-600">Register</Link> <br />
                         <Link href="/auth/forgot-password" className="text-blue-600">Forgot Password?</Link>
                     </>
