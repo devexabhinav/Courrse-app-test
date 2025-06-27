@@ -3,8 +3,10 @@ import { getOverviewData } from "../../fetch";
 import { OverviewCard } from "./card";
 import * as icons from "./icons";
 
-export async function OverviewCardsGroup() {
-  const { views, profit, products, users } = await getOverviewData();
+export async function OverviewCardsGroup({ users, loading }: any) {
+
+  console.log(users)
+  const { views, profit, products } = await getOverviewData();
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
@@ -38,8 +40,7 @@ export async function OverviewCardsGroup() {
       <OverviewCard
         label="Total Users"
         data={{
-          ...users,
-          value: compactFormat(users.value),
+          value: compactFormat(users.length), growthRate: 0, // or add your own logic here
         }}
         Icon={icons.Users}
       />

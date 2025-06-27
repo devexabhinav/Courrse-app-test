@@ -1,5 +1,4 @@
 import { DotIcon } from "@/assets/icons";
-import { formatMessageTime } from "@/lib/format-message-time";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,12 +54,7 @@ export async function ChatsCard() {
 
                   <DotIcon />
 
-                  <time
-                    className="text-xs"
-                    dateTime={chat.lastMessage.timestamp}
-                  >
-                    {formatMessageTime(chat.lastMessage.timestamp)}
-                  </time>
+                
                 </div>
 
                 {!!chat.unreadCount && (

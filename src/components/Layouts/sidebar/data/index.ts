@@ -9,14 +9,14 @@ export const NAV_DATA = [
         icon: Icons.HomeIcon,
         items: [
           {
-            title: "eCommerce",
+            title: "Dashboard Data",
             url: "/",
           },
         ],
       },
       {
-        title: "Calendar",
-        url: "/calendar",
+        title: "Courses",
+        url: "/courses",
         icon: Icons.Calendar,
         items: [],
       },

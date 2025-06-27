@@ -5,6 +5,7 @@ import NextTopLoader from 'nextjs-toploader';
 
 import { Sidebar } from '@/components/Layouts/sidebar';
 import { Header } from '@/components/Layouts/header';
+import ToastProvider from '@/components/core/ToasterProvider'; // ✅ Import the ToastProvider
 
 import type { PropsWithChildren } from 'react';
 
@@ -27,6 +28,8 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
           </main>
         </div>
       </div>
+
+      <ToastProvider /> {/* ✅ This renders ToastContainer only on the client */}
     </>
   );
 }

@@ -1,5 +1,4 @@
 import { PeriodPicker } from "@/components/period-picker";
-import { standardFormat } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 import { getPaymentsOverviewData } from "@/services/charts.services";
 import { PaymentsOverviewChart } from "./chart";
@@ -32,7 +31,7 @@ export async function PaymentsOverview({
 
       <PaymentsOverviewChart data={data} />
 
-      <dl className="grid divide-stroke text-center dark:divide-dark-3 sm:grid-cols-2 sm:divide-x [&>div]:flex [&>div]:flex-col-reverse [&>div]:gap-1">
+      {/* <dl className="grid divide-stroke text-center dark:divide-dark-3 sm:grid-cols-2 sm:divide-x [&>div]:flex [&>div]:flex-col-reverse [&>div]:gap-1">
         <div className="dark:border-dark-3 max-sm:mb-3 max-sm:border-b max-sm:pb-3">
           <dt className="text-xl font-bold text-dark dark:text-white">
             ${standardFormat(data.received.reduce((acc, { y }) => acc + y, 0))}
@@ -46,7 +45,7 @@ export async function PaymentsOverview({
           </dt>
           <dd className="font-medium dark:text-dark-6">Due Amount</dd>
         </div>
-      </dl>
+      </dl> */}
     </div>
   );
 }
