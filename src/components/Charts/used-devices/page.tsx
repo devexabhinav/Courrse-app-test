@@ -1,19 +1,21 @@
+// UsedDevices.tsx
+"use client";
+
 import { PeriodPicker } from "@/components/period-picker";
 import { cn } from "@/lib/utils";
-import { getDevicesUsedData } from "@/services/charts.services";
 import { DonutChart } from "./chart";
 
 type PropsType = {
   timeFrame?: string;
   className?: string;
+  data: any[]; // ✅ Add this
 };
 
-export async function UsedDevices({
+export function UsedDevices({
   timeFrame = "monthly",
   className,
+  data,
 }: PropsType) {
-  const data = await getDevicesUsedData(timeFrame);
-
   return (
     <div
       className={cn(

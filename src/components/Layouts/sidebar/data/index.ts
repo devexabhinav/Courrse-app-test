@@ -15,8 +15,20 @@ export const NAV_DATA = [
         ],
       },
       {
-        title: "Courses",
+        title: "COURSES",
         url: "/courses",
+        icon: Icons.Calendar,
+        items: [],
+      },
+       {
+        title: "CHAPTERS",
+        url: "/chapters",
+        icon: Icons.Calendar,
+        items: [],
+      },
+        {
+        title: "MCQ",
+        url: "/mcq",
         icon: Icons.Calendar,
         items: [],
       },

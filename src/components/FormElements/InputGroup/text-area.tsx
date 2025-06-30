@@ -10,6 +10,9 @@ interface PropsType {
   className?: string;
   icon?: React.ReactNode;
   defaultValue?: string;
+  name?:string
+  value?:string;
+  onChange?:any;
 }
 
 export function TextAreaGroup({
@@ -21,6 +24,9 @@ export function TextAreaGroup({
   className,
   icon,
   defaultValue,
+  name,
+  value,
+  onChange
 }: PropsType) {
   const id = useId();
 
@@ -36,7 +42,9 @@ export function TextAreaGroup({
       <div className="relative mt-3 [&_svg]:pointer-events-none [&_svg]:absolute [&_svg]:left-5.5 [&_svg]:top-5.5">
         <textarea
           id={id}
+          name={name}
           rows={6}
+          value={value}
           placeholder={placeholder}
           defaultValue={defaultValue}
           className={cn(
@@ -46,6 +54,7 @@ export function TextAreaGroup({
           required={required}
           disabled={disabled}
           data-active={active}
+          onChange={onChange}
         />
 
         {icon}

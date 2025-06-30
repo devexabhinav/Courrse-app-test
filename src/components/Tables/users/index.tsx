@@ -40,40 +40,54 @@ export function Users({ className, users }: UsersProps) {
       {/* {loading ? (
         <p className="text-center">Loading...</p>
       ) : ( */}
-        <Table>
-          <TableHeader>
-            <TableRow className="border-none uppercase [&>th]:text-center">
-              <TableHead className="!text-left">Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Verified</TableHead>
-              <TableHead>Created At</TableHead>
-            </TableRow>
-          </TableHeader>
+      <Table>
+        <TableHeader>
+          <TableRow className="border-none uppercase [&>th]:text-center">
+            <TableHead className="!text-left">Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Verified</TableHead>
+            <TableHead>Created At</TableHead>
+          </TableRow>
+        </TableHeader>
 
-          <TableBody>
-            {users && users.length > 0 ? (
-              users.map((user) => (
-                <TableRow
-                  className="text-center text-base font-medium text-dark dark:text-white"
-                  key={user.id}
-                >
-                  <TableCell className="!text-left">{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.verified ? "✅" : "❌"}</TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleString()}</TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  No users found.
+        <TableBody>
+          {users && users.length > 0 ? (
+            users.map((user) => (
+              <TableRow
+                className="text-center text-base font-medium text-dark dark:text-white"
+                key={user.id}
+              >
+                <TableCell className="!text-left">{user.username}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  <span className={user.verified ? "text-green-600" : "text-red-500"}>
+                    {user.verified ? "Verified" : "Unverified"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  {new Intl.DateTimeFormat("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true,
+                  }).format(new Date(user.createdAt))}
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center">
+                No users found.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
       {/* )} */}
     </div>
   );

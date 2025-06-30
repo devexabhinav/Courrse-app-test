@@ -11,33 +11,33 @@ import {
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Pencil, SearchIcon, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
 import { ToggleRight } from "lucide-react";
 import { ToggleLeft } from "lucide-react";
 
-export default function Courses({ className }: any) {
+export default function Mcq({ className }: any) {
   const router = useRouter()
-  const [courses, setCourses] = useState<any>([]);
+  const [mcq, setMcq] = useState<any>([]);
 
-  const fetchCourses = async () => {
+  const fetchMcq = async () => {
     try {
-      const res = await api.get("course/list");
-      setCourses(res.data?.data?.courses || []);
+      const res = await api.get("mcq");
+      setMcq(res.data?.data || []);
     } catch (err) {
       console.error("Failed to fetch courses:", err);
     }
   };
 
   useEffect(() => {
-    fetchCourses();
+    fetchMcq();
   }, []);
 
   const handleEdit = async (id: number) => {
     try {
       if (id) {
-        router.push(`/courses/edit-course?id=${id}`);
+        router.push(`/mcq/edit-mcq?id=${id}`);
       }
     } catch (err) {
       console.error("Failed to fetch course details", err);
@@ -45,15 +45,15 @@ export default function Courses({ className }: any) {
   };
 
   const handleDelete = async (id: number) => {
-    const confirmDelete = confirm("Are you sure you want to delete this course?");
+    const confirmDelete = confirm("Are you sure you want to delete this MCQ?");
     if (!confirmDelete) return;
 
     try {
-      const response = await api.delete(`course/${id}`);
+      const response = await api.delete(`mcq/${id}`);
       if (response.success) {
-        toasterSuccess("Course Deleted Successfully", 2000, "id")
+        toasterSuccess("MCQ Deleted Successfully", 2000, "id")
       }
-      await fetchCourses();
+      await fetchMcq();
 
     } catch (error) {
       console.error("Failed to delete course:", error);
@@ -64,7 +64,7 @@ export default function Courses({ className }: any) {
       const res = await api.put(`course/${id}/status`, { is_active: newStatus });
       if (res.success) {
         toasterSuccess("Status updated successfully", 2000, "status");
-        fetchCourses();
+        fetchMcq();
       } else {
         console.error(res.error);
       }
@@ -79,37 +79,21 @@ export default function Courses({ className }: any) {
         className,
       )}
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        {/* Left Side - Heading */}
+      <div className="mb-4 flex items-center justify-between">
         <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
-          All Courses List
+          All MCQ's List
         </h2>
-
-        {/* Right Side - Search + Button Group */}
-        <div className="flex items-center gap-4">
-          <div className="relative w-full max-w-[300px]">
-            <input
-              type="search"
-              placeholder="Search"
-              className="flex w-full items-center gap-3.5 rounded-full border bg-gray-2 py-3 pl-[53px] pr-5 outline-none transition-colors focus-visible:border-primary dark:border-dark-3 dark:bg-dark-2 dark:hover:border-dark-4 dark:hover:bg-dark-3 dark:hover:text-dark-6 dark:focus-visible:border-primary"
-            />
-            <SearchIcon className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 max-[1015px]:size-5" />
-          </div>
-
-          <button
-            onClick={() => router.push("/courses/add-courses")}
-            className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition"
-          >
-            Add Course
-          </button>
-        </div>
+        <button onClick={() => router.push("/mcq/add-mcq")} className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition" >
+          Add MCQ
+        </button>
       </div>
+
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
-            <TableHead className="!text-left">Title</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
+            <TableHead className="!text-left">Course</TableHead>
+            <TableHead>Question</TableHead>
+            <TableHead>Correct Answer</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Creator Name</TableHead>
             <TableHead>Created At</TableHead>
@@ -118,17 +102,18 @@ export default function Courses({ className }: any) {
         </TableHeader>
 
         <TableBody>
-          {courses.length > 0 ? (
-            courses.map((course: any) => (
+          {mcq.length > 0 ? (
+            mcq.map((course: any) => (
+                console.log(course,"course===="),
               <TableRow
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={course.id}
               >
-                <TableCell className="!text-left">{course.title}</TableCell>
-                <TableCell>{course.description}</TableCell>
-                <TableCell>{course.category}</TableCell>
+                <TableCell className="!text-left">{course.course?.title}</TableCell>
+                <TableCell>{course.question}</TableCell>
+                <TableCell>{course.answer}</TableCell>
                 <TableCell className="flex items-center justify-center gap-2">
-
+                 
                   <button
                     onClick={() => handleToggleStatus(course.id, !course.is_active)}
                     className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"

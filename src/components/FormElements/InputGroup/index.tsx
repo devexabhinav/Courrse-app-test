@@ -18,6 +18,7 @@ type InputGroupProps = {
   iconPosition?: "left" | "right";
   height?: "sm" | "default";
   defaultValue?: string;
+  onClick?:any
 };
 
 const InputGroup: React.FC<InputGroupProps> = ({
@@ -57,7 +58,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
           type={type}
           name={props.name}
           placeholder={placeholder}
-          onChange={handleChange}
+          onChange={props.onChange}
           value={props.value}
           defaultValue={props.defaultValue}
           className={cn(
