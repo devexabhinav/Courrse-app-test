@@ -1,4 +1,3 @@
-/* app/layout.tsx */
 import "@/css/satoshi.css";
 import "@/css/style.css";
 import 'flatpickr/dist/themes/material_blue.css';
@@ -7,7 +6,8 @@ import type { Metadata } from "next";
 import type { PropsWithChildren } from "react";
 
 import { Providers } from "./providers";
-import ClientLayoutShell from "../components/ClientLayoutShell";   // 👈 new
+import ClientLayoutShell from "../components/ClientLayoutShell";
+import AuthChecker from "../components/AuthChecker";
 
 export const metadata: Metadata = {
   title: {
@@ -23,8 +23,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <ClientLayoutShell>{children}
-          </ClientLayoutShell>
+          <AuthChecker>
+            <ClientLayoutShell>{children}</ClientLayoutShell>
+          </AuthChecker>
         </Providers>
       </body>
     </html>

@@ -4,8 +4,6 @@ import { OverviewCard } from "./card";
 import * as icons from "./icons";
 
 export async function OverviewCardsGroup({ users, loading }: any) {
-
-  console.log(users)
   const { views, profit, products } = await getOverviewData();
 
   return (

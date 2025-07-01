@@ -81,7 +81,7 @@ export default function Mcq({ className }: any) {
     >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
-          All MCQ's List
+          All MCQs List
         </h2>
         <button onClick={() => router.push("/mcq/add-mcq")} className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition" >
           Add MCQ
@@ -104,7 +104,6 @@ export default function Mcq({ className }: any) {
         <TableBody>
           {mcq.length > 0 ? (
             mcq.map((course: any) => (
-                console.log(course,"course===="),
               <TableRow
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={course.id}

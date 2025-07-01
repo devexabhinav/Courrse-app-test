@@ -2,16 +2,23 @@
 
 import { usePathname } from 'next/navigation';
 import NextTopLoader from 'nextjs-toploader';
+import Cookies from "js-cookie";
 
 import { Sidebar } from '@/components/Layouts/sidebar';
 import { Header } from '@/components/Layouts/header';
-import ToastProvider from '@/components/core/ToasterProvider'; // ✅ Import the ToastProvider
+import ToastProvider from '@/components/core/ToasterProvider';
 
 import type { PropsWithChildren } from 'react';
 
 export default function ClientLayoutShell({ children }: PropsWithChildren) {
-  const pathname   = usePathname();
+  const pathname = usePathname();
+  const token = Cookies.get('token');
   const isAuthPage = pathname.startsWith('/auth');
+
+  // If no token and not on auth page, don't render anything (AuthChecker will handle redirect)
+  if (!token && !isAuthPage) {
+    return null;
+  }
 
   return (
     <>
@@ -29,7 +36,7 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
         </div>
       </div>
 
-      <ToastProvider /> {/* ✅ This renders ToastContainer only on the client */}
+      <ToastProvider />
     </>
   );
 }

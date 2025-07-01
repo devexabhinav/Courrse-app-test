@@ -2,40 +2,77 @@
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Image from "next/image";
+import Cookies from 'js-cookie';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CameraIcon } from "./_components/icons";
 import { SocialAccounts } from "./_components/social-accounts";
+import api from "@/lib/api";
 
 export default function Page() {
+  const name = Cookies.get('name')
   const [data, setData] = useState({
-    name: "Danish Heilium",
+    name: name,
     profilePhoto: "/images/user/user-03.png",
     coverPhoto: "/images/cover/cover-01.png",
   });
 
-  const handleChange = (e: any) => {
-    if (e.target.name === "profilePhoto" ) {
-      const file = e.target?.files[0];
+  const handleChange = async (e: any) => {
+    const file = e.target.files[0];
+    const name = e.target.name;
 
-      setData({
-        ...data,
-        profilePhoto: file && URL.createObjectURL(file),
-      });
-    } else if (e.target.name === "coverPhoto") {
-      const file = e.target?.files[0];
+    if (!file) return;
 
-      setData({
-        ...data,
-        coverPhoto: file && URL.createObjectURL(file),
-      });
-    } else {
-      setData({
-        ...data,
-        [e.target.name]: e.target.value,
-      });
+    const formData = new FormData();
+    formData.append("file", file);
+    const userId = Cookies.get("userId");
+    formData.append("userId", userId || "");
+
+    try {
+      const res = await api.postFile("upload/update-profile-image", formData);
+
+      const profileImageUrl = res?.data?.data?.profileImage;
+      if (res?.data?.success && profileImageUrl) {
+        setData((prev) => ({
+          ...prev,
+          [name]: profileImageUrl,
+        }));
+        window.dispatchEvent(new CustomEvent("profile-image-updated", {
+          detail: { profileImageUrl }
+        }));
+        fetchUserProfileImage()
+      } else {
+        console.error("Upload failed:", res);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
     }
   };
+
+  const fetchUserProfileImage = async () => {
+    const userId = Cookies.get("userId");
+
+    if (!userId) return;
+
+    try {
+      const res = await api.get(`upload/${userId}`);
+      if (res?.data?.success) {
+        const { name, profileImage } = res.data.data;
+        setData((prev) => ({
+          ...prev,
+          name: name || prev.name,
+          profilePhoto: profileImage || prev.profilePhoto,
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to load profile image:", err);
+    }
+  };
+
+  // on page load
+  useEffect(() => {
+    fetchUserProfileImage();
+  }, []);
 
   return (
     <div className="mx-auto w-full max-w-[970px]">

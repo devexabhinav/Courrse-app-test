@@ -24,8 +24,6 @@ export default function ChartPageClient({ timeFrameKey }: Props) {
         amount: Number(item.count),
       }));
 
-      console.log("Formatted chart data:", formatted); // ✅ debug
-
       setChartData(formatted);
     } catch (err) {
       console.error("Failed to fetch data:", err);

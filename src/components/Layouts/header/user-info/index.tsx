@@ -9,17 +9,58 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
+import Cookies from 'js-cookie';
+import { toasterSuccess } from "@/components/core/Toaster";
+import api from "@/lib/api";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
+  const name = Cookies.get('name')
+  const email = Cookies.get('email')
+  const [userImage, setUserImage] = useState("/images/user2.png");
 
   const USER = {
-    name: "John Smith",
-    email: "johnson@nextadmin.com",
-    img: "/images/user/user-03.png",
+    name: name,
+    email: email,
+    img: "/images/user2.png",
   };
+
+
+  useEffect(() => {
+    const userId = Cookies.get("userId");
+
+    const fetchProfileImage = async () => {
+      try {
+        const res = await api.get(`upload/${userId}`);
+        if (res?.data?.success) {
+          const { profileImage } = res.data.data;
+          setUserImage(profileImage || "/images/user2.png");
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile image:", err);
+      }
+    };
+
+    if (userId) fetchProfileImage();
+
+    const handleImageUpdate = (event: CustomEvent) => {
+      // Update image directly from event if available
+      if (event.detail?.profileImageUrl) {
+        setUserImage(event.detail.profileImageUrl);
+      } else {
+        // Fallback to API call if no URL in event
+        fetchProfileImage();
+      }
+    };
+
+    window.addEventListener("profile-image-updated", handleImageUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener("profile-image-updated", handleImageUpdate as EventListener);
+    };
+  }, []);
 
   return (
     <Dropdown isOpen={isOpen} setIsOpen={setIsOpen}>
@@ -28,7 +69,7 @@ export function UserInfo() {
 
         <figure className="flex items-center gap-3">
           <Image
-            src={USER.img}
+            src={userImage}
             className="size-12"
             alt={`Avatar of ${USER.name}`}
             role="presentation"
@@ -58,7 +99,7 @@ export function UserInfo() {
 
         <figure className="flex items-center gap-2.5 px-5 py-3.5">
           <Image
-            src={USER.img}
+            src={userImage}
             className="size-12"
             alt={`Avatar for ${USER.name}`}
             role="presentation"
@@ -106,10 +147,17 @@ export function UserInfo() {
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6">
           <button
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              Cookies.remove('token');
+              Cookies.remove('userId');
+              Cookies.remove('name');
+              Cookies.remove('email');
+              setIsOpen(false);
+              window.location.href = '/auth/login';
+              toasterSuccess("Logout SucessFully", 2000, "id")
+            }}
           >
             <LogOutIcon />
-
             <span className="text-base font-medium">Log out</span>
           </button>
         </div>

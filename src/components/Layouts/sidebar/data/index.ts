@@ -7,12 +7,8 @@ export const NAV_DATA = [
       {
         title: "Dashboard",
         icon: Icons.HomeIcon,
-        items: [
-          {
-            title: "Dashboard Data",
-            url: "/",
-          },
-        ],
+        url: "/",
+        items: [],
       },
       {
         title: "COURSES",
@@ -20,17 +16,28 @@ export const NAV_DATA = [
         icon: Icons.Calendar,
         items: [],
       },
-       {
+      {
         title: "CHAPTERS",
         url: "/chapters",
         icon: Icons.Calendar,
         items: [],
       },
-        {
+      {
         title: "MCQ",
         url: "/mcq",
         icon: Icons.Calendar,
         items: [],
+      },
+        {
+        title: "USER DETAILS",
+        icon: Icons.Alphabet,
+        items: [
+          {
+            title: "User List",
+            url: "/users",
+            
+          },
+        ],
       },
       {
         title: "Profile",
@@ -85,30 +92,6 @@ export const NAV_DATA = [
           {
             title: "Basic Chart",
             url: "/charts/basic-chart",
-          },
-        ],
-      },
-      {
-        title: "UI Elements",
-        icon: Icons.FourCircle,
-        items: [
-          {
-            title: "Alerts",
-            url: "/ui-elements/alerts",
-          },
-          {
-            title: "Buttons",
-            url: "/ui-elements/buttons",
-          },
-        ],
-      },
-      {
-        title: "Authentication",
-        icon: Icons.Authentication,
-        items: [
-          {
-            title: "Sign In",
-            url: "/auth/sign-in",
           },
         ],
       },

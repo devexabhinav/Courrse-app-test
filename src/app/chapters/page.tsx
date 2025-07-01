@@ -72,7 +72,7 @@ export default function Chapters({ className }: any) {
           All Chapters List
         </h2>
         <button
-          onClick={() => router.push("/chapters/add-chapter")}
+          onClick={() => router.push("/chapters/add-chapters")}
           className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition"
         >
           Add Chapter

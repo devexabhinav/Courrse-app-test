@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export function Logo() {
   return (
-    <div className="relative h-50 w-[10.847rem]">
+    <div className="">
       <Image
         src={logo}
         className="dark:hidden"

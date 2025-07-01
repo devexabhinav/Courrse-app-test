@@ -25,16 +25,6 @@ const EditMcq = () => {
     chapter_id: ""
   });
 
-  // Fetch all courses
-  const fetchCourses = async () => {
-    try {
-      const res = await api.get("course/list");
-      setCourses(res.data?.data?.courses || []);
-    } catch (err) {
-      console.error("Failed to fetch courses:", err);
-    }
-  };
-
   // Fetch chapters for a course
   const fetchChapters = async (courseId: string) => {
     try {
@@ -45,29 +35,40 @@ const EditMcq = () => {
     }
   };
 
-  // Fetch existing MCQ data
-  const fetchMcq = async () => {
-    try {
-      const res = await api.get(`mcq/${mcqId}`);
-      const data = res.data?.data;
-      setFormData({
-        question: data.question,
-        options: data.options || ["", "", "", ""],
-        answer: data.answer,
-        course_id: data.course_id.toString(),
-        chapter_id: data.chapter_id.toString(),
-      });
-      await fetchChapters(data.course_id);
-    } catch (err) {
-      console.error("Failed to fetch MCQ:", err);
-    }
-  };
-
   useEffect(() => {
-    if (!mcqId) return router.push("/mcq");
-    fetchCourses();
-    fetchMcq();
-  }, [mcqId]);
+    if (!mcqId) {
+      router.push("/mcq");
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        // Fetch all courses
+        const coursesRes = await api.get("course/list");
+        setCourses(coursesRes.data?.data?.courses || []);
+
+        // Fetch MCQ
+        const mcqRes = await api.get(`mcq/${mcqId}`);
+        const data = mcqRes.data?.data;
+
+        setFormData({
+          question: data.question,
+          options: data.options || ["", "", "", ""],
+          answer: data.answer,
+          course_id: data.course_id.toString(),
+          chapter_id: data.chapter_id.toString(),
+        });
+
+        // Fetch chapters for selected course
+        const chaptersRes = await api.get(`chapter?course_id=${data.course_id}`);
+        setChapters(chaptersRes.data?.data || []);
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+      }
+    };
+
+    fetchData();
+  }, [mcqId, router]);
 
   useEffect(() => {
     if (formData.course_id) {

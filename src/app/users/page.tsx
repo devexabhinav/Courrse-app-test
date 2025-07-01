@@ -1,18 +1,29 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";
 import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
-import ChartPageClient from "../../users/ChartPageClient";
+import ChartPageClient from "./ChartPageClient";
 
-export const metadata: Metadata = {
-  title: "Basic Chart",
-};
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  verified: boolean;
+  createdAt: string;
+}
+
+interface UsersProps {
+  className?: string;
+  users: User[];
+  // loading: boolean;
+}
 
 // Define the expected type for searchParams
 interface SearchParams {
   selected_time_frame?: string;
 }
 
-// Update the Page function to handle searchParams as a Promise
+// Export as default and handle searchParams as a Promise
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
   // Await the searchParams to resolve the Promise
   const resolvedSearchParams = await searchParams;
@@ -21,8 +32,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
 
   return (
     <>
-      <Breadcrumb pageName="Basic Chart" />
-      <ChartPageClient timeFrameKey={timeFrameKey} />
+      <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
+        <div className="col-span-12">
+          {/* <Users users={users} /> */}
+          <Breadcrumb pageName="Basic Chart" />
+          <ChartPageClient timeFrameKey={timeFrameKey} />
+        </div>
+      </div>
     </>
   );
 }

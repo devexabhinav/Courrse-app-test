@@ -20,7 +20,6 @@ const handleResponse = async (response: Response) => {
 
 const api = {
     get: async (url: string, token?: string) => {
-        console.log(`📡 Fetching: ${BASE_URL}${url}`); // ✅ log the full URL
         const res = await fetch(`${BASE_URL}${url}`, {
             method: 'GET',
             headers: {
@@ -65,7 +64,7 @@ const api = {
         });
         return handleResponse(res);
     },
-    
+
     postFile: async (url: string, formData: FormData, token?: string) => {
         const res = await fetch(`${BASE_URL}${url}`, {
             method: 'POST',
