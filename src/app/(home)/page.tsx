@@ -20,7 +20,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const { selected_time_frame } = resolvedSearchParams;
 
   const res = await api.get("user");
-  const users = res.data.data.users;
+  const users = res?.data?.data?.users;
   const timeFrameKey = createTimeFrameExtractor(selected_time_frame)("used_devices") ?? "used_devices:monthly";
 
   return (

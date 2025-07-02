@@ -23,7 +23,7 @@ const AddMcq = () => {
 
     const fetchCourses = async () => {
         try {
-            const res = await api.get("course/list");
+            const res = await api.get("course/list?active=true");
             setCourses(res.data?.data?.courses || []);
         } catch (err) {
             console.error("Failed to fetch courses:", err);

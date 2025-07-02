@@ -19,12 +19,20 @@ import { ToggleLeft } from "lucide-react";
 
 export default function Courses({ className }: any) {
   const router = useRouter()
-  const [courses, setCourses] = useState<any>([]);
-
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [courses, setCourses] = useState([]);
   const fetchCourses = async () => {
     try {
-      const res = await api.get("course/list");
-      setCourses(res.data?.data?.courses || []);
+      const query = new URLSearchParams();
+      if (search) query.append("search", search);
+      if (statusFilter === "active") query.append("active", "true");
+      if (statusFilter === "inactive") query.append("active", "false");
+
+      const res = await api.get(`course/list?${query.toString()}`);
+      if (res.success) {
+        setCourses(res?.data?.data?.courses || []);
+      }
     } catch (err) {
       console.error("Failed to fetch courses:", err);
     }
@@ -32,7 +40,7 @@ export default function Courses({ className }: any) {
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [search, statusFilter]);
 
   const handleEdit = async (id: number) => {
     try {
@@ -79,31 +87,51 @@ export default function Courses({ className }: any) {
         className,
       )}
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        {/* Left Side - Heading */}
-        <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Heading */}
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           All Courses List
         </h2>
 
-        {/* Right Side - Search + Button Group */}
-        <div className="flex items-center gap-4">
-          <div className="relative w-full max-w-[300px]">
-            <input
-              type="search"
-              placeholder="Search"
-              className="flex w-full items-center gap-3.5 rounded-full border bg-gray-2 py-3 pl-[53px] pr-5 outline-none transition-colors focus-visible:border-primary dark:border-dark-3 dark:bg-dark-2 dark:hover:border-dark-4 dark:hover:bg-dark-3 dark:hover:text-dark-6 dark:focus-visible:border-primary"
-            />
-            <SearchIcon className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 max-[1015px]:size-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+          {/* Status Filter Dropdown */}
+          <div className="relative w-full sm:w-48">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
+              className="w-full appearance-none rounded-full border border-gray-300 bg-gray-50 py-2 px-4 text-sm text-gray-700 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            >
+              <option value="all">All Courses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+              ▼
+            </div>
           </div>
 
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-[300px]">
+            <input
+              type="search"
+              placeholder="Search courses..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+            />
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+          </div>
+
+          {/* Add Course Button */}
           <button
             onClick={() => router.push("/courses/add-courses")}
-            className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition"
+            className="w-full sm:w-auto rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700"
           >
-            Add Course
+            + Add Course
           </button>
         </div>
       </div>
+
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
@@ -112,6 +140,7 @@ export default function Courses({ className }: any) {
             <TableHead>Category</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Creator Name</TableHead>
+            <TableHead>Image</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -124,31 +153,56 @@ export default function Courses({ className }: any) {
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={course.id}
               >
-                <TableCell className="!text-left">{course.title}</TableCell>
-                <TableCell>{course.description}</TableCell>
-                <TableCell>{course.category}</TableCell>
-                <TableCell className="flex items-center justify-center gap-2">
-
-                  <button
-                    onClick={() => handleToggleStatus(course.id, !course.is_active)}
-                    className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-                    title="Change Status"
-                  >
-                    {course.is_active ? (
-                      <ToggleRight className="w-10 h-8 text-green-600 group-hover:text-primary" />
-                    ) : (
-                      <ToggleLeft className="w-10 h-8 text-red-600 group-hover:text-primary" />
-                    )}
-                  </button>
-
-                  {/* Tooltip */}
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                    Change Status
-                  </div>
-                  {/* </div> */}
+                {/* Title */}
+                <TableCell className="!text-left align-top py-6">
+                  <span className="font-semibold">{course.title}</span>
                 </TableCell>
-                <TableCell>{course.creator}</TableCell>
-                <TableCell>
+
+                {/* Description with clean multi-line formatting */}
+                <TableCell className="text-left align-top py-6 whitespace-pre-line">
+                  <div className="text-sm leading-6 text-gray-700 dark:text-gray-300">
+                    {course.description.split('\n').map((line: any, idx: any) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        {line.trim().startsWith("✅") && (
+                          <span className="text-green-500">✅</span>
+                        )}
+                        <span>{line.replace(/^✅\s*/, "")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </TableCell>
+
+                {/* Category */}
+                <TableCell className="align-top py-6">{course.category}</TableCell>
+
+                {/* Status Toggle */}
+                <TableCell className="align-top py-6">
+                  <div className="flex items-center justify-center">
+                    <button
+                      onClick={() => handleToggleStatus(course.id, !course.is_active)}
+                      className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                      title="Change Status"
+                    >
+                      {course.is_active ? (
+                        <ToggleRight className="w-10 h-8 text-green-600" />
+                      ) : (
+                        <ToggleLeft className="w-10 h-8 text-red-600" />
+                      )}
+                    </button>
+                  </div>
+                </TableCell>
+
+                {/* Creator */}
+                <TableCell className="align-top py-6">{course.creator}</TableCell>
+                <TableCell className="align-top py-6">
+                  <img
+                    src={course.image}
+                    alt={course.title}
+                    className="h-16 w-24 object-cover rounded-md border"
+                  />
+                </TableCell>
+                {/* Created At */}
+                <TableCell className="align-top py-6">
                   {new Intl.DateTimeFormat("en-GB", {
                     day: "2-digit",
                     month: "2-digit",
@@ -159,7 +213,9 @@ export default function Courses({ className }: any) {
                     hour12: true,
                   }).format(new Date(course.createdAt))}
                 </TableCell>
-                <TableCell>
+
+                {/* Actions */}
+                <TableCell className="align-top py-6">
                   <div className="flex items-center justify-center gap-3">
                     <button
                       className="text-blue-600 hover:text-blue-800"
@@ -181,12 +237,13 @@ export default function Courses({ className }: any) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={7} className="text-center">
+              <TableCell colSpan={7} className="text-center py-8">
                 No courses found.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
+
       </Table>
     </div>
   );

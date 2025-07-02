@@ -95,18 +95,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
       } else if (type === "login") {
         const token = response.data?.data?.accessToken;
+        const refreshToken = response.data?.data?.refreshToken;
         const name = response.data?.data?.user?.username;
         const email = response.data?.data?.user?.email;
         const userId = response.data?.data?.user?.id;
+        const role = response.data?.data?.user?.role;
 
         if (token) {
-          Cookies.set("token", token, { expires: 7 });
+          Cookies.set("token", token, { expires: 1 });
+          Cookies.set("refreshToken", refreshToken, { expires: 7 });
           Cookies.set("name", name, { expires: 7 });
           Cookies.set("email", email, { expires: 7 });
           Cookies.set("userId", userId, { expires: 7 });
+          Cookies.set("role", role, { expires: 7 });
         }
 
-        router.push("/");
+        window.location.href = '/';
       }
     } else {
       const messageMap: Record<string, string> = {
@@ -130,7 +134,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const renderTitle = () => {
     switch (type) {
       case "login":
-        return "Welcome Back";
+        return "Login";
       case "register":
         return "Create Your Account";
       case "forgot-password":
@@ -143,26 +147,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   return (
     <>
       {isRegistered ? (
-        // Success block stands on its own, full screen
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-white to-green-50 px-4 sm:px-8">
-          <div className="relative bg-white/80 backdrop-blur-md border border-green-200 rounded-3xl shadow-2xl px-6 py-12 sm:px-12 sm:py-16 w-full text-center space-y-8">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-white to-green-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 px-4 sm:px-8">
+          <div className="relative bg-white/80 dark:bg-white/10 backdrop-blur-md border border-green-200 dark:border-green-700 rounded-3xl shadow-2xl px-6 py-12 sm:px-12 sm:py-16 w-full text-center space-y-8">
 
-            {/* Success Icon */}
-            <div className="relative mx-auto w-28 h-28 rounded-full bg-green-100 shadow-inner flex items-center justify-center">
+            <div className="relative mx-auto w-28 h-28 rounded-full bg-green-100 dark:bg-green-900 shadow-inner flex items-center justify-center">
               <div className="absolute -inset-1 bg-green-400 opacity-20 blur-xl rounded-full animate-ping"></div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-green-600 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-green-600 dark:text-green-400 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2l4-4M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z" />
               </svg>
             </div>
 
-            {/* Title & Message */}
-            <h1 className="text-4xl font-extrabold text-green-800 tracking-tight">Registration Successful</h1>
-            <p className="text-lg text-gray-700 leading-relaxed w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mx-auto">
+            <h1 className="text-4xl font-extrabold text-green-800 dark:text-green-300 tracking-tight">Registration Successful</h1>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mx-auto">
               You are almost ready to get started! Please check your inbox and confirm your email address to activate your account.
-              Be sure to look in your spam or promotions folders if you dont see it.
+              Be sure to look in your spam or promotions folders if you don’t see it.
             </p>
 
-            {/* CTA */}
             <Link href="/auth/login">
               <button className="mt-2 inline-flex items-center justify-center px-8 py-3 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 hover:scale-105 transition-all duration-300 shadow-md">
                 Go to Login
@@ -171,49 +171,48 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           </div>
         </div>
       ) : (
-        // Only apply layout styles for form flow
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-white px-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-6">
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-950 px-4">
+          <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
+            <h2 className="text-3xl font-extrabold text-center text-gray-800 dark:text-white mb-6">
               {renderTitle()}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-5 animate-fadeIn">
               {type === "register" && (
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                   <input
                     name="name"
                     type="text"
                     placeholder="Enter your name"
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Email Address</label>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                 <input
                   name="email"
                   type="email"
                   placeholder="Enter your email"
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
 
               {(type === "login" || type === "register" || type === "reset-password") && (
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Password</label>
                   <input
                     name={type === "reset-password" ? "newPassword" : "password"}
                     type="password"
                     placeholder="Enter your password"
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -221,13 +220,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
               {type === "register" && (
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">Confirm Password</label>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
                   <input
                     name="confirmPassword"
                     type="password"
                     placeholder="Confirm your password"
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -242,7 +241,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </form>
 
             {/* Links */}
-            <div className="mt-6 text-center text-sm text-gray-600">
+            <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
               {type === "login" && (
                 <>
                   Don&apos;t have an account?{" "}
@@ -273,6 +272,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         </div>
       )}
     </>
+
   );
 
 

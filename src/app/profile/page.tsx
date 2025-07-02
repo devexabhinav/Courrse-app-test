@@ -8,9 +8,12 @@ import { useEffect, useState } from "react";
 import { CameraIcon } from "./_components/icons";
 import { SocialAccounts } from "./_components/social-accounts";
 import api from "@/lib/api";
+import { toasterSuccess } from "@/components/core/Toaster";
 
 export default function Page() {
   const name = Cookies.get('name')
+  const [loading, setLoading] = useState(false);
+
   const [data, setData] = useState({
     name: name,
     profilePhoto: "/images/user/user-03.png",
@@ -28,26 +31,32 @@ export default function Page() {
     const userId = Cookies.get("userId");
     formData.append("userId", userId || "");
 
+    setLoading(true); // start loader
+
     try {
       const res = await api.postFile("upload/update-profile-image", formData);
-
       const profileImageUrl = res?.data?.data?.profileImage;
       if (res?.data?.success && profileImageUrl) {
+        console.log(res?.data?.data?.message, "=============")
         setData((prev) => ({
           ...prev,
           [name]: profileImageUrl,
         }));
+        toasterSuccess(res?.data?.data?.message, 2000, "id");
         window.dispatchEvent(new CustomEvent("profile-image-updated", {
           detail: { profileImageUrl }
         }));
-        fetchUserProfileImage()
+        fetchUserProfileImage();
       } else {
         console.error("Upload failed:", res);
       }
     } catch (error) {
       console.error("Error uploading image:", error);
+    } finally {
+      setLoading(false); // stop loader
     }
   };
+
 
   const fetchUserProfileImage = async () => {
     const userId = Cookies.get("userId");
@@ -116,6 +125,7 @@ export default function Page() {
             <div className="relative drop-shadow-2">
               {data?.profilePhoto && (
                 <>
+                  {/* Profile Image */}
                   <Image
                     src={data?.profilePhoto}
                     width={160}
@@ -124,9 +134,17 @@ export default function Page() {
                     alt="profile"
                   />
 
+                  {/* Loader Overlay */}
+                  {loading && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-white/80">
+                      <div className="animate-spin rounded-full h-6 w-6 border-4 border-primary border-t-transparent"></div>
+                    </div>
+                  )}
+
+                  {/* File Input Label */}
                   <label
                     htmlFor="profilePhoto"
-                    className="absolute bottom-0 right-0 flex size-8.5 cursor-pointer items-center justify-center rounded-full bg-primary text-white hover:bg-opacity-90 sm:bottom-2 sm:right-2"
+                    className="absolute bottom-0 right-0 flex size-8.5 cursor-pointer items-center justify-center rounded-full bg-primary text-white hover:bg-opacity-90 sm:bottom-2 sm:right-2 z-20"
                   >
                     <CameraIcon />
 
@@ -142,6 +160,7 @@ export default function Page() {
                 </>
               )}
             </div>
+
           </div>
           <div className="mt-4">
             <h3 className="mb-1 text-heading-6 font-bold text-dark dark:text-white">

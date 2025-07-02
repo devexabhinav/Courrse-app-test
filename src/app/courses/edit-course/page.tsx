@@ -152,7 +152,18 @@ const EditCourse = () => {
             placeholder="Upload Image"
             onChange={handleChange}
           />
-
+          {typeof formData.image === "string" && (
+            <div className="mb-5.5">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white mt-4">
+                Current Image Preview
+              </label>
+              <img
+                src={formData.image}
+                alt="Course"
+                className="h-32 w-48 object-cover rounded border"
+              />
+            </div>
+          )}
           <TextAreaGroup
             className="mb-5.5"
             label="Description"

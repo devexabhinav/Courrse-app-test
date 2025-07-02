@@ -44,7 +44,7 @@ const EditMcq = () => {
     const fetchData = async () => {
       try {
         // Fetch all courses
-        const coursesRes = await api.get("course/list");
+        const coursesRes = await api.get("course/list?active=true");
         setCourses(coursesRes.data?.data?.courses || []);
 
         // Fetch MCQ

@@ -9,6 +9,7 @@ import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { CallIcon, EmailIcon, PencilSquareIcon, UserIcon } from "@/assets/icons";
+import { CableIcon, Heading1Icon, TicketsPlaneIcon, TypeIcon } from "lucide-react";
 
 const AddCourse = () => {
   const router = useRouter();
@@ -32,7 +33,7 @@ const AddCourse = () => {
         const imageUrl = imageUploadRes.data?.data?.fileUrl;
         if (imageUrl) {
           setFormData((prev) => ({ ...prev, image: imageUrl }));
-          toasterSuccess("Image uploaded successfully",2000,"id");
+          toasterSuccess("Image uploaded successfully", 2000, "id");
         } else {
           toasterError("Upload failed ❌");
         }
@@ -58,14 +59,14 @@ const AddCourse = () => {
         image: formData.image || "",
       };
 
-      const data=await api.post("course/create-course", payload);
-      if(data.success){
-        toasterSuccess("Course created successfully",2000,"id");
+      const data = await api.post("course/create-course", payload);
+      if (data.success) {
+        toasterSuccess("Course created successfully", 2000, "id");
         router.push("/courses");
 
       }
-      else{
-        toasterError(data.error.code,2000,"id")
+      else {
+        toasterError(data.error.code, 2000, "id")
       }
     } catch (error) {
       console.error("Course creation failed", error);
@@ -101,7 +102,7 @@ const AddCourse = () => {
               placeholder="Add Title Here"
               value={formData.title}
               onChange={handleChange}
-              icon={<CallIcon />}
+              icon={<TicketsPlaneIcon />}
               iconPosition="left"
               height="sm"
             />
@@ -115,7 +116,7 @@ const AddCourse = () => {
             placeholder="Add Category Here"
             value={formData.category}
             onChange={handleChange}
-            icon={<EmailIcon />}
+            icon={<TypeIcon />}
             iconPosition="left"
             height="sm"
           />
@@ -131,6 +132,18 @@ const AddCourse = () => {
               console.log("File input clicked!");
             }}
           />
+          {typeof formData.image === "string" && (
+            <div className="mb-5.5 mt-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                Image Preview:
+              </label>
+              <img
+                src={formData.image}
+                alt="Course"
+                className="h-32 w-48 object-cover rounded border"
+              />
+            </div>
+          )}
 
           <TextAreaGroup
             className="mb-5.5"

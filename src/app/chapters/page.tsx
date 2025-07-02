@@ -11,35 +11,40 @@ import {
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, SearchIcon, Trash2 } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
 
 export default function Chapters({ className }: any) {
   const router = useRouter();
+  const [search, setSearch] = useState("");
   const [chapters, setChapters] = useState<any[]>([]);
-
+  const [showMediaModal, setShowMediaModal] = useState<any>(false);
+  const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const fetchChapters = async () => {
     try {
-      const res = await api.get("chapter/get-all-chapters");
-      if(res.success){
+      const query = new URLSearchParams();
 
-        setChapters(res.data?.data || []);
+      if (search) {
+        query.append("search", search);
       }
-      else{
-        
+
+      const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
+      if (res.success) {
+        setChapters(res.data?.data || []);
       }
     } catch (err) {
       console.error("Failed to fetch chapters:", err);
     }
   };
 
+
   useEffect(() => {
     fetchChapters();
-  }, []);
+  }, [search]);
 
   const handleEdit = (id: number) => {
-    router.push(`/chapters/edit?id=${id}`);
+    router.push(`/chapters/edit-chapters?id=${id}`);
   };
 
   const handleDelete = async (id: number) => {
@@ -52,8 +57,8 @@ export default function Chapters({ className }: any) {
         toasterSuccess("Chapter Deleted Successfully", 3000, "id");
         await fetchChapters();
       }
-      else{
-        toasterError(response.error.code,3000,"id")
+      else {
+        toasterError(response.error.code, 3000, "id")
       }
     } catch (error) {
       console.error("Failed to delete chapter:", error);
@@ -71,21 +76,94 @@ export default function Chapters({ className }: any) {
         <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
           All Chapters List
         </h2>
-        <button
-          onClick={() => router.push("/chapters/add-chapters")}
-          className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition"
-        >
-          Add Chapter
-        </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+
+
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-[300px]">
+            <input
+              type="search"
+              placeholder="Search Chapters ..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+            />
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+          </div>
+
+          {/* Add Course Button */}
+          <button
+            onClick={() => router.push("/chapters/add-chapters")}
+            className="w-full sm:w-auto rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700"
+          >
+            + Add Chapter
+          </button>
+        </div>
       </div>
+      {showMediaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
+          <div
+            className={cn(
+              "relative max-h-[90vh] overflow-y-auto rounded-lg bg-white p-6 dark:bg-gray-800",
+              activeMedia.items.length === 1 ? "w-auto" : "w-[90vw]"
+            )}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowMediaModal(false)}
+              className="absolute right-4 top-4 text-xl font-bold text-red-500"
+            >
+              ✕
+            </button>
+
+            <h3 className="mb-4 text-lg font-semibold text-dark dark:text-white">
+              {activeMedia.type === "image" ? "Chapter Image" : "Chapter Video"}
+            </h3>
+
+            <div
+              className={cn(
+                "flex gap-4",
+                activeMedia.items.length > 1 ? "flex-wrap" : "justify-center"
+              )}
+            >
+              {activeMedia.items.map((url: any, idx: any) =>
+                activeMedia.type === "image" ? (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`media-${idx}`}
+                    className={cn(
+                      "rounded border object-contain",
+                      activeMedia.items.length === 1 ? "h-auto max-h-[70vh] w-auto max-w-full" : "h-32 w-48"
+                    )}
+                  />
+                ) : (
+                  <video
+                    key={idx}
+                    src={url}
+                    controls
+                    className={cn(
+                      "rounded border object-contain",
+                      activeMedia.items.length === 1 ? "h-auto max-h-[70vh] w-auto max-w-full" : "h-32 w-48"
+                    )}
+                  />
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
             <TableHead className="!text-left">Title</TableHead>
             <TableHead>Content</TableHead>
-            <TableHead>Course ID</TableHead>
+            <TableHead>Course Name</TableHead>
             <TableHead>Order</TableHead>
+            <TableHead>Images</TableHead>
+            <TableHead>Videos</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -100,8 +178,41 @@ export default function Chapters({ className }: any) {
               >
                 <TableCell className="!text-left">{chapter.title}</TableCell>
                 <TableCell>{chapter.content?.slice(0, 50)}...</TableCell>
-                <TableCell>{chapter.course_id}</TableCell>
+                <TableCell>{chapter.course.title}</TableCell>
                 <TableCell>{chapter.order}</TableCell>
+
+                <TableCell className="text-center">
+                  {chapter.images?.length > 0 ? (
+                    <button
+                      className="text-blue-600 underline"
+                      onClick={() => {
+                        setActiveMedia({ type: "image", items: chapter.images });
+                        setShowMediaModal(true);
+                      }}
+                    >
+                      View Images
+                    </button>
+                  ) : (
+                    <span>---</span>
+                  )}
+                </TableCell>
+
+                <TableCell className="text-center">
+                  {chapter.videos?.length > 0 ? (
+                    <button
+                      className="text-green-600 underline"
+                      onClick={() =>{
+                        setActiveMedia({ type: "video", items: chapter.videos })
+                          setShowMediaModal(true);
+                      }
+                      }
+                    >
+                      View Videos
+                    </button>
+                  ) : (
+                    <span>---</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   {new Intl.DateTimeFormat("en-GB", {
                     day: "2-digit",

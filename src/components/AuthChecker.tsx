@@ -1,27 +1,50 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
+import Loader from './Loader';
 
 export default function AuthChecker({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [hydrated, setHydrated] = useState(false); 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const token = Cookies.get('token')
+    setHydrated(true); 
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+
+    const token = Cookies.get('token');
+    const role = Cookies.get('role');
     const isAuthPage = pathname.startsWith('/auth');
+    const isNoAccessPage = pathname.startsWith('/no-access');
 
-    // If no token and not on auth page, redirect to login
-    if (!token && !isAuthPage) {
-      router.push('/auth/login');
+    if (isAuthPage || isNoAccessPage) {
+      setLoading(false);
+      return;
     }
 
-    // If token exists but on auth page, redirect to dashboard
-    if (token && isAuthPage) {
-      router.push('/');
+    if (!token) {
+      router.replace('/auth/login');
+      return;
     }
-  }, [pathname, router]);
+
+    if (role !== 'admin') {
+      router.replace('/no-access');
+      return;
+    }
+
+    setLoading(false);
+  }, [hydrated, pathname]);
+
+if (!hydrated || loading) {
+  return <Loader />;
+}
 
   return <>{children}</>;
 }

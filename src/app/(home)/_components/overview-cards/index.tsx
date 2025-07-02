@@ -38,7 +38,7 @@ export async function OverviewCardsGroup({ users, loading }: any) {
       <OverviewCard
         label="Total Users"
         data={{
-          value: compactFormat(users.length), growthRate: 0, 
+          value: compactFormat(users?.length), growthRate: 0, 
         }}
         Icon={icons.Users}
       />
