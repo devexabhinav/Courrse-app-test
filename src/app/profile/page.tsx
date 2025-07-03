@@ -37,7 +37,6 @@ export default function Page() {
       const res = await api.postFile("upload/update-profile-image", formData);
       const profileImageUrl = res?.data?.data?.profileImage;
       if (res?.data?.success && profileImageUrl) {
-        console.log(res?.data?.data?.message, "=============")
         setData((prev) => ({
           ...prev,
           [name]: profileImageUrl,

@@ -22,9 +22,16 @@ export default function Courses({ className }: any) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [courses, setCourses] = useState([]);
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(5);
+
   const fetchCourses = async () => {
     try {
       const query = new URLSearchParams();
+      query.append("page", String(page));
+      query.append("limit", String(limit));
       if (search) query.append("search", search);
       if (statusFilter === "active") query.append("active", "true");
       if (statusFilter === "inactive") query.append("active", "false");
@@ -32,6 +39,7 @@ export default function Courses({ className }: any) {
       const res = await api.get(`course/list?${query.toString()}`);
       if (res.success) {
         setCourses(res?.data?.data?.courses || []);
+        setTotalPages(res.data?.data?.totalPages || 1);
       }
     } catch (err) {
       console.error("Failed to fetch courses:", err);
@@ -40,7 +48,7 @@ export default function Courses({ className }: any) {
 
   useEffect(() => {
     fetchCourses();
-  }, [search, statusFilter]);
+  }, [search, statusFilter, page]);
 
   const handleEdit = async (id: number) => {
     try {
@@ -195,12 +203,17 @@ export default function Courses({ className }: any) {
                 {/* Creator */}
                 <TableCell className="align-top py-6">{course.creator}</TableCell>
                 <TableCell className="align-top py-6">
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="h-16 w-24 object-cover rounded-md border"
-                  />
+                  {course.image ? (
+                    <img
+                      src={course.image}
+                      alt={course.title}
+                      className="h-16 w-24 object-cover rounded-md border"
+                    />
+                  ) : (
+                    <span className="text-gray-500">---</span>
+                  )}
                 </TableCell>
+
                 {/* Created At */}
                 <TableCell className="align-top py-6">
                   {new Intl.DateTimeFormat("en-GB", {
@@ -245,6 +258,28 @@ export default function Courses({ className }: any) {
         </TableBody>
 
       </Table>
+
+      {courses.length > 0 && (
+
+        <div className="mt-6 flex justify-end items-center gap-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-800 dark:text-white">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+          >
+            Next
+          </button>
+        </div>)}
     </div>
   );
 }

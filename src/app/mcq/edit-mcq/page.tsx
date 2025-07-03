@@ -89,29 +89,76 @@ const EditMcq = () => {
     }
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    try {
-      const payload = {
-        question: formData.question,
-        options: formData.options,
-        answer: formData.answer,
-        course_id: parseInt(formData.course_id),
-        chapter_id: parseInt(formData.chapter_id),
-      };
-      const res = await api.put(`mcq/${mcqId}`, payload);
+const handleSubmit = async (e: any) => {
+  e.preventDefault();
 
-      if (res?.success) {
-        toasterSuccess("MCQ updated successfully!", 2000, "id");
-        router.push("/mcq");
-      } else {
-        toasterError(res?.error?.code || "Update failed", 2000, "id");
-      }
-    } catch (err) {
-      console.error("Update failed:", err);
-      toasterError("Failed to update MCQ ❌");
+  const trimmedQuestion = formData.question.trim();
+  const trimmedAnswer = formData.answer.trim();
+  const trimmedOptions = formData.options.map(opt => opt.trim());
+
+  // 1. Required fields check
+  if (!trimmedQuestion) {
+    toasterError("Question is required ❌");
+    return;
+  }
+
+  if (trimmedOptions.some(opt => !opt)) {
+    toasterError("All 4 options must be filled ❌");
+    return;
+  }
+
+  if (!trimmedAnswer) {
+    toasterError("Correct answer is required ❌");
+    return;
+  }
+
+  if (!formData.course_id) {
+    toasterError("Please select a course ❌");
+    return;
+  }
+
+  if (!formData.chapter_id) {
+    toasterError("Please select a chapter ❌");
+    return;
+  }
+
+  // 2. Check for unique options
+  const uniqueOptions = new Set(trimmedOptions);
+  if (uniqueOptions.size !== trimmedOptions.length) {
+    toasterError("Options must be unique ❌");
+    return;
+  }
+
+  // 3. Answer must match one of the options
+  if (!trimmedOptions.includes(trimmedAnswer)) {
+    toasterError("Answer must match one of the options ❌");
+    return;
+  }
+
+  // ✅ All validations passed
+  try {
+    const payload = {
+      question: trimmedQuestion,
+      options: trimmedOptions,
+      answer: trimmedAnswer,
+      course_id: parseInt(formData.course_id),
+      chapter_id: parseInt(formData.chapter_id),
+    };
+
+    const res = await api.put(`mcq/${mcqId}`, payload);
+
+    if (res?.success) {
+      toasterSuccess("MCQ updated successfully!", 2000, "id");
+      router.push("/mcq");
+    } else {
+      toasterError(res?.error?.code || "Update failed", 2000, "id");
     }
-  };
+  } catch (err) {
+    console.error("Update failed:", err);
+    toasterError("Failed to update MCQ ❌");
+  }
+};
+
 
   return (
     <>
@@ -154,6 +201,7 @@ const EditMcq = () => {
             <select
               name="course_id"
               value={formData.course_id}
+              disabled
               onChange={handleChange}
               className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2 text-sm outline-none dark:border-dark-3 dark:bg-boxdark"
             >
@@ -186,9 +234,9 @@ const EditMcq = () => {
           </div>
 
           <div className="flex justify-end gap-4">
-            <button
+           <button
+              className="rounded-lg border border-stroke px-6 py-[7px] font-medium text-dark hover:shadow-1 dark:border-dark-3 dark:text-white"
               type="button"
-              className="rounded-lg border border-stroke px-6 py-2 font-medium text-dark"
               onClick={() => router.back()}
             >
               Cancel
@@ -197,7 +245,7 @@ const EditMcq = () => {
               type="submit"
               className="rounded-lg bg-primary px-6 py-2 font-medium text-white"
             >
-              Update
+              Edit MCQ
             </button>
           </div>
         </form>

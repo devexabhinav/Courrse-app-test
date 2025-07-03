@@ -3,44 +3,47 @@ import { getOverviewData } from "../../fetch";
 import { OverviewCard } from "./card";
 import * as icons from "./icons";
 
-export async function OverviewCardsGroup({ users, loading }: any) {
-  const { views, profit, products } = await getOverviewData();
+export async function OverviewCardsGroup() {
+  const {
+    totalUsers,
+    verifiedUsers,
+    adminUsers,
+    activeCourses,
+    inactiveCourses,
+    enrolledCourses
+  } = await getOverviewData();
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-      <OverviewCard
-        label="Total Views"
-        data={{
-          ...views,
-          value: compactFormat(views.value),
-        }}
-        Icon={icons.Views}
-      />
-
-      <OverviewCard
-        label="Total Profit"
-        data={{
-          ...profit,
-          value: "$" + compactFormat(profit.value),
-        }}
-        Icon={icons.Profit}
-      />
-
-      <OverviewCard
-        label="Total Products"
-        data={{
-          ...products,
-          value: compactFormat(products.value),
-        }}
-        Icon={icons.Product}
-      />
-
+    <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 2xl:gap-7.5">
       <OverviewCard
         label="Total Users"
-        data={{
-          value: compactFormat(users?.length), growthRate: 0, 
-        }}
+        data={{ value: compactFormat(totalUsers), growthRate: 0 }}
         Icon={icons.Users}
+      />
+      <OverviewCard
+        label="Verified Users"
+        data={{ value: compactFormat(verifiedUsers), growthRate: 0 }}
+        Icon={icons.Users}
+      />
+      <OverviewCard
+        label="Admin Users"
+        data={{ value: compactFormat(adminUsers), growthRate: 0 }}
+        Icon={icons.Users}
+      />
+      <OverviewCard
+        label="Active Courses"
+        data={{ value: compactFormat(activeCourses), growthRate: 0 }}
+        Icon={icons.Product}
+      />
+      <OverviewCard
+        label="Inactive Courses"
+        data={{ value: compactFormat(inactiveCourses), growthRate: 0 }}
+        Icon={icons.Product}
+      />
+      <OverviewCard
+        label="Enrolled Courses"
+        data={{ value: compactFormat(enrolledCourses), growthRate: 0 }}
+        Icon={icons.Product} 
       />
     </div>
   );

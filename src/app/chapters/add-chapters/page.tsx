@@ -8,7 +8,8 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
-import { PencilSquareIcon, CallIcon, EmailIcon } from "@/assets/icons";
+import { PencilSquareIcon } from "@/assets/icons";
+import { BookOpen, ListOrdered } from "lucide-react";
 
 const AddChapter = () => {
   const router = useRouter();
@@ -59,8 +60,6 @@ const AddChapter = () => {
 
     const form = new FormData();
     form.append("file", file);
-
-    // Set loading state to true
     if (type === "image") {
       setImageUploadLoading(true);
     } else {
@@ -97,7 +96,6 @@ const AddChapter = () => {
       console.error("Upload error:", err);
       toasterError("Upload failed");
     } finally {
-      // Reset loading state after upload completes
       if (type === "image") {
         setImageUploadLoading(false);
       } else {
@@ -110,12 +108,20 @@ const AddChapter = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
+    // ✅ Simple validation (only required fields)
+    const { title, content, course_id, order } = formData;
+
+    if (!title.trim() || !content.trim() || !course_id || !order) {
+      toasterError("Please fill in all required fields ❌");
+      return;
+    }
+
     try {
       const payload = {
-        title: formData.title,
-        content: formData.content,
-        course_id: Number(formData.course_id),
-        order: Number(formData.order),
+        title: title.trim(),
+        content: content.trim(),
+        course_id: Number(course_id),
+        order: Number(order),
         images: uploadedImageUrls,
         videos: uploadedVideoUrls,
       };
@@ -133,7 +139,8 @@ const AddChapter = () => {
       toasterError("Failed to create chapter ❌");
     }
   };
-  console.log(uploadedImageUrls, "uploadedImageUrls===========================")
+
+
   return (
     <>
       <Breadcrumb pageName="Chapters" />
@@ -148,7 +155,7 @@ const AddChapter = () => {
               placeholder="Enter Chapter Title"
               value={formData.title}
               onChange={handleChange}
-              icon={<CallIcon />}
+              icon={<BookOpen />}
               iconPosition="left"
               height="sm"
             />
@@ -161,13 +168,13 @@ const AddChapter = () => {
               placeholder="Enter Order Number"
               value={formData.order}
               onChange={handleChange}
-              icon={<EmailIcon />}
+              icon={<ListOrdered />}
               iconPosition="left"
               height="sm"
+              min={1}
+              step={1}
             />
           </div>
-
-
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
               Select Course
@@ -188,7 +195,7 @@ const AddChapter = () => {
           </div>
 
           <TextAreaGroup
-            className="mb-5.5"
+            className="mb-5.5 mt-5"
             label="Content"
             name="content"
             placeholder="Enter Chapter Content"
@@ -253,8 +260,6 @@ const AddChapter = () => {
             </button>
           </div>
 
-
-          {/* Video Uploads */}
           <div className="mb-10">
             <label className="block text-lg font-semibold text-gray-800 dark:text-white mb-3">
               🎥 Upload Chapter Videos
@@ -274,25 +279,25 @@ const AddChapter = () => {
                     </span>
                   </label>
 
-                {videoUploadLoading && index === uploadedVideoUrls.length ? (
-  <div className="w-28 h-20 flex items-center justify-center rounded-lg bg-gray-100 border animate-pulse">
-    <div className="loader border-4 border-blue-600 border-t-transparent rounded-full w-6 h-6 animate-spin" />
-  </div>
-) : uploadedVideoUrls[index] && (
-  <a
-    href={uploadedVideoUrls[index]}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="w-28 h-20 block rounded-lg shadow border overflow-hidden"
-  >
-    <video
-      className="w-full h-full object-cover cursor-pointer pointer-events-none"
-    >
-      <source src={uploadedVideoUrls[index]} type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-  </a>
-)}
+                  {videoUploadLoading && index === uploadedVideoUrls.length ? (
+                    <div className="w-28 h-20 flex items-center justify-center rounded-lg bg-gray-100 border animate-pulse">
+                      <div className="loader border-4 border-blue-600 border-t-transparent rounded-full w-6 h-6 animate-spin" />
+                    </div>
+                  ) : uploadedVideoUrls[index] && (
+                    <a
+                      href={uploadedVideoUrls[index]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-28 h-20 block rounded-lg shadow border overflow-hidden"
+                    >
+                      <video
+                        className="w-full h-full object-cover cursor-pointer pointer-events-none"
+                      >
+                        <source src={uploadedVideoUrls[index]} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    </a>
+                  )}
 
                 </div>
               ))}
@@ -314,7 +319,6 @@ const AddChapter = () => {
             </button>
           </div>
 
-
           <div className="flex justify-end gap-3">
             <button
               className="rounded-lg border border-stroke px-6 py-[7px] font-medium text-dark hover:shadow-1 dark:border-dark-3 dark:text-white"
@@ -325,10 +329,11 @@ const AddChapter = () => {
             </button>
 
             <button
-              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90"
+              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               type="submit"
+              disabled={imageUploadLoading || videoUploadLoading}
             >
-              Save
+              {imageUploadLoading || videoUploadLoading ? "Uploading..." : "Create Chapter"}
             </button>
           </div>
         </form>

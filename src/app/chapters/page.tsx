@@ -21,17 +21,22 @@ export default function Chapters({ className }: any) {
   const [chapters, setChapters] = useState<any[]>([]);
   const [showMediaModal, setShowMediaModal] = useState<any>(false);
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(5);
+
   const fetchChapters = async () => {
     try {
       const query = new URLSearchParams();
-
-      if (search) {
-        query.append("search", search);
-      }
+      query.append("page", String(page));
+      query.append("limit", String(limit));
+      if (search) query.append("search", search);
 
       const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
+
       if (res.success) {
-        setChapters(res.data?.data || []);
+        setChapters(res.data?.data?.data || []);
+        setTotalPages(res.data?.data?.pagination?.totalPages || 1);
       }
     } catch (err) {
       console.error("Failed to fetch chapters:", err);
@@ -39,9 +44,10 @@ export default function Chapters({ className }: any) {
   };
 
 
+
   useEffect(() => {
     fetchChapters();
-  }, [search]);
+  }, [page, search]);
 
   const handleEdit = (id: number) => {
     router.push(`/chapters/edit-chapters?id=${id}`);
@@ -122,21 +128,44 @@ export default function Chapters({ className }: any) {
 
             <div
               className={cn(
-                "flex gap-4",
-                activeMedia.items.length > 1 ? "flex-wrap" : "justify-center"
+                "grid gap-4 mx-auto", // center and space items
+                activeMedia.items.length <= 1
+                  ? "grid-cols-1"
+                  : activeMedia.items.length === 2
+                    ? "grid-cols-2"
+                    : activeMedia.items.length === 3
+                      ? "grid-cols-3"
+                      : activeMedia.items.length === 4
+                        ? "grid-cols-4"
+                        : activeMedia.items.length === 5
+                          ? "grid-cols-5"
+                          : "grid-cols-6"
               )}
+              style={{
+                maxWidth: "fit-content",
+              }}
             >
-              {activeMedia.items.map((url: any, idx: any) =>
-                activeMedia.type === "image" ? (
-                  <img
+              {activeMedia.items.map((url: any, idx: any) => {
+                if (!url) return null;
+
+                return activeMedia.type === "image" ? (
+                  <a
                     key={idx}
-                    src={url}
-                    alt={`media-${idx}`}
-                    className={cn(
-                      "rounded border object-contain",
-                      activeMedia.items.length === 1 ? "h-auto max-h-[70vh] w-auto max-w-full" : "h-32 w-48"
-                    )}
-                  />
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={url}
+                      alt={`media-${idx}`}
+                      className={cn(
+                        "rounded border object-contain cursor-pointer",
+                        activeMedia.items.length === 1
+                          ? "h-auto max-h-[70vh] w-auto max-w-full"
+                          : "h-32 w-48"
+                      )}
+                    />
+                  </a>
                 ) : (
                   <video
                     key={idx}
@@ -144,11 +173,14 @@ export default function Chapters({ className }: any) {
                     controls
                     className={cn(
                       "rounded border object-contain",
-                      activeMedia.items.length === 1 ? "h-auto max-h-[70vh] w-auto max-w-full" : "h-32 w-48"
+                      activeMedia.items.length === 1
+                        ? "h-auto max-h-[70vh] w-auto max-w-full"
+                        : "h-32 w-48"
                     )}
                   />
-                )
-              )}
+                );
+              })}
+
             </div>
           </div>
         </div>
@@ -201,9 +233,9 @@ export default function Chapters({ className }: any) {
                   {chapter.videos?.length > 0 ? (
                     <button
                       className="text-green-600 underline"
-                      onClick={() =>{
+                      onClick={() => {
                         setActiveMedia({ type: "video", items: chapter.videos })
-                          setShowMediaModal(true);
+                        setShowMediaModal(true);
                       }
                       }
                     >
@@ -246,13 +278,40 @@ export default function Chapters({ className }: any) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center">
+              <TableCell colSpan={8} className="text-center">
                 No chapters found
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+      {
+
+        chapters.length > 0 && (
+          <>
+            <div className="mt-6 flex justify-end items-center gap-4">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-800 dark:text-white">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )
+      }
+
     </div>
   );
 }

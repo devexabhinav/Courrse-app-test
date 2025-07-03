@@ -20,17 +20,25 @@ const AddCourse = () => {
     creator: "",
     image: null as File | null,
   });
+  const [isUploading, setIsUploading] = useState(false);
+
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
 
     if (name === "image" && files && files[0]) {
       const selectedFile = files[0];
+      if (!selectedFile.type.startsWith("image/")) {
+        toasterError("Only image files are allowed ❌");
+        return;
+      }
       try {
+        setIsUploading(true); // Start upload
         const imageForm = new FormData();
         imageForm.append("file", selectedFile);
 
         const imageUploadRes = await api.postFile("upload", imageForm);
         const imageUrl = imageUploadRes.data?.data?.fileUrl;
+
         if (imageUrl) {
           setFormData((prev) => ({ ...prev, image: imageUrl }));
           toasterSuccess("Image uploaded successfully", 2000, "id");
@@ -40,8 +48,9 @@ const AddCourse = () => {
       } catch (err) {
         console.error("Upload failed", err);
         toasterError("Upload failed ❌");
+      } finally {
+        setIsUploading(false); // End upload
       }
-
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -50,12 +59,20 @@ const AddCourse = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
+    const { title, description, category, creator } = formData;
+
+    // Check for empty required fields
+    if (!title || !description || !category || !creator) {
+      toasterError("Please fill all the required fields ❌", 2000, "id");
+      return;
+    }
+
     try {
       const payload = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        creator: formData.creator,
+        title,
+        description,
+        category,
+        creator,
         image: formData.image || "",
       };
 
@@ -63,16 +80,15 @@ const AddCourse = () => {
       if (data.success) {
         toasterSuccess("Course created successfully", 2000, "id");
         router.push("/courses");
-
-      }
-      else {
-        toasterError(data.error.code, 2000, "id")
+      } else {
+        toasterError(data.error.code, 2000, "id");
       }
     } catch (error) {
       console.error("Course creation failed", error);
       toasterError("Failed to create course ❌");
     }
   };
+
 
 
   return (
@@ -127,16 +143,31 @@ const AddCourse = () => {
             fileStyleVariant="style1"
             label="Upload Image"
             placeholder="Upload Image"
+            accept="image/*"
             onChange={handleChange}
             onClick={() => {
               console.log("File input clicked!");
             }}
           />
           {typeof formData.image === "string" && (
-            <div className="mb-5.5 mt-2">
+            <div className="mb-5.5 mt-2 relative w-max">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Image Preview:
               </label>
+
+              {/* Cross Button */}
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({ ...prev, image: null }))
+                }
+                className="absolute right-2 top-2 z-10 rounded-full bg-white dark:bg-dark-3 text-black dark:text-white border p-1 hover:bg-red-500 hover:text-white transition"
+                title="Remove image"
+              >
+                ×
+              </button>
+
+              {/* Image */}
               <img
                 src={formData.image}
                 alt="Course"
@@ -144,6 +175,7 @@ const AddCourse = () => {
               />
             </div>
           )}
+
 
           <TextAreaGroup
             className="mb-5.5"
@@ -165,10 +197,11 @@ const AddCourse = () => {
             </button>
 
             <button
-              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90"
+              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
+              disabled={isUploading}
             >
-              Save
+              {isUploading ? "Uploading..." : "Add Course"}
             </button>
           </div>
         </form>

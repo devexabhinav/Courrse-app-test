@@ -14,6 +14,7 @@ const EditCourse = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("id");
+  const [isUploading, setIsUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -42,7 +43,7 @@ const EditCourse = () => {
         }
       } catch (err) {
         console.error("Failed to fetch course", err);
-        toasterError("Failed to load course");
+        toasterError("Failed to load course",2000,"id");
       }
     };
 
@@ -55,6 +56,7 @@ const EditCourse = () => {
     if (name === "image" && files && files[0]) {
       const selectedFile = files[0];
       try {
+        setIsUploading(true); // start loader
         const imageForm = new FormData();
         imageForm.append("file", selectedFile);
 
@@ -64,11 +66,13 @@ const EditCourse = () => {
           setFormData((prev) => ({ ...prev, image: imageUrl }));
           toasterSuccess("Image uploaded successfully", 2000, "id");
         } else {
-          toasterError("Upload failed ❌");
+          toasterError("Upload failed ❌",2000,"id");
         }
       } catch (err) {
         console.error("Upload failed", err);
-        toasterError("Upload failed ❌");
+        toasterError("Upload failed ❌",2000,"id");
+      } finally {
+        setIsUploading(false); // stop loader
       }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -78,12 +82,19 @@ const EditCourse = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
+    // Validate required fields
+    const { title, description, category, creator } = formData;
+    if (!title || !description || !category || !creator) {
+      toasterError("Please fill in all required fields ❌",2000,"id");
+      return;
+    }
+
     try {
       const payload = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        creator: formData.creator,
+        title,
+        description,
+        category,
+        creator,
         image: formData.image || "",
       };
 
@@ -94,7 +105,7 @@ const EditCourse = () => {
       }
     } catch (error) {
       console.error("Course update failed", error);
-      toasterError("Failed to update course ❌");
+      toasterError("Failed to update course ❌",2000,"id");
     }
   };
 
@@ -152,18 +163,60 @@ const EditCourse = () => {
             placeholder="Upload Image"
             onChange={handleChange}
           />
-          {typeof formData.image === "string" && (
-            <div className="mb-5.5">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white mt-4">
+          {isUploading || typeof formData.image === "string" ? (
+            <div className="mb-5.5 mt-2 relative w-max">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Current Image Preview
               </label>
-              <img
-                src={formData.image}
-                alt="Course"
-                className="h-32 w-48 object-cover rounded border"
-              />
+
+              <div className="h-32 w-48 flex items-center justify-center rounded border bg-gray-50 dark:bg-gray-800 relative">
+                {isUploading ? (
+                  <div className="flex flex-col items-center justify-center gap-2 text-blue-600">
+                    <svg
+                      className="animate-spin h-6 w-6 text-blue-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 00-8 8z"
+                      ></path>
+                    </svg>
+                    <span className="text-sm">Uploading...</span>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
+                      className="absolute right-2 top-2 z-10 rounded-full bg-white dark:bg-dark-3 text-black dark:text-white border p-1 hover:bg-red-500 hover:text-white transition"
+                      title="Remove image"
+                    >
+                      ×
+                    </button>
+
+                    <img
+                      src={formData.image as string}
+                      alt="Course"
+                      className="h-full w-full object-cover rounded"
+                    />
+                  </>
+                )}
+              </div>
             </div>
-          )}
+          ) : null}
+
+
           <TextAreaGroup
             className="mb-5.5"
             label="Description"
@@ -184,11 +237,13 @@ const EditCourse = () => {
             </button>
 
             <button
-              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90"
+              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
+              disabled={isUploading}
             >
-              Save
+              {isUploading ? "Uploading..." : "Edit Course"}
             </button>
+
           </div>
         </form>
       </ShowcaseSection>

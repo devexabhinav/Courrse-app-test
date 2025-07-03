@@ -11,37 +11,37 @@ import {
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, ToggleRight, ToggleLeft } from "lucide-react";
 import { toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
-import { ToggleRight } from "lucide-react";
-import { ToggleLeft } from "lucide-react";
 
 export default function Mcq({ className }: any) {
-  const router = useRouter()
-  const [mcq, setMcq] = useState<any>([]);
+  const router = useRouter();
+  const [mcq, setMcq] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(5); // items per page
 
   const fetchMcq = async () => {
     try {
-      const res = await api.get("mcq");
-      setMcq(res.data?.data || []);
+      const res = await api.get(`mcq?page=${page}&limit=${limit}`);
+
+      const mcqs = res.data?.data?.data || [];
+      const total = res.data?.data?.pagination?.total || 0;
+
+      setMcq(mcqs);
+      setTotal(total);
     } catch (err) {
-      console.error("Failed to fetch courses:", err);
+      console.error("Failed to fetch MCQs:", err);
     }
   };
 
   useEffect(() => {
     fetchMcq();
-  }, []);
+  }, [page]);
 
-  const handleEdit = async (id: number) => {
-    try {
-      if (id) {
-        router.push(`/mcq/edit-mcq?id=${id}`);
-      }
-    } catch (err) {
-      console.error("Failed to fetch course details", err);
-    }
+  const handleEdit = (id: number) => {
+    router.push(`/mcq/edit-mcq?id=${id}`);
   };
 
   const handleDelete = async (id: number) => {
@@ -51,39 +51,41 @@ export default function Mcq({ className }: any) {
     try {
       const response = await api.delete(`mcq/${id}`);
       if (response.success) {
-        toasterSuccess("MCQ Deleted Successfully", 2000, "id")
+        toasterSuccess("MCQ Deleted Successfully", 2000, "id");
+        fetchMcq(); // Refresh after delete
       }
-      await fetchMcq();
-
     } catch (error) {
-      console.error("Failed to delete course:", error);
+      console.error("Failed to delete MCQ:", error);
     }
   };
+
   const handleToggleStatus = async (id: number, newStatus: boolean) => {
     try {
-      const res = await api.put(`course/${id}/status`, { is_active: newStatus });
+      const res = await api.put(`mcq/${id}/status`, { is_active: newStatus });
       if (res.success) {
         toasterSuccess("Status updated successfully", 2000, "status");
         fetchMcq();
-      } else {
-        console.error(res.error);
       }
     } catch (err) {
       console.error("Failed to update status", err);
     }
   };
+
+  const totalPages = Math.ceil(total / limit);
+
   return (
     <div
       className={cn(
         "grid rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
-        className,
+        className
       )}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
-          All MCQs List
-        </h2>
-        <button onClick={() => router.push("/mcq/add-mcq")} className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition" >
+        <h2 className="text-body-2xlg font-bold text-dark dark:text-white">All MCQs List</h2>
+        <button
+          onClick={() => router.push("/mcq/add-mcq")}
+          className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition"
+        >
           Add MCQ
         </button>
       </div>
@@ -95,7 +97,7 @@ export default function Mcq({ className }: any) {
             <TableHead>Question</TableHead>
             <TableHead>Correct Answer</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Creator Name</TableHead>
+            {/* <TableHead>Creator Name</TableHead> */}
             <TableHead>Created At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -112,26 +114,19 @@ export default function Mcq({ className }: any) {
                 <TableCell>{course.question}</TableCell>
                 <TableCell>{course.answer}</TableCell>
                 <TableCell className="flex items-center justify-center gap-2">
-                 
                   <button
                     onClick={() => handleToggleStatus(course.id, !course.is_active)}
                     className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
                     title="Change Status"
                   >
                     {course.is_active ? (
-                      <ToggleRight className="w-10 h-8 text-green-600 group-hover:text-primary" />
+                      <ToggleRight className="w-10 h-8 text-green-600" />
                     ) : (
-                      <ToggleLeft className="w-10 h-8 text-red-600 group-hover:text-primary" />
+                      <ToggleLeft className="w-10 h-8 text-red-600" />
                     )}
                   </button>
-
-                  {/* Tooltip */}
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                    Change Status
-                  </div>
-                  {/* </div> */}
                 </TableCell>
-                <TableCell>{course.creator}</TableCell>
+                {/* <TableCell>{course.creator}</TableCell> */}
                 <TableCell>
                   {new Intl.DateTimeFormat("en-GB", {
                     day: "2-digit",
@@ -166,12 +161,33 @@ export default function Mcq({ className }: any) {
           ) : (
             <TableRow>
               <TableCell colSpan={7} className="text-center">
-                No courses found.
+                No MCQs found.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      <div className="mt-4 flex justify-end items-center gap-3">
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-sm">
+          Page {page} of {totalPages || 1}
+        </span>
+        <button
+          onClick={() => setPage((prev) => (page < totalPages ? prev + 1 : prev))}
+          disabled={page >= totalPages}
+          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

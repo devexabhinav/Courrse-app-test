@@ -64,29 +64,76 @@ const AddMcq = () => {
         }
     };
 
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
-        try {
-            const payload = {
-                question: formData.question,
-                options: formData.options,
-                answer: formData.answer,
-                course_id: parseInt(formData.course_id),
-                chapter_id: parseInt(formData.chapter_id),
-            };
-            const res = await api.post("mcq/create-mcq", payload);
-            if (res?.success) {
-                toasterSuccess("MCQ created successfully!", 2000, "id");
-                router.push("/mcq");
-            }
-            else {
-                toasterError(res.error.code, 2000, "id")
-            }
-        } catch (err) {
-            console.error("MCQ creation failed:", err);
-            toasterError("Failed to create MCQ ❌");
-        }
+const handleSubmit = async (e: any) => {
+  e.preventDefault();
+
+  const trimmedQuestion = formData.question.trim();
+  const trimmedAnswer = formData.answer.trim();
+  const trimmedOptions = formData.options.map((opt) => opt.trim());
+
+  // Basic Required Field Validation
+  if (!trimmedQuestion) {
+    toasterError("Question is required ❌");
+    return;
+  }
+
+  if (trimmedOptions.some((opt) => !opt)) {
+    toasterError("All 4 options must be filled ❌");
+    return;
+  }
+
+  if (!trimmedAnswer) {
+    toasterError("Correct answer is required ❌");
+    return;
+  }
+
+  if (!formData.course_id) {
+    toasterError("Please select a course ❌");
+    return;
+  }
+
+  if (!formData.chapter_id) {
+    toasterError("Please select a chapter ❌");
+    return;
+  }
+
+  // ✅ Check for duplicate options
+  const uniqueOptions = new Set(trimmedOptions);
+  if (uniqueOptions.size !== trimmedOptions.length) {
+    toasterError("Options must be unique ❌");
+    return;
+  }
+
+  // ✅ Check if answer exists in the options
+  if (!trimmedOptions.includes(trimmedAnswer)) {
+    toasterError("Answer must match one of the options ❌");
+    return;
+  }
+
+  // All validations passed, proceed with API call
+  try {
+    const payload = {
+      question: trimmedQuestion,
+      options: trimmedOptions,
+      answer: trimmedAnswer,
+      course_id: parseInt(formData.course_id),
+      chapter_id: parseInt(formData.chapter_id),
     };
+
+    const res = await api.post("mcq/create-mcq", payload);
+    if (res?.success) {
+      toasterSuccess("MCQ created successfully!", 2000, "id");
+      router.push("/mcq");
+    } else {
+      toasterError(res.error.code, 2000, "id");
+    }
+  } catch (err) {
+    console.error("MCQ creation failed:", err);
+    toasterError("Failed to create MCQ ❌");
+  }
+};
+
+
 
     return (
         <>
@@ -160,10 +207,10 @@ const AddMcq = () => {
                             ))}
                         </select>
                     </div>
-                    <div className="flex justify-end gap-4">
+                    <div className="flex justify-end gap-3">
                         <button
+                            className="rounded-lg border border-stroke px-6 py-[7px] font-medium text-dark hover:shadow-1 dark:border-dark-3 dark:text-white"
                             type="button"
-                            className="rounded-lg border border-stroke px-6 py-2 font-medium text-dark"
                             onClick={() => router.back()}
                         >
                             Cancel
@@ -172,7 +219,7 @@ const AddMcq = () => {
                             type="submit"
                             className="rounded-lg bg-primary px-6 py-2 font-medium text-white"
                         >
-                            Submit
+                            Create MCQ
                         </button>
                     </div>
                 </form>

@@ -1,4 +1,3 @@
-// UsedDevices.tsx
 "use client";
 
 import { PeriodPicker } from "@/components/period-picker";
@@ -8,7 +7,7 @@ import { DonutChart } from "./chart";
 type PropsType = {
   timeFrame?: string;
   className?: string;
-  data: any[]; // ✅ Add this
+  data: any[]; 
 };
 
 export function UsedDevices({
@@ -25,7 +24,7 @@ export function UsedDevices({
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
-          Used Devices
+          Total Visitors
         </h2>
 
         <PeriodPicker defaultValue={timeFrame} sectionKey="used_devices" />
