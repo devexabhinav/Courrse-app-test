@@ -11,8 +11,7 @@ interface AuthFormProps {
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
-  const router = useRouter();
-
+  const [isRegistered, setIsRegistered] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,7 +19,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     name: "",
     newPassword: "",
   });
-  const [isRegistered, setIsRegistered] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -149,7 +147,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       {isRegistered ? (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-white to-green-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 px-4 sm:px-8">
           <div className="relative bg-white/80 dark:bg-white/10 backdrop-blur-md border border-green-200 dark:border-green-700 rounded-3xl shadow-2xl px-6 py-12 sm:px-12 sm:py-16 w-full text-center space-y-8">
-
             <div className="relative mx-auto w-28 h-28 rounded-full bg-green-100 dark:bg-green-900 shadow-inner flex items-center justify-center">
               <div className="absolute -inset-1 bg-green-400 opacity-20 blur-xl rounded-full animate-ping"></div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-green-600 dark:text-green-400 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">

@@ -4,16 +4,25 @@ import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export default function UsersWithProgressPage({ className }: any) {
+  const router = useRouter()
   const [users, setUsers] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(5); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await api.get("user/get-all-details"); // adjust if full URL needed
-        setUsers(res.data.data || []);
+        const res = await api.get(`user/get-all-details?page=${page}&limit=${limit}`);
+        console.log(res.data.data.users )
+        setUsers(res.data.data.users|| []);
+        const total = res.data?.data?.totalPages || 0;
+        console.log(total,"=sh")
+        setTotal(total);
       } catch (error) {
         console.error("Failed to fetch users", error);
       } finally {
@@ -21,7 +30,12 @@ export default function UsersWithProgressPage({ className }: any) {
       }
     }
     fetchUsers();
-  }, []);
+  }, [page]);
+
+  const handleMore = (id: any) => {
+    router.push(`/users/user-details/view-details?id=${id}`)
+  }
+  // const totalPages = Math.ceil(total / limit);
 
   return (
     <div
@@ -65,9 +79,7 @@ export default function UsersWithProgressPage({ className }: any) {
                     {user.verified ? "Verified" : "Unverified"}
                   </span>
                 </TableCell>
-              
 
-                {/* Enrolled Courses */}
                 <TableCell>
                   {user.enrolledCourses?.length > 0 ? (
                     <ul className="text-left space-y-1">
@@ -88,8 +100,6 @@ export default function UsersWithProgressPage({ className }: any) {
                     <span className="italic text-gray-500">Not Enrolled</span>
                   )}
                 </TableCell>
-
-                {/* Progress */}
                 <TableCell>
                   {user.enrolledCourses?.length > 0 ? (
                     <ul className="text-left space-y-1">
@@ -104,7 +114,7 @@ export default function UsersWithProgressPage({ className }: any) {
                   )}
                 </TableCell>
 
-                <TableCell>View More Details</TableCell>
+                <TableCell onClick={() => handleMore(user.id)} className="cursor-pointer">View More Details</TableCell>
               </TableRow>
             ))
           ) : (
@@ -116,7 +126,25 @@ export default function UsersWithProgressPage({ className }: any) {
           )}
         </TableBody>
       </Table>
-
+      <div className="mt-4 flex justify-end items-center gap-3">
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-sm">
+          Page {page} of {total || 1}
+        </span>
+        <button
+          onClick={() => setPage((prev) => (page < total ? prev + 1 : prev))}
+          disabled={page >= total}
+          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
       {/* )} */}
     </div>
   );
