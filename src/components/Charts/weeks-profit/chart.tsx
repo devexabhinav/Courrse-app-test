@@ -91,6 +91,7 @@ export function WeeksProfitChart({ data }: PropsType) {
       opacity: 1,
     },
   };
+  
   return (
     <div className="-ml-3.5 mt-3">
       <Chart

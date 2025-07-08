@@ -7,6 +7,8 @@ import { useSidebarContext } from "../sidebar/sidebar-context";
 import { MenuIcon } from "./icons";
 import { ThemeToggleSwitch } from "./theme-toggle";
 import { UserInfo } from "./user-info";
+import logo from "@/assets/logos/logo.webp";
+import darktheme from "@/assets/logos/darktheme.png";
 
 export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();
@@ -24,7 +26,7 @@ export function Header() {
       {isMobile && (
         <Link href={"/"} className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
           <Image
-            src={"/images/logo/logo-icon.svg"}
+            src={logo}
             width={32}
             height={32}
             alt=""
