@@ -4,7 +4,7 @@ import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
 import ChartPageClient from "../../users/ChartPageClient";
 
 export const metadata: Metadata = {
-  title: "Basic Chart",
+  title: "Chart",
 };
 
 // Define the expected type for searchParams
@@ -21,7 +21,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
 
   return (
     <>
-      <Breadcrumb pageName="Basic Chart" />
+      <Breadcrumb pageName="Chart" />
       <ChartPageClient timeFrameKey={timeFrameKey} />
     </>
   );

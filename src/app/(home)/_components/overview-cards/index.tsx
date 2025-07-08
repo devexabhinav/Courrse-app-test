@@ -3,7 +3,7 @@ import { getOverviewData } from "../../fetch";
 import { OverviewCard } from "./card";
 import * as icons from "./icons";
 
-export async function OverviewCardsGroup() {
+export async function OverviewCardsGroup({users}:any) {
   const {
     totalUsers,
     verifiedUsers,
