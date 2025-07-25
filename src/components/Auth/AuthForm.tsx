@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { toasterError, toasterSuccess } from "../core/Toaster";
-import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
 interface AuthFormProps {
