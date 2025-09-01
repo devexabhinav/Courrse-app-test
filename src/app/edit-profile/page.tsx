@@ -12,18 +12,21 @@ export default function EditProfile() {
   const [position, setPosition] = useState<string>("");
   const [about, setAbout] = useState<string>("");
   const [links, setLinks] = useState<string[]>([""]);
+  const [role, setRole] = useState<string | undefined>();
 
   // ✅ Load data from cookies when component mounts
   useEffect(() => {
-    const savedName = Cookies.get("name");
+   const savedName = Cookies.get("name");
     const savedPosition = Cookies.get("position");
     const savedAbout = Cookies.get("about");
     const savedLinks = Cookies.get("links");
+    const userRole = Cookies.get("role"); // Get role from cookies
     
     if (savedName) setName(savedName);
     if (savedPosition) setPosition(savedPosition);
     if (savedAbout) setAbout(savedAbout);
     if (savedLinks) setLinks(JSON.parse(savedLinks));
+    if (userRole) setRole(userRole); // Set role state
   }, []);
 
   const handleLinkChange = (index: number, value: string) => {
@@ -51,6 +54,10 @@ export default function EditProfile() {
     
   };
 
+
+   const isUser = role === 'user';
+
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Edit Teacher Profile</h1>
@@ -67,21 +74,23 @@ export default function EditProfile() {
         </div>
 
         {/* Position */}
-        <div>
-          <label className="block font-medium">Position</label>
-          <select
-            value={position}
-            onChange={(e) => setPosition(e.target.value)}
-            className="border px-3 py-2 rounded w-full"
-          >
-            <option value="">Select Position</option>
-            <option value="Full Stack Developer">Full Stack Developer</option>
-            <option value="React Developer">React Developer</option>
-            <option value="PHP Developer">PHP Developer</option>
-            <option value="Backend Developer">Backend Developer</option>
-            <option value="Python Developer">Python Developer</option>
-          </select>
-        </div>
+          {!isUser && (
+          <div>
+            <label className="block font-medium">Position</label>
+            <select
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              className="border px-3 py-2 rounded w-full"
+            >
+              <option value="">Select Position</option>
+              <option value="Full Stack Developer">Full Stack Developer</option>
+              <option value="React Developer">React Developer</option>
+              <option value="PHP Developer">PHP Developer</option>
+              <option value="Backend Developer">Backend Developer</option>
+              <option value="Python Developer">Python Developer</option>
+            </select>
+          </div>
+        )}
 
         {/* About */}
         <div>
@@ -95,7 +104,10 @@ export default function EditProfile() {
         </div>
 
         {/* Links */}
-        <div>
+   
+
+         {!isUser && (
+          <div>
           <label className="block font-medium">Paste Links</label>
           {links.map((link, index) => (
             <div key={index} className="flex gap-2 mb-2">
@@ -124,6 +136,8 @@ export default function EditProfile() {
             + Add another link
           </button>
         </div>
+        )}
+
 
         <button
           type="submit"

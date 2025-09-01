@@ -18,6 +18,7 @@ export default function Page() {
   const [about, setAbout] = useState("");
   const [links, setLinks] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<string | undefined>();
 
   const [data, setData] = useState({
     name: "",
@@ -33,6 +34,7 @@ export default function Page() {
     setAbout(Cookies.get("about") || "");
     const storedLinks = Cookies.get("links");
     setLinks(storedLinks ? JSON.parse(storedLinks) : []);
+    setRole(Cookies.get("role"));
     fetchUserProfileImage();
   }, []);
 
@@ -85,6 +87,8 @@ export default function Page() {
       console.error("Failed to load profile image:", err);
     }
   };
+
+  const isUser = role === 'user';
 
   return (
     <div className="mx-auto w-full max-w-[970px]">
@@ -159,7 +163,13 @@ export default function Page() {
             <h3 className="mb-1 text-heading-6 font-bold text-dark dark:text-white">
               {name  || data.name}
             </h3>
-            <p className="font-medium">{position || data.position}</p>
+            
+            {/* Show "Trainee" for users, otherwise show position */}
+            {isUser ? (
+              <p className="font-medium">Trainee</p>
+            ) : (
+              <p className="font-medium">{position || data.position}</p>
+            )}
 
             {/* About */}
             <div className="mx-auto max-w-[720px] mt-6">
@@ -168,7 +178,10 @@ export default function Page() {
             </div>
 
             {/* Social Links */}
-            {links.length > 0 && (
+            {isUser ? (
+              <p></p>
+            ) : (
+              links.length > 0 && (
               <div className="mt-4">
                 <h4 className="font-medium text-dark dark:text-white">My Links</h4>
                 <ul className="mt-2">
@@ -181,6 +194,7 @@ export default function Page() {
                   ))}
                 </ul>
               </div>
+            )
             )}
 
             <SocialAccounts />

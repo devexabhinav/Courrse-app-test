@@ -34,10 +34,10 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
       return;
     }
 
-    if (role !== 'admin') {
-      router.replace('/user-access');
-      return;
-    }
+    // if (role !== 'admin') {
+    //   router.replace('/user-access');
+    //   return;
+    // }
 
     setLoading(false);
   }, [hydrated, pathname]);

@@ -9,38 +9,61 @@ import { NAV_DATA } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
+import Cookies from "js-cookie";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { setIsOpen, isOpen, isMobile, toggleSidebar } = useSidebarContext();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [role, setRole] = useState<string | undefined>();
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
-
-    // Uncomment the following line to enable multiple expanded items
-    // setExpandedItems((prev) =>
-    //   prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
-    // );
   };
+
+  useEffect(() => {
+    const r = Cookies.get('role');
+    setRole(r);
+  }, []);
 
   useEffect(() => {
     // Keep collapsible open, when it's subpage is active
     NAV_DATA.some((section) => {
       return section.items.some((item) => {
-        return item.items.some((subItem) => {
+        return item.items?.some((subItem) => {
           if (subItem.url === pathname) {
             if (!expandedItems.includes(item.title)) {
               toggleExpanded(item.title);
             }
-
-            // Break the loop
             return true;
           }
         });
       });
     });
   }, [pathname]);
+
+  const isUser = role === 'user';
+  const isAdmin = role === 'admin';
+
+  // Filter navigation items based on user role and item type
+  const getFilteredNavData = () => {
+    return NAV_DATA.map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (isUser) {
+          // For users, only show items with type 'both' or 'user'
+          return item.type === 'both' || item.type === 'user';
+        } else if (isAdmin) {
+          // For admin, show items with type 'both' or 'admin'
+          return item.type === 'both' || item.type === 'admin';
+        }
+        // If no role, show nothing
+        return false;
+      })
+    })).filter((section) => section.items.length > 0); // Remove empty sections
+  };
+
+  const filteredNavData = getFilteredNavData();
 
   return (
     <>
@@ -66,7 +89,7 @@ export function Sidebar() {
         <div className="flex h-full flex-col py-10 pl-[25px] pr-[7px]">
           <div className="relative pr-4.5">
             <Link
-              href={"/"}
+              href={isUser ? "/user-dashboard" : "/"}
               onClick={() => isMobile && toggleSidebar()}
               className="px-0 py-2.5 min-[850px]:py-0"
             >
@@ -79,7 +102,6 @@ export function Sidebar() {
                 className="absolute left-3/4 right-4.5 top-1/2 -translate-y-1/2 text-right"
               >
                 <span className="sr-only">Close Menu</span>
-
                 <ArrowLeftIcon className="ml-auto size-7" />
               </button>
             )}
@@ -87,7 +109,7 @@ export function Sidebar() {
 
           {/* Navigation */}
           <div className="custom-scrollbar mt-2 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
-            {NAV_DATA.map((section) => (
+            {filteredNavData.map((section) => (
               <div key={section.label} className="mb-6">
                 <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
                   {section.label}
@@ -97,7 +119,7 @@ export function Sidebar() {
                   <ul className="space-y-2">
                     {section.items.map((item) => (
                       <li key={item.title}>
-                        {item.items.length ? (
+                        {item.items && item.items.length > 0 ? (
                           <div>
                             <MenuItem
                               isActive={item.items.some(
@@ -143,11 +165,7 @@ export function Sidebar() {
                           </div>
                         ) : (
                           (() => {
-                            const href =
-                              "url" in item
-                                ? item.url + ""
-                                : "/" +
-                                  item.title.toLowerCase().split(" ").join("-");
+                            const href = item.url || "/" + item.title.toLowerCase().split(" ").join("-");
 
                             return (
                               <MenuItem
