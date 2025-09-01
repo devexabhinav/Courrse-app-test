@@ -22,7 +22,7 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
     const token = Cookies.get('token');
     const role = Cookies.get('role');
     const isAuthPage = pathname.startsWith('/auth');
-    const isNoAccessPage = pathname.startsWith('/no-access');
+    const isNoAccessPage = pathname.startsWith('/user-access');
 
     if (isAuthPage || isNoAccessPage) {
       setLoading(false);
@@ -35,7 +35,7 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
     }
 
     if (role !== 'admin') {
-      router.replace('/no-access');
+      router.replace('/user-access');
       return;
     }
 
