@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import { Sidebar } from '@/components/Layouts/sidebar';
 import { Header } from '@/components/Layouts/header';
 import ToastProvider from '@/components/core/ToasterProvider';
+import UserCoursesDashboard from '@/components/UserCoursesDashboard'; // We'll create this component
 
 import type { PropsWithChildren } from 'react';
 
@@ -31,8 +32,8 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
   const isAuthenticated = !isAuthPage && (isAdmin || isUser);
 
   // For admin: always show actual content
-  // For user: show user message only on dashboard, show actual content for other pages
-  const showUserMessage = isUser && (pathname === '/' || pathname === '/user-dashboard');
+  // For user: show courses dashboard only on dashboard, show actual content for other pages
+  const showUserDashboard = isUser && (pathname === '/' || pathname === '/user-dashboard');
 
   return (
     <>
@@ -45,20 +46,8 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
           {isAuthenticated && <Header />}
 
           <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
-            {showUserMessage ? (
-              <div className="flex items-center justify-center">
-                <div className="text-center">
-                  <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                    You're a user
-                  </h1>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400">
-                    Welcome to your user dashboard
-                  </p>
-                  
-                  {/* Dashboard table content for users */}
-                 
-                </div>
-              </div>
+            {showUserDashboard ? (
+              <UserCoursesDashboard />
             ) : (
               // Show actual page content for:
               // - Admin on all pages

@@ -7,9 +7,21 @@ import { MenuIcon } from "./icons";
 import { ThemeToggleSwitch } from "./theme-toggle";
 import { UserInfo } from "./user-info";
 import logo from "@/assets/logos/logo.webp";
+import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();
+  const [role, setRole] = useState<string | undefined>();
+
+   useEffect(() => {
+    setRole(Cookies.get("role"));
+  }, []);
+
+
+  const isUser = role === 'user';
+
+
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-stroke bg-white px-4 py-5 shadow-1 dark:border-stroke-dark dark:bg-gray-dark md:px-5 2xl:px-10">
@@ -37,7 +49,13 @@ export function Header() {
         <h1 className="mb-0.5 text-heading-5 font-bold text-dark dark:text-white">
           Dashboard
         </h1>
-        <p className="font-medium">Admin Dashboard For Course App</p>
+        
+
+          {isUser ? (
+              <p className="font-medium">Welcome students</p>
+            ) : (
+              <p className="font-medium"><p className="font-medium">Admin Dashboard For Course App</p></p>
+            )}
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-2 min-[375px]:gap-4">

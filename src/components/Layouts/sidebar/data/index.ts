@@ -5,6 +5,13 @@ export const NAV_DATA = [
     label: "MAIN MENU",
     items: [
       {
+        title: "Home",
+        url: "/",
+        icon: Icons.User,
+        items: [],
+        type: "user", // Show to both admin and user
+      },
+      {
         title: "Dashboard",
         icon: Icons.HomeIcon,
         url: "/",
@@ -61,6 +68,7 @@ export const NAV_DATA = [
         items: [],
         type: "user", // Show to both admin and user
       },
+       
     ],
   },
 ];

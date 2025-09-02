@@ -1,0 +1,578 @@
+
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import api from "@/lib/api";
+import { 
+  ArrowLeft, 
+  Clock, 
+  Users, 
+  Star, 
+  BookOpen, 
+  CheckCircle, 
+  Play,
+  FileText,
+  Download,
+  Calendar,
+  BarChart3
+} from "lucide-react";
+import Image from "next/image";
+import { toasterSuccess, toasterError } from "@/components/core/Toaster";
+
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  creator: string;
+  created_at: string;
+  duration: string;
+  enrolled_students: number;
+  rating: number;
+  total_lessons: number;
+  price: number;
+  is_enrolled: boolean;
+  progress?: number;
+  chapters: Chapter[];
+}
+
+interface Chapter {
+  id: number;
+  title: string;
+  description: string;
+  order: number;
+  lessons: Lesson[];
+  is_completed: boolean;
+}
+
+interface Lesson {
+  id: number;
+  title: string;
+  description: string;
+  duration: string;
+  order: number;
+  video_url: string;
+  resources: Resource[];
+  is_completed: boolean;
+  is_locked: boolean;
+}
+
+interface Resource {
+  id: number;
+  title: string;
+  type: string;
+  url: string;
+}
+
+export default function CourseEnrollmentPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get('id');
+  
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews">("overview");
+  const [enrolling, setEnrolling] = useState(false);
+
+  useEffect(() => {
+    if (courseId) {
+      fetchCourseDetails();
+    }
+  }, [courseId]);
+
+  const fetchCourseDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`course/${courseId}`);
+      
+      if (res.success) {
+        setCourse(res.data);
+      } else {
+        console.error("Failed to fetch course details");
+      }
+    } catch (err) {
+      console.error("Error fetching course:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnroll = async () => {
+    if (!courseId) return;
+    
+    try {
+      setEnrolling(true);
+      const res = await api.post(`course/${courseId}/enroll`);
+      
+      if (res.success) {
+        toasterSuccess("Successfully enrolled in the course!");
+        // Refresh course data to update enrollment status
+        fetchCourseDetails();
+      } else {
+        toasterError(res.error || "Failed to enroll in the course");
+      }
+    } catch (err) {
+      toasterError("An error occurred during enrollment");
+      console.error("Enrollment error:", err);
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+  const handleContinueLearning = () => {
+    if (course) {
+      router.push(`/user-panel/courses/${course.id}/chapter`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Course Not Found</h2>
+          <button 
+            onClick={() => router.back()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <button 
+            onClick={() => router.back()}
+            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back to Courses
+          </button>
+        </div>
+      </div>
+
+      {/* Course Hero Section */}
+      <div className="bg-white dark:bg-gray-800 shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="md:w-2/3">
+              <div className="mb-4">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  {course.category}
+                </span>
+              </div>
+              
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                {course.title}
+              </h1>
+              
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+                {course.description}
+              </p>
+              
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <Users className="w-4 h-4 mr-1" />
+                  {course.enrolled_students.toLocaleString()} students
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <Clock className="w-4 h-4 mr-1" />
+                  {course.duration}
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <Star className="w-4 h-4 mr-1 text-yellow-500" />
+                  {course.rating.toFixed(1)} rating
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <BookOpen className="w-4 h-4 mr-1" />
+                  {course.total_lessons} lessons
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="flex-shrink-0 mr-3">
+                  <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {course.creator.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Created by</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{course.creator}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="md:w-1/3">
+              <div className="rounded-lg overflow-hidden shadow-md mb-4">
+                <Image 
+                  src={course.image || "/placeholder-course.jpg"} 
+                  alt={course.title}
+                  width={400}
+                  height={225}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {course.price > 0 ? `$${course.price.toFixed(2)}` : 'Free'}
+                  </h3>
+                </div>
+                
+                {course.is_enrolled ? (
+                  <>
+                    {course.progress && course.progress > 0 ? (
+                      <>
+                        <div className="mb-4">
+                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
+                            <span>Your progress</span>
+                            <span>{course.progress}% complete</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
+                            <div 
+                              className="bg-blue-600 h-2.5 rounded-full" 
+                              style={{ width: `${course.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <button
+                          onClick={handleContinueLearning}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+                        >
+                          <Play className="w-5 h-5 mr-2" />
+                          Continue Learning
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={handleContinueLearning}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+                      >
+                        <Play className="w-5 h-5 mr-2" />
+                        Start Learning
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    onClick={handleEnroll}
+                    disabled={enrolling}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                  >
+                    {enrolling ? 'Enrolling...' : (course.price > 0 ? 'Enroll Now' : 'Start Learning')}
+                  </button>
+                )}
+                
+                <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                  <p>30-day money-back guarantee</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Course Content Tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "overview"
+                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              Overview
+            </button>
+            
+            <button
+              onClick={() => setActiveTab("curriculum")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "curriculum"
+                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              Curriculum
+            </button>
+            
+            <button
+              onClick={() => setActiveTab("reviews")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "reviews"
+                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              Reviews
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "overview" && (
+          <div className="prose dark:prose-invert max-w-none">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">About This Course</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              {course.description}
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 text-blue-500" />
+                  What You'll Learn
+                </h3>
+                <ul className="space-y-2">
+                  {course.description.split('✅').filter(item => item.trim()).map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-300">{item.trim()}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <BookOpen className="w-5 h-5 mr-2 text-blue-500" />
+                  Course Details
+                </h3>
+                <dl className="space-y-3">
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Duration</dt>
+                    <dd className="text-gray-900 dark:text-white font-medium">{course.duration}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Lessons</dt>
+                    <dd className="text-gray-900 dark:text-white font-medium">{course.total_lessons}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Level</dt>
+                    <dd className="text-gray-900 dark:text-white font-medium">All Levels</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Language</dt>
+                    <dd className="text-gray-900 dark:text-white font-medium">English</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Certificate</dt>
+                    <dd className="text-gray-900 dark:text-white font-medium">Yes</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "curriculum" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Course Content</h2>
+            
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {course.chapters?.length || 0} chapters • {course.total_lessons} lessons • {course.duration}
+                  </span>
+                </div>
+                
+                {!course.is_enrolled && (
+                  <button
+                    onClick={handleEnroll}
+                    disabled={enrolling}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    {enrolling ? 'Enrolling...' : 'Enroll to Access'}
+                  </button>
+                )}
+              </div>
+              
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {course.chapters?.map((chapter) => (
+                  <div key={chapter.id} className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        {chapter.order}. {chapter.title}
+                      </h3>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {chapter.lessons.length} lessons
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                      {chapter.description}
+                    </p>
+                    
+                    <div className="space-y-2">
+                      {chapter.lessons.map((lesson) => (
+                        <div 
+                          key={lesson.id} 
+                          className={`flex items-center p-3 rounded-lg ${
+                            lesson.is_locked && !course.is_enrolled 
+                              ? 'bg-gray-50 dark:bg-gray-700 opacity-60' 
+                              : 'bg-gray-50 dark:bg-gray-700'
+                          }`}
+                        >
+                          <div className="flex-shrink-0 mr-3">
+                            {lesson.is_completed ? (
+                              <CheckCircle className="w-5 h-5 text-green-500" />
+                            ) : lesson.is_locked && !course.is_enrolled ? (
+                              <div className="w-5 h-5 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            ) : (
+                              <Play className="w-5 h-5 text-blue-500" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-grow">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                              {lesson.order}. {lesson.title}
+                            </h4>
+                            <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {lesson.duration}
+                              {lesson.resources.length > 0 && (
+                                <>
+                                  <span className="mx-2">•</span>
+                                  <FileText className="w-3 h-3 mr-1" />
+                                  {lesson.resources.length} resources
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {lesson.is_locked && !course.is_enrolled ? (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Locked</span>
+                          ) : (
+                            <button 
+                              onClick={() => {
+                                if (course.is_enrolled) {
+                                  router.push(`/user-panel/courses/${course.id}/lessons/${lesson.id}`);
+                                }
+                              }}
+                              className={`text-sm font-medium ${
+                                course.is_enrolled 
+                                  ? 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300' 
+                                  : 'text-gray-400'
+                              }`}
+                            >
+                              Preview
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "reviews" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Student Reviews</h2>
+            
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-white mr-4">
+                    {course.rating.toFixed(1)}
+                  </div>
+                  <div>
+                    <div className="flex items-center mb-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-5 h-5 ${
+                            star <= Math.floor(course.rating)
+                              ? 'text-yellow-500 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Course Rating • {course.enrolled_students.toLocaleString()} students
+                    </p>
+                  </div>
+                </div>
+                
+                {course.is_enrolled && (
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                    Write a Review
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Sample reviews - in a real app, these would come from the backend */}
+              {[1, 2, 3].map((review) => (
+                <div key={review} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                  <div className="flex items-start mb-4">
+                    <div className="flex-shrink-0 mr-4">
+                      <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          U{review}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">User {review}</h4>
+                      <div className="flex items-center mt-1">
+                        <div className="flex items-center">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${
+                                star <= 5 ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">2 weeks ago</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 dark:text-gray-300">
+                    This course was absolutely fantastic! The instructor explained complex concepts in a way that was easy to understand. The hands-on projects were particularly valuable.
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

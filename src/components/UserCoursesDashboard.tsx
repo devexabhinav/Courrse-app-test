@@ -54,9 +54,9 @@ export default function Courses({ className }: any) {
     }
   };
 
-  const handleCourseClick = (id: number) => {
-    router.push(`/user-panel/courses/${id}/chapter`);
-  };
+const handleCourseClick = (id: number) => {
+  router.push(`/user-panel/courses/CourseEnrollment/${id}`);
+};
 
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation(); // Prevent triggering the card click
@@ -165,15 +165,7 @@ export default function Courses({ className }: any) {
                 )}
                 
                 {/* Status Badge */}
-                <div className="absolute top-3 right-3">
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    course.is_active 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                  }`}>
-                    {course.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
+               
               </div>
 
               {/* Course Content */}

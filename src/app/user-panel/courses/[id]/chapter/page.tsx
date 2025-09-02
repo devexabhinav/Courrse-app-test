@@ -1,17 +1,9 @@
 "use client";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Pencil, SearchIcon, Trash2 } from "lucide-react";
+import { Pencil, SearchIcon, Trash2, ImageIcon, VideoIcon, ListOrdered } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter, useParams } from "next/navigation";
 
@@ -26,7 +18,7 @@ export default function Chapters({ className }: any) {
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [limit] = useState(5);
+  const [limit] = useState(8); // Increased limit for better grid layout
   const [courseName, setCourseName] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +30,6 @@ export default function Chapters({ className }: any) {
       query.append("limit", String(limit));
       if (search) query.append("search", search);
       
-      // Add course_id filter - this is the key change
       if (courseId) {
         query.append("course_id", courseId.toString());
       }
@@ -47,8 +38,6 @@ export default function Chapters({ className }: any) {
       const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
 
       if (res.success) {
-        // Filter chapters by course ID on the client side as well
-        // in case the API doesn't properly filter
         let filteredChapters = res.data?.data?.data || [];
         
         if (courseId) {
@@ -60,11 +49,9 @@ export default function Chapters({ className }: any) {
         setChapters(filteredChapters);
         setTotalPages(res.data?.data?.pagination?.totalPages || 1);
         
-        // Set course name from the first chapter (if available)
         if (filteredChapters.length > 0 && filteredChapters[0].course) {
           setCourseName(filteredChapters[0].course.title);
         } else if (courseId) {
-          // If no chapters but we have a course ID, try to fetch course name separately
           fetchCourseName();
         }
       }
@@ -74,6 +61,11 @@ export default function Chapters({ className }: any) {
       setLoading(false);
     }
   };
+
+  const handleChapterClick = (chapterId: number) => {
+  router.push(`/user-panel/chapters/${chapterId}`);
+};
+
 
   const fetchCourseName = async () => {
     try {
@@ -90,27 +82,7 @@ export default function Chapters({ className }: any) {
     fetchChapters();
   }, [page, search, courseId]);
 
-  const handleEdit = (id: number) => {
-    router.push(`/chapters/edit-chapters?id=${id}&course_id=${courseId}`);
-  };
 
-  const handleDelete = async (id: number) => {
-    const confirmDelete = confirm("Are you sure you want to delete this chapter?");
-    if (!confirmDelete) return;
-
-    try {
-      const response = await api.delete(`chapter/${id}`);
-      if (response.success) {
-        toasterSuccess("Chapter Deleted Successfully", 3000, "id");
-        await fetchChapters();
-      }
-      else {
-        toasterError(response.error.code, 3000, "id")
-      }
-    } catch (error) {
-      console.error("Failed to delete chapter:", error);
-    }
-  };
 
   if (loading) {
     return (
@@ -123,47 +95,42 @@ export default function Chapters({ className }: any) {
   return (
     <div
       className={cn(
-        "grid rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
+        "rounded-[10px] bg-white px-6 pb-6 pt-6 shadow-1 dark:bg-gray-dark dark:shadow-card",
         className
       )}
     >
-      <div className="mb-4 flex items-center justify-between">
+      {/* Header Section */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             {courseId ? "Course Chapters" : "All Chapters List"}
           </h2>
           {courseId && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               {courseName 
                 ? `Course: ${courseName}` 
                 : `Course ID: ${courseId}`}
             </p>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
 
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           {/* Search Bar */}
-          <div className="relative w-full sm:w-[300px]">
+          <div className="relative w-full sm:w-64">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="search"
-              placeholder="Search Chapters ..."
+              placeholder="Search chapters..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+              className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
             />
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
 
-          {/* Add Chapter Button */}
-          <button
-            onClick={() => router.push(`/chapters/add-chapters${courseId ? `?course_id=${courseId}` : ''}`)}
-            className="w-full sm:w-auto rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700"
-          >
-            + Add Chapter
-          </button>
+    
         </div>
       </div>
-      
+
       {/* Media Modal */}
       {showMediaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
@@ -243,113 +210,144 @@ export default function Chapters({ className }: any) {
         </div>
       )}
 
-      <Table>
-        <TableHeader>
-          <TableRow className="border-none uppercase [&>th]:text-center">
-            <TableHead className="!text-left">Title</TableHead>
-            <TableHead>Content</TableHead>
-            {!courseId && <TableHead>Course Name</TableHead>}
-            <TableHead>Order</TableHead>
-            <TableHead>Images</TableHead>
-            <TableHead>Videos</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
+      {/* Chapters Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {chapters.length > 0 ? (
+          chapters.map((chapter: any) => (
+            <div
+              key={chapter.id}
+              onClick={() => handleChapterClick(chapter.id)}
+              className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
+            >
+              {/* Chapter Content */}
+              <div className="p-5">
+                {/* Header with Order and Actions */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <ListOrdered className="h-4 w-4 text-gray-500 mr-2" />
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Order: {chapter.order}
+                    </span>
+                  </div>
+                  
+                </div>
 
-        <TableBody>
-          {chapters.length > 0 ? (
-            chapters.map((chapter: any) => (
-              <TableRow
-                className="text-center text-base font-medium text-dark dark:text-white"
-                key={chapter.id}
-              >
-                <TableCell className="!text-left">{chapter.title}</TableCell>
-                <TableCell>{chapter.content?.slice(0, 50)}...</TableCell>
-                {!courseId && <TableCell>{chapter.course?.title}</TableCell>}
-                <TableCell>{chapter.order}</TableCell>
+                {/* Title */}
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2">
+                  {chapter.title}
+                </h3>
 
-                <TableCell className="text-center">
-                  {chapter.images?.length > 0 ? (
-                    <button
-                      className="text-blue-600 underline"
-                      onClick={() => {
-                        setActiveMedia({ type: "image", items: chapter.images });
-                        setShowMediaModal(true);
-                      }}
-                    >
-                      View Images
-                    </button>
-                  ) : (
-                    <span>---</span>
-                  )}
-                </TableCell>
+                {/* Content Preview */}
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                  {chapter.content?.slice(0, 100)}...
+                </p>
 
-                <TableCell className="text-center">
-                  {chapter.videos?.length > 0 ? (
-                    <button
-                      className="text-green-600 underline"
-                      onClick={() => {
-                        setActiveMedia({ type: "video", items: chapter.videos })
-                        setShowMediaModal(true);
-                      }
-                      }
-                    >
-                      View Videos
-                    </button>
-                  ) : (
-                    <span>---</span>
-                  )}
-                </TableCell>
-                
-                <TableCell className="flex justify-center gap-2">
+                {/* Course Name (if not filtered by course) */}
+                {!courseId && chapter.course?.title && (
+                  <div className="mb-4">
+                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      Course: {chapter.course.title}
+                    </span>
+                  </div>
+                )}
+
+                {/* Media Actions */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
-                    onClick={() => handleEdit(chapter.id)}
-                    className="text-blue-600 hover:text-blue-800"
+                    onClick={() => {
+                      setActiveMedia({ type: "image", items: chapter.images });
+                      setShowMediaModal(true);
+                    }}
+                    disabled={!chapter.images?.length}
+                    className="flex items-center text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                   >
-                    <Pencil size={18} />
+                    <ImageIcon className="h-4 w-4 mr-1" />
+                    {chapter.images?.length || 0} Images
                   </button>
-                  <button
-                    onClick={() => handleDelete(chapter.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={courseId ? 7 : 8} className="text-center">
-                {courseId 
-                  ? `No chapters found for this course${courseName ? ` (${courseName})` : ''}` 
-                  : 'No chapters found'}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
 
+                  <button
+                    onClick={() => {
+                      setActiveMedia({ type: "video", items: chapter.videos });
+                      setShowMediaModal(true);
+                    }}
+                    disabled={!chapter.videos?.length}
+                    className="flex items-center text-sm text-green-600 hover:text-green-800 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  >
+                    <VideoIcon className="h-4 w-4 mr-1" />
+                    {chapter.videos?.length || 0} Videos
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full py-12 text-center">
+            <div className="mx-auto max-w-md">
+              <div className="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">
+                <SearchIcon className="mx-auto h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                No chapters found
+              </h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                {search ? 'Try adjusting your search terms' : 'No chapters available for this course'}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
       {chapters.length > 0 && (
-        <div className="mt-6 flex justify-end items-center gap-4">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
-          >
-            Previous
-          </button>
-          <span className="text-sm text-gray-800 dark:text-white">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
-          >
-            Next
-          </button>
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+           Total Chapters {chapters.length} 
+           {/* of {totalPages * limit} chapters */}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+            >
+              Previous
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium ${
+                      page === pageNum
+                        ? 'bg-green-600 text-white'
+                        : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              {totalPages > 5 && <span className="px-2 text-gray-500">...</span>}
+            </div>
+            
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+
+
+
+
