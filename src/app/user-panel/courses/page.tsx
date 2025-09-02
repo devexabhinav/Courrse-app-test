@@ -18,6 +18,7 @@ export default function Courses({ className }: any) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(8);
+  const [Loading, setLoading] = useState(true);
 
   const fetchCourses = async () => {
     try {
@@ -31,12 +32,17 @@ export default function Courses({ className }: any) {
       const res = await api.get(`course/list?${query.toString()}`);
       if (res.success) {
         setCourses(res?.data?.data?.courses || []);
+        
         setTotalPages(res.data?.data?.totalPages || 1);
       }
     } catch (err) {
       console.error("Failed to fetch courses:", err);
     }
   };
+
+
+
+
 
   useEffect(() => {
     fetchCourses();

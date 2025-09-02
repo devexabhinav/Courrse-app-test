@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import {
   Clock,
   BookOpen,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { useParams } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -28,19 +29,33 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [enrolling, setEnrolling] = useState(false);
   const [enrollmentStatus, setEnrollmentStatus] = useState(null);
-
+  const [user, setUser] = useState(null);
 
   const params = useParams();
   const courseId = params.id;
+  const userId = Cookies.get("userId");
 
+
+  
   useEffect(() => {
+    // Fetch user data from localStorage or your auth context
+    const userData = userId
+    if (userData) {
+      setUser(JSON.parse(userData));
+
+      
+    }
+    
+    
     const fetchCourseData = async () => {
       try {
         setLoading(true);
         const res = await api.get(`course/${courseId}`);
+       
 
         if (res.success) {
           setCourse(res.data?.data);
+          
         } else {
           setError("Failed to fetch course data");
         }
@@ -56,6 +71,45 @@ export default function Dashboard() {
       fetchCourseData();
     }
   }, [courseId]);
+
+  const handleEnroll = async () => {
+    if (!user) {
+      setEnrollmentStatus("Please log in to enroll in this course");
+      console.log("-----user-----11--",user)
+      return;
+    }
+
+    setEnrolling(true);
+    setEnrollmentStatus(null);
+
+    try {
+
+      const response = await api.post("enroll", {
+        user_id: user,
+        course_id: courseId,
+
+        
+       
+      });
+
+      
+  
+      if (response.success) {
+        setEnrollmentStatus("success");
+        // Update course data to reflect enrollment
+        setCourse(prev => ({...prev, isEnrolled: true}));
+
+       
+      } else {
+        setEnrollmentStatus(response.message || "Enrolled");
+      }
+    } catch (err) {
+      console.error("Enrollment error:", err);
+      setEnrollmentStatus("An error occurred during enrollment");
+    } finally {
+      setEnrolling(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -77,69 +131,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-
-  const handleEnroll = async () => {
-    // If you want to redirect to enrollment page instead
-    // router.push(`/user-panel/courses/CourseEnrollment/${courseId}`);
-    // return;
-    
-    setEnrolling(true);
-    setEnrollmentStatus(null);
-
-    try {
-      // Get user ID from your authentication system
-      // This will depend on how you handle authentication
-      const userId = session?.user?.id || localStorage.getItem('userId');
-      
-      if (!userId) {
-        setEnrollmentStatus({ 
-          type: 'error', 
-          message: 'Please log in to enroll in this course' 
-        });
-        setEnrolling(false);
-        return;
-      }
-
-      // Make API call to enroll user
-      const response = await api.post('/enrollments', {
-        user_id: userId,
-        course_id: courseId,
-        enrolled_at: new Date().toISOString(),
-        status: 'active'
-      });
-
-      if (response.success) {
-        setEnrollmentStatus({ 
-          type: 'success', 
-          message: 'Successfully enrolled in course!' 
-        });
-        
-        // Optionally redirect after successful enrollment
-        // setTimeout(() => {
-        //   router.push(`/user-panel/courses/CourseEnrollment/${courseId}`);
-        // }, 1500);
-      } else {
-        setEnrollmentStatus({ 
-          type: 'error', 
-          message: response.message || 'Failed to enroll in course' 
-        });
-      }
-    } catch (error) {
-      console.error('Enrollment error:', error);
-      setEnrollmentStatus({ 
-        type: 'error', 
-        message: 'Failed to enroll. Please try again.' 
-      });
-    } finally {
-      setEnrolling(false);
-    }
-  };
-
-
-
-  
-
 
   const formattedCourse = {
     id: course.id,
@@ -165,7 +156,8 @@ export default function Dashboard() {
       title: course.roadmap_title || `Roadmap for ${course.title}`,
       progress: course.roadmap_progress || 8.25,
       technologies: course.technologies || ["Node", "Express", "MongoDB"]
-    }
+    },
+    isEnrolled: course.isEnrolled || false
   };
 
   return (
@@ -275,17 +267,21 @@ export default function Dashboard() {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 flex items-center">
               <div className="text-right mr-4">
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">{formattedCourse.price}</div>
+                {enrollmentStatus === "success" && (
+                  <div className="text-sm text-green-600 dark:text-green-400 mt-1">Enrolled successfully!</div>
+                )}
+                {enrollmentStatus && enrollmentStatus !== "success" && (
+                  <div className="text-sm  text-green-600 mt-1">{enrollmentStatus}</div>
+                )}
               </div>
-              {/* <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all transform hover:scale-105">
-                Enroll Now
-              </button> */}
-
-              <button
+              <button 
                 onClick={handleEnroll}
-                disabled={enrolling}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={enrolling || formattedCourse.isEnrolled}
+                className={`bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all transform hover:scale-105 ${
+                  enrolling || formattedCourse.isEnrolled ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                {enrolling ? "Enrolling..." : formattedCourse.isEnrolled ? "Enrolled" : "Enroll Now"}
               </button>
             </div>
           </div>
