@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Clock, 
-  BookOpen, 
-  Award, 
+import {
+  Clock,
+  BookOpen,
+  Award,
   ChevronDown,
   Search,
   BarChart3,
@@ -28,6 +28,8 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [enrolling, setEnrolling] = useState(false);
   const [enrollmentStatus, setEnrollmentStatus] = useState(null);
+
+
   const params = useParams();
   const courseId = params.id;
 
@@ -36,7 +38,7 @@ export default function Dashboard() {
       try {
         setLoading(true);
         const res = await api.get(`course/${courseId}`);
-        
+
         if (res.success) {
           setCourse(res.data?.data);
         } else {
@@ -49,7 +51,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-    
+
     if (courseId) {
       fetchCourseData();
     }
@@ -75,6 +77,69 @@ export default function Dashboard() {
       </div>
     );
   }
+
+
+  const handleEnroll = async () => {
+    // If you want to redirect to enrollment page instead
+    // router.push(`/user-panel/courses/CourseEnrollment/${courseId}`);
+    // return;
+    
+    setEnrolling(true);
+    setEnrollmentStatus(null);
+
+    try {
+      // Get user ID from your authentication system
+      // This will depend on how you handle authentication
+      const userId = session?.user?.id || localStorage.getItem('userId');
+      
+      if (!userId) {
+        setEnrollmentStatus({ 
+          type: 'error', 
+          message: 'Please log in to enroll in this course' 
+        });
+        setEnrolling(false);
+        return;
+      }
+
+      // Make API call to enroll user
+      const response = await api.post('/enrollments', {
+        user_id: userId,
+        course_id: courseId,
+        enrolled_at: new Date().toISOString(),
+        status: 'active'
+      });
+
+      if (response.success) {
+        setEnrollmentStatus({ 
+          type: 'success', 
+          message: 'Successfully enrolled in course!' 
+        });
+        
+        // Optionally redirect after successful enrollment
+        // setTimeout(() => {
+        //   router.push(`/user-panel/courses/CourseEnrollment/${courseId}`);
+        // }, 1500);
+      } else {
+        setEnrollmentStatus({ 
+          type: 'error', 
+          message: response.message || 'Failed to enroll in course' 
+        });
+      }
+    } catch (error) {
+      console.error('Enrollment error:', error);
+      setEnrollmentStatus({ 
+        type: 'error', 
+        message: 'Failed to enroll. Please try again.' 
+      });
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+
+
+  
+
 
   const formattedCourse = {
     id: course.id,
@@ -103,42 +168,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleEnroll = async () => {
-    if (!session) {
-      setEnrollmentStatus({ type: 'error', message: 'Please sign in to enroll' });
-      return;
-    }
-
-    try {
-      setEnrolling(true);
-      setEnrollmentStatus(null);
-      
-      const response = await fetch('/api/enroll', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseId: courseId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setEnrollmentStatus({ type: 'success', message: data.message });
-        // You might want to update the UI to reflect enrollment
-      } else {
-        setEnrollmentStatus({ type: 'error', message: data.message });
-      }
-    } catch (error) {
-      console.error('Enrollment error:', error);
-      setEnrollmentStatus({ type: 'error', message: 'Failed to enroll. Please try again.' });
-    } finally {
-      setEnrolling(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6">
       {/* Header */}
@@ -158,9 +187,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-      
+
       <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Course App</div>
-      
+
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Course Info */}
@@ -168,12 +197,12 @@ export default function Dashboard() {
           {/* Roadmap Section */}
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{formattedCourse.roadmap.title}</h2>
-            
+
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-600" 
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
                     style={{ width: `${formattedCourse.roadmap.progress}%` }}
                   ></div>
                 </div>
@@ -181,7 +210,7 @@ export default function Dashboard() {
               </div>
               <button className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 transition-colors">Reset</button>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-4 mb-4">
               {formattedCourse.roadmap.technologies.map((tech, index) => (
                 <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800/30">
@@ -189,7 +218,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            
+
             <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
               <Users className="h-4 w-4 mr-1" />
               <span>{formattedCourse.enrollment} enrolled</span>
@@ -197,7 +226,7 @@ export default function Dashboard() {
               <span>All Levels</span>
             </div>
           </div>
-          
+
           {/* Course Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 flex items-center hover:shadow-md transition-shadow">
@@ -209,7 +238,7 @@ export default function Dashboard() {
                 <div className="font-bold text-lg text-gray-800 dark:text-white">{formattedCourse.duration}</div>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 flex items-center hover:shadow-md transition-shadow">
               <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full mr-4">
                 <Video className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -219,7 +248,7 @@ export default function Dashboard() {
                 <div className="font-bold text-lg text-gray-800 dark:text-white">{formattedCourse.videos}</div>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 flex items-center hover:shadow-md transition-shadow">
               <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full mr-4">
                 <FileQuestion className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -229,7 +258,7 @@ export default function Dashboard() {
                 <div className="font-bold text-lg text-gray-800 dark:text-white">{formattedCourse.assessments}</div>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 flex items-center hover:shadow-md transition-shadow">
               <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full mr-4">
                 <UserPlus className="h-6 w-6 text-orange-600 dark:text-orange-400" />
@@ -240,7 +269,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          
+
           {/* Enroll Now Button - Moved to top right */}
           <div className="flex justify-end mb-6">
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 flex items-center">
@@ -251,28 +280,16 @@ export default function Dashboard() {
                 Enroll Now
               </button> */}
 
-
-               <button 
-            onClick={handleEnroll}
-            disabled={enrolling}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {enrolling ? 'Enrolling...' : 'Enroll Now'}
-          </button>
-        </div>
-      </div>
-
-      {/* Enrollment Status Message */}
-      {enrollmentStatus && (
-        <div className={`flex justify-end mb-4 ${enrollmentStatus.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-          {enrollmentStatus.message}
-        </div>
-      )}
-
-
+              <button
+                onClick={handleEnroll}
+                disabled={enrolling}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {enrolling ? 'Enrolling...' : 'Enroll Now'}
+              </button>
             </div>
           </div>
-          
+
           {/* Course Details */}
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
             <div className="mb-6">
@@ -292,7 +309,7 @@ export default function Dashboard() {
                 {formattedCourse.description}
               </p>
             </div>
-            
+
             {/* Tabs */}
             <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
               <nav className="flex -mb-px">
@@ -300,23 +317,22 @@ export default function Dashboard() {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`mr-8 py-3 px-1 text-center font-medium text-sm border-b-2 ${
-                      activeTab === tab 
-                        ? "border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400" 
+                    className={`mr-8 py-3 px-1 text-center font-medium text-sm border-b-2 ${activeTab === tab
+                        ? "border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400"
                         : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
-                    }`}
+                      }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 ))}
               </nav>
             </div>
-            
+
             {/* Tab Content */}
             {activeTab === "overview" && (
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">About this course</h3>
-                
+
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <BarChart3 className="h-5 w-5 text-blue-500 mr-3" />
@@ -363,14 +379,14 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            
+
             {activeTab === "curriculum" && (
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">Curriculum</h3>
                   <div className="text-sm text-gray-600 dark:text-gray-400">{formattedCourse.chapters} chapters • {formattedCourse.duration} total length</div>
                 </div>
-                
+
                 <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                   <div className="p-4 bg-gray-50 dark:bg-gray-800 flex justify-between items-center">
                     <div className="flex items-center">
@@ -385,7 +401,7 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            
+
             {activeTab === "instructor" && (
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">About the Instructor</h3>
@@ -400,7 +416,7 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            
+
             {activeTab === "reviews" && (
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Reviews</h3>
@@ -421,7 +437,7 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-        
+
         {/* Right Column - Stats */}
         <div className="space-y-6">
           {/* Progress Stats */}
@@ -462,7 +478,7 @@ export default function Dashboard() {
             </div>
             <div className="text-center text-sm text-gray-600 dark:text-gray-400">{formattedCourse.stepsCompleted} of {formattedCourse.totalSteps} steps completed</div>
           </div>
-          
+
           {/* Recent Activity */}
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
             <h3 className="font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h3>
@@ -489,7 +505,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          
+
           {/* Course Rating */}
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
             <h3 className="font-medium text-gray-900 dark:text-white mb-4">Course Rating</h3>
