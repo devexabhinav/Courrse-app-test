@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2 } from "lucide-react";
+import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toasterError } from "@/components/core/Toaster";
@@ -17,6 +17,8 @@ export default function ChapterDetail() {
   const [error, setError] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const [showMediaModal, setShowMediaModal] = useState(false);
+  const [chaptersList, setChaptersList] = useState<any[]>([]);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(-1);
 
   const fetchChapterDetail = async () => {
     try {
@@ -31,6 +33,11 @@ export default function ChapterDetail() {
         
         if (chapterData) {
           setChapter(chapterData);
+          
+          // If we have a course ID, fetch all chapters for navigation
+          if (chapterData.course_id) {
+            await fetchChaptersList(chapterData.course_id, chapterData._id);
+          }
         } else {
           setError("Chapter data not found in response");
           toasterError("Chapter data format unexpected", 3000);
@@ -51,11 +58,77 @@ export default function ChapterDetail() {
     }
   };
 
+  const fetchChaptersList = async (courseId: string, currentChapterId: string) => {
+    try {
+      // Use your API structure to get all chapters
+      const query = new URLSearchParams();
+      query.append("page", "1");
+      query.append("limit", "100"); // Set a high limit to get all chapters
+      query.append("course_id", courseId.toString());
+      
+      const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
+      
+      if (res.success) {
+        // Filter chapters for the current course
+        let filteredChapters = res.data?.data?.data || [];
+        
+        if (courseId) {
+          filteredChapters = filteredChapters.filter(
+            (chapter: any) => chapter.course_id?.toString() === courseId.toString()
+          );
+        }
+        
+        // Sort chapters by order if available
+        filteredChapters.sort((a: any, b: any) => {
+          if (a.order !== undefined && b.order !== undefined) {
+            return a.order - b.order;
+          }
+          return 0;
+        });
+        
+        setChaptersList(filteredChapters);
+        
+        // Find the current chapter index
+        const index = filteredChapters.findIndex((chap: any) => chap._id === currentChapterId);
+        setCurrentChapterIndex(index);
+      }
+    } catch (err) {
+      console.error("Failed to fetch chapters list:", err);
+      // We can continue even if this fails - the user just won't have navigation
+    }
+  };
+
   useEffect(() => {
     if (chapterId) {
       fetchChapterDetail();
     }
   }, [chapterId]);
+
+
+
+
+
+    const navigateToChapter = (direction: 'prev' | 'next') => {
+  if (currentChapterIndex === -1) return;
+  
+  let targetIndex = currentChapterIndex;
+  if (direction === 'prev' && currentChapterIndex > 0) {
+    targetIndex = currentChapterIndex - 1;
+  } else if (direction === 'next' && currentChapterIndex < chaptersList.length - 1) {
+    targetIndex = currentChapterIndex + 1;
+  } else {
+    return; // No navigation possible
+  }
+
+  const targetChapter = chaptersList[targetIndex];
+  
+  // Navigate to the target chapter using its _id
+  router.push(`${targetChapter.id}`);
+};
+
+
+    
+    
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "Unknown date";
@@ -115,7 +188,15 @@ export default function ChapterDetail() {
     );
   }
 
-  // Render chapter content - NOW IT WILL WORK!
+  // Determine if we can navigate to previous or next chapter
+  const hasPrevious = currentChapterIndex > 0;
+  const hasNext = currentChapterIndex < chaptersList.length - 1;
+
+  // Get the previous and next chapter info for display
+  const previousChapter = hasPrevious ? chaptersList[currentChapterIndex - 1] : null;
+  const nextChapter = hasNext ? chaptersList[currentChapterIndex + 1] : null;
+
+  // Render chapter content
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -168,6 +249,51 @@ export default function ChapterDetail() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mb-8">
+          <button
+            onClick={() => navigateToChapter('prev')}
+            disabled={!hasPrevious}
+            className={cn(
+              "flex flex-col items-start px-4 py-3 rounded-lg transition-colors w-48 text-left",
+              hasPrevious
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed"
+            )}
+          >
+            <div className="flex items-center mb-1">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              <span className="text-sm">Previous Chapter</span>
+            </div>
+            {hasPrevious && (
+              <span className="text-xs font-light truncate w-full">
+                {previousChapter?.title || `Chapter ${previousChapter?.order}`}
+              </span>
+            )}
+          </button>
+          
+          <button
+            onClick={() => navigateToChapter('next')}
+            disabled={!hasNext}
+            className={cn(
+              "flex flex-col items-end px-4 py-3 rounded-lg transition-colors w-48 text-right",
+              hasNext
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed"
+            )}
+          >
+            <div className="flex items-center mb-1">
+              <span className="text-sm">Next Chapter</span>
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </div>
+            {hasNext && (
+              <span className="text-xs font-light truncate w-full">
+                {nextChapter?.title || `Chapter ${nextChapter?.order}`}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Content Section */}
