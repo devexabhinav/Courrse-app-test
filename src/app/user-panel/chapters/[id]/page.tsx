@@ -11,7 +11,7 @@ export default function ChapterDetail() {
   const params = useParams();
   const router = useRouter();
   const chapterId = params.id;
-  
+
   const [chapter, setChapter] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,20 +20,25 @@ export default function ChapterDetail() {
   const [chaptersList, setChaptersList] = useState<any[]>([]);
   const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(-1);
 
+  const [viewedImages, setViewedImages] = useState<Set<number>>(new Set()); 
+  const [viewedVideos, setViewedVideos] = useState<Set<number>>(new Set());
+  const [completedVideos, setCompletedVideos] = useState<Set<number>>(new Set());
+  const [chapterCompleted, setChapterCompleted] = useState(false);
+
   const fetchChapterDetail = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const res = await api.get(`chapter/${chapterId}`);
-      
+
       if (res.success) {
         // Extract chapter data from the nested structure: res.data.data.chapter
         const chapterData = res.data?.data?.chapter;
-        
+
         if (chapterData) {
           setChapter(chapterData);
-          
+
           // If we have a course ID, fetch all chapters for navigation
           if (chapterData.course_id) {
             await fetchChaptersList(chapterData.course_id, chapterData._id);
@@ -48,9 +53,9 @@ export default function ChapterDetail() {
       }
     } catch (err: any) {
       console.error("Failed to fetch chapter:", err);
-      const errorMsg = err.response?.data?.error?.message || 
-                      err.message || 
-                      "Failed to load chapter";
+      const errorMsg = err.response?.data?.error?.message ||
+        err.message ||
+        "Failed to load chapter";
       setError(errorMsg);
       toasterError(errorMsg, 3000);
     } finally {
@@ -65,19 +70,19 @@ export default function ChapterDetail() {
       query.append("page", "1");
       query.append("limit", "100"); // Set a high limit to get all chapters
       query.append("course_id", courseId.toString());
-      
+
       const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
-      
+
       if (res.success) {
         // Filter chapters for the current course
         let filteredChapters = res.data?.data?.data || [];
-        
+
         if (courseId) {
           filteredChapters = filteredChapters.filter(
             (chapter: any) => chapter.course_id?.toString() === courseId.toString()
           );
         }
-        
+
         // Sort chapters by order if available
         filteredChapters.sort((a: any, b: any) => {
           if (a.order !== undefined && b.order !== undefined) {
@@ -85,9 +90,9 @@ export default function ChapterDetail() {
           }
           return 0;
         });
-        
+
         setChaptersList(filteredChapters);
-        
+
         // Find the current chapter index
         const index = filteredChapters.findIndex((chap: any) => chap._id === currentChapterId);
         setCurrentChapterIndex(index);
@@ -108,27 +113,43 @@ export default function ChapterDetail() {
 
 
 
-    const navigateToChapter = (direction: 'prev' | 'next') => {
-  if (currentChapterIndex === -1) return;
-  
-  let targetIndex = currentChapterIndex;
-  if (direction === 'prev' && currentChapterIndex > 0) {
-    targetIndex = currentChapterIndex - 1;
-  } else if (direction === 'next' && currentChapterIndex < chaptersList.length - 1) {
-    targetIndex = currentChapterIndex + 1;
-  } else {
-    return; // No navigation possible
-  }
+  const navigateToChapter = (direction: 'prev' | 'next') => {
+    if (currentChapterIndex === -1) return;
 
-  const targetChapter = chaptersList[targetIndex];
-  
-  // Navigate to the target chapter using its _id
-  router.push(`${targetChapter.id}`);
-};
+    let targetIndex = currentChapterIndex;
+    console.log('Current index:', currentChapterIndex);
+    console.log('Chapters list length:', chaptersList.length);
+
+    if (direction === 'prev' && currentChapterIndex > 0) {
+      targetIndex = currentChapterIndex - 1;
+      console.log('Going to previous, target index:', targetIndex);
+    } else if (direction === 'next' && currentChapterIndex < chaptersList.length - 1) {
+      targetIndex = currentChapterIndex + 1;
+      console.log('Going to next, target index:', targetIndex);
+    } else {
+      console.log('No navigation possible in direction:', direction);
+      return; // No navigation possible
+    }
+
+    console.log('Navigating to index:', targetIndex);
+
+    // Update the current chapter index
+    setCurrentChapterIndex(targetIndex);
+
+    // Set the chapter data directly from the chapters list
+    const targetChapter = chaptersList[targetIndex];
+    setChapter(targetChapter);
+
+    // Optionally update the URL without triggering a page reload
+    const chapterId = targetChapter._id || targetChapter.id;
+    if (chapterId) {
+      window.history.pushState(null, '', `${chapterId}`);
+    }
+  };
 
 
-    
-    
+
+
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "Unknown date";
@@ -161,30 +182,40 @@ export default function ChapterDetail() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <button
-            onClick={() => router.back()}
+            onClick={(courseId: number) => 
+              router.back()
+            //  router.push(`/user-panel/courses/${courseId}/chapter`)
+            }
             className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Chapters
-          </button>
+          </button>  
+
+
           
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Unable to load chapter
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {error || "Chapter not found or inaccessible"}
-            </p>
-            <button
-              onClick={fetchChapterDetail}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Try Again
-            </button>
-          </div>
+
+
+
+
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Unable to load chapter
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {error || "Chapter not found or inaccessible"}
+          </p>
+          <button
+            onClick={fetchChapterDetail}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Try Again
+          </button>
         </div>
       </div>
+      </div >
     );
   }
 
@@ -202,14 +233,22 @@ export default function ChapterDetail() {
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <button
+          {/* <button
             onClick={() => router.back()}
             className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Chapters
-          </button>
-          
+          </button> */}
+
+          <button 
+  onClick={() => router.push(`/user-panel/courses/${chapter.course_id}/chapter`)}
+  className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
+>
+  <ArrowLeft className="h-5 w-5 mr-2" />
+  Back to Chapters
+</button>
+
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -273,7 +312,7 @@ export default function ChapterDetail() {
               </span>
             )}
           </button>
-          
+
           <button
             onClick={() => navigateToChapter('next')}
             disabled={!hasNext}
@@ -303,7 +342,7 @@ export default function ChapterDetail() {
           </h2>
           <div className="prose prose-lg max-w-none dark:prose-invert">
             {chapter.content ? (
-              <div 
+              <div
                 className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line"
               >
                 {chapter.content}
@@ -397,7 +436,7 @@ export default function ChapterDetail() {
               >
                 ✕
               </button>
-              
+
               {activeMedia.type === "image" ? (
                 <img
                   src={activeMedia.items[0]}
