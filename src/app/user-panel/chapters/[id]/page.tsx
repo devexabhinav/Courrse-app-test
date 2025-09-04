@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { toasterError } from "@/components/core/Toaster";
+import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 
 export default function ChapterDetail() {
   const params = useParams();
@@ -20,12 +20,18 @@ export default function ChapterDetail() {
   const [chaptersList, setChaptersList] = useState<any[]>([]);
   const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(-1);
 
-  // Updated state for flexible media completion tracking
+  // Media completion tracking
   const [viewedImages, setViewedImages] = useState<Set<number>>(new Set());
   const [viewedVideos, setViewedVideos] = useState<Set<number>>(new Set());
   const [completedVideos, setCompletedVideos] = useState<Set<number>>(new Set());
   const [videoProgress, setVideoProgress] = useState<{[key: number]: {watchTime: number, canComplete: boolean}}>({}); 
   const [chapterCompleted, setChapterCompleted] = useState(false);
+
+  // MCQ state
+  const [mcqs, setMcqs] = useState<any[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<{[key: string]: string}>({});
+  const [submittedMcqs, setSubmittedMcqs] = useState<Set<string>>(new Set());
+  const [mcqResults, setMcqResults] = useState<{[key: string]: boolean}>({});
 
   const fetchChapterDetail = async () => {
     try {
@@ -42,6 +48,7 @@ export default function ChapterDetail() {
 
           if (chapterData.course_id) {
             await fetchChaptersList(chapterData.course_id, chapterData._id);
+            await fetchChapterMcqs(chapterData._id); // Fetch MCQs for this chapter
           }
         } else {
           setError("Chapter data not found in response");
@@ -98,18 +105,101 @@ export default function ChapterDetail() {
     }
   };
 
+  // Fetch MCQs for this chapter
+  const fetchChapterMcqs = async (chapterId: string) => {
+    try {
+      const res = await api.get(`mcq?chapter_id=${chapterId}&limit=100`);
+      
+      if (res.success) {
+        const mcqData = res.data?.data?.data || [];
+        setMcqs(mcqData);
+        
+      }
+    } catch (err) {
+      console.error("Failed to fetch chapter MCQs:", err);
+    }
+  };
+
+  
+
   // Function to check if chapter is completed
   const checkChapterCompletion = () => {
     const totalImages = chapter?.images?.length || 0;
     const totalVideos = chapter?.videos?.length || 0;
+    // const totalMcqs = mcqs.length || 0;
     
     const allImagesViewed = totalImages === 0 || viewedImages.size === totalImages;
     const allVideosCompleted = totalVideos === 0 || completedVideos.size === totalVideos;
+    // const allMcqsCompleted = totalMcqs === 0 || submittedMcqs.size === totalMcqs
     
-    const isCompleted = allImagesViewed && allVideosCompleted;
+    const isCompleted = allImagesViewed && allVideosCompleted ;
     setChapterCompleted(isCompleted);
     
     return isCompleted;
+  };
+
+  // Handle MCQ answer selection
+  const handleAnswerSelect = (mcqId: string, answer: string) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [mcqId]: answer
+    }));
+  };
+
+  // Submit MCQ answer
+  const submitMcqAnswer = async (mcqId: string) => {
+    const selectedAnswer = selectedAnswers[mcqId];
+    
+    if (!selectedAnswer) {
+      toasterError("Please select an answer", 2000);
+      return;
+    }
+
+    try {
+      // In a real implementation, you would send this to your API
+      // For now, we'll just check against the correct answer locally
+      const mcq = mcqs.find(m => m._id === mcqId || m.id === mcqId);
+      const isCorrect = mcq && mcq.answer === selectedAnswer;
+      
+      setMcqResults(prev => ({
+        ...prev,
+        [mcqId]: isCorrect
+      }));
+      
+      const newSubmittedMcqs = new Set(submittedMcqs);
+      newSubmittedMcqs.add(mcqId);
+      setSubmittedMcqs(newSubmittedMcqs);
+      
+      if (isCorrect) {
+        toasterSuccess("Correct answer!", 2000);
+      } else {
+        toasterError("Incorrect answer. Please try again.", 2000);
+      }
+      
+      setTimeout(checkChapterCompletion, 100);
+    } catch (err) {
+      console.error("Failed to submit MCQ answer:", err);
+      toasterError("Failed to submit answer", 2000);
+    }
+  };
+
+  // Reset MCQ for retry
+  const resetMcq = (mcqId: string) => {
+    const newSubmittedMcqs = new Set(submittedMcqs);
+    newSubmittedMcqs.delete(mcqId);
+    setSubmittedMcqs(newSubmittedMcqs);
+    
+    setSelectedAnswers(prev => {
+      const newAnswers = {...prev};
+      delete newAnswers[mcqId];
+      return newAnswers;
+    });
+    
+    setMcqResults(prev => {
+      const newResults = {...prev};
+      delete newResults[mcqId];
+      return newResults;
+    });
   };
 
   // Updated navigateToChapter function with completion check
@@ -118,17 +208,14 @@ export default function ChapterDetail() {
 
     // For next navigation, check if current chapter is completed
     if (direction === 'next' && !chapterCompleted) {
-      toasterError("Please view all videos and images in this chapter before proceeding to the next one.", 4000);
+      toasterError("Please complete all media and MCQs in this chapter before proceeding to the next one.", 4000);
       return;
     }
 
     let targetIndex = currentChapterIndex;
-    console.log('Current index:', currentChapterIndex);
-    console.log('Chapters list length:', chaptersList.length);
 
     if (direction === 'prev' && currentChapterIndex > 0) {
       targetIndex = currentChapterIndex - 1;
-      console.log('Going to previous, target index:', targetIndex);
     } else if (direction === 'next' && currentChapterIndex < chaptersList.length - 1) {
       targetIndex = currentChapterIndex + 1;
       console.log('Going to next, target index:', targetIndex);
@@ -145,6 +232,9 @@ export default function ChapterDetail() {
     setCompletedVideos(new Set());
     setVideoProgress({});
     setChapterCompleted(false);
+    setSelectedAnswers({});
+    setSubmittedMcqs(new Set());
+    setMcqResults({});
 
     setCurrentChapterIndex(targetIndex);
     const targetChapter = chaptersList[targetIndex];
@@ -228,10 +318,14 @@ export default function ChapterDetail() {
       setCompletedVideos(new Set());
       setVideoProgress({});
       setChapterCompleted(false);
+      setSelectedAnswers({});
+      setSubmittedMcqs(new Set());
+      setMcqResults({});
       
       setTimeout(checkChapterCompletion, 100);
     }
   }, [chapter]);
+  
 
   // Progress indicator component
   const ProgressIndicator = () => {
@@ -244,13 +338,13 @@ export default function ChapterDetail() {
         <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
           <div className="flex items-center text-green-800 dark:text-green-200">
             <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-sm font-medium">Chapter completed - No media to view</span>
+            <span className="text-sm font-medium">Chapter completed - No media or MCQs to complete</span>
           </div>
         </div>
       );
     }
     
-    const completedCount = viewedImages.size + completedVideos.size;
+    const completedCount = viewedImages.size + completedVideos.size ;
     const progressPercentage = (completedCount / totalMedia) * 100;
     
     return (
@@ -269,6 +363,9 @@ export default function ChapterDetail() {
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>
+        <div className="mt-2 text-xs text-blue-600 dark:text-blue-300">
+          Images: {viewedImages.size}/{totalImages} • Videos: {completedVideos.size}/{totalVideos} 
+        </div>
         {chapterCompleted && (
           <div className="flex items-center mt-2 text-green-800 dark:text-green-200">
             <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
@@ -278,6 +375,139 @@ export default function ChapterDetail() {
       </div>
     );
   };
+
+  // Render MCQs component
+  const renderMcqs = () => {
+
+
+
+   const filteredMcqs = mcqs.filter(mcq => {
+        // Log each MCQ's chapter_id for debugging
+        console.log("MCQ chapter_id:", mcq.chapter_id, "Route ID:", chapterId);
+        
+        // Handle both string and number comparisons
+        const mcqChapterId = mcq.chapter_id;
+        
+        // Compare as strings to avoid type issues
+        return mcqChapterId.toString() === chapterId.toString();
+    });
+    console.log("filtered mcq", filteredMcqs)
+    
+
+    if (!mcqs.length) return null;
+    
+    return (
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Quiz Questions ({filteredMcqs.length}) - {submittedMcqs.size} completed
+        </h3>
+        
+        <div className="space-y-6">
+          {filteredMcqs.map((mcq, index) => {
+            const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
+            const isCorrect = mcqResults[mcq._id || mcq.id];
+            
+            return (
+              <div 
+                key={mcq._id || mcq.id} 
+                className={`p-4 rounded-lg border ${
+                  isSubmitted 
+                    ? isCorrect 
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                }`}
+              >
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                  {index + 1}. {mcq.question}
+                </h4>
+                
+                <div className="space-y-2">
+                  {mcq.options && mcq.options.map((option: string, optIndex: number) => {
+                    const optionLetter = String.fromCharCode(65 + optIndex); // A, B, C, D
+                    const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
+                    const isCorrectAnswer = option === mcq.answer;
+                    
+                    return (
+                      <label 
+                        key={optIndex}
+                        className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
+                          !isSubmitted
+                            ? isSelected
+                              ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                            : isCorrectAnswer
+                              ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+                              : isSelected && !isCorrectAnswer
+                                ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
+                                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name={`mcq-${mcq._id || mcq.id}`}
+                          value={option}
+                          checked={isSelected}
+                          onChange={() => handleAnswerSelect(mcq._id || mcq.id, option)}
+                          disabled={isSubmitted}
+                          className="mr-3"
+                        />
+                        <span className="font-medium mr-2">{optionLetter}.</span>
+                        <span>{option}</span>
+                        
+                        {isSubmitted && isCorrectAnswer && (
+                          <span className="ml-auto text-green-600 dark:text-green-400">
+                            ✓ Correct
+                          </span>
+                        )}
+                        
+                        {isSubmitted && isSelected && !isCorrectAnswer && (
+                          <span className="ml-auto text-red-600 dark:text-red-400">
+                            ✗ Incorrect
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+                
+                <div className="mt-4 flex justify-end">
+                  {!isSubmitted ? (
+                    <button
+                      onClick={() => submitMcqAnswer(mcq._id || mcq.id)}
+                      disabled={!selectedAnswers[mcq._id || mcq.id]}
+                      className={`px-4 py-2 rounded-lg ${
+                        selectedAnswers[mcq._id || mcq.id]
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Submit Answer
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <span className={`font-medium ${
+                        isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {isCorrect ? 'Correct!' : 'Incorrect!'}
+                      </span>
+                      <button
+                        onClick={() => resetMcq(mcq._id || mcq.id)}
+                        className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"
+                      >
+                        Try Again
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
 
   // Updated image rendering with tracking
   const renderImages = () => {
@@ -574,7 +804,7 @@ export default function ChapterDetail() {
                   : "bg-gray-400 text-gray-600 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed"
                 : "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed"
             )}
-            title={!chapterCompleted && hasNext ? "Complete all media in this chapter first" : ""}
+            title={!chapterCompleted && hasNext ? "Complete all media and MCQs in this chapter first" : ""}
           >
             <div className="flex items-center mb-1">
               <span className="text-sm">Next Chapter</span>
@@ -590,7 +820,7 @@ export default function ChapterDetail() {
             )}
             {!chapterCompleted && hasNext && (
               <span className="text-xs text-red-300 mt-1">
-                View all media first
+                Complete all content first
               </span>
             )}
           </button>
@@ -637,6 +867,9 @@ export default function ChapterDetail() {
             </p>
           </div>
         )}
+
+        {/* MCQs Section */}
+        {renderMcqs()}
 
         {/* Media Modal */}
         {showMediaModal && (
