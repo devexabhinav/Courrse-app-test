@@ -20,9 +20,11 @@ export default function ChapterDetail() {
   const [chaptersList, setChaptersList] = useState<any[]>([]);
   const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(-1);
 
-  const [viewedImages, setViewedImages] = useState<Set<number>>(new Set()); 
+  // Updated state for flexible media completion tracking
+  const [viewedImages, setViewedImages] = useState<Set<number>>(new Set());
   const [viewedVideos, setViewedVideos] = useState<Set<number>>(new Set());
   const [completedVideos, setCompletedVideos] = useState<Set<number>>(new Set());
+  const [videoProgress, setVideoProgress] = useState<{[key: number]: {watchTime: number, canComplete: boolean}}>({}); 
   const [chapterCompleted, setChapterCompleted] = useState(false);
 
   const fetchChapterDetail = async () => {
@@ -33,13 +35,11 @@ export default function ChapterDetail() {
       const res = await api.get(`chapter/${chapterId}`);
 
       if (res.success) {
-        // Extract chapter data from the nested structure: res.data.data.chapter
         const chapterData = res.data?.data?.chapter;
 
         if (chapterData) {
           setChapter(chapterData);
 
-          // If we have a course ID, fetch all chapters for navigation
           if (chapterData.course_id) {
             await fetchChaptersList(chapterData.course_id, chapterData._id);
           }
@@ -65,16 +65,14 @@ export default function ChapterDetail() {
 
   const fetchChaptersList = async (courseId: string, currentChapterId: string) => {
     try {
-      // Use your API structure to get all chapters
       const query = new URLSearchParams();
       query.append("page", "1");
-      query.append("limit", "100"); // Set a high limit to get all chapters
+      query.append("limit", "100");
       query.append("course_id", courseId.toString());
 
       const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
 
       if (res.success) {
-        // Filter chapters for the current course
         let filteredChapters = res.data?.data?.data || [];
 
         if (courseId) {
@@ -83,7 +81,6 @@ export default function ChapterDetail() {
           );
         }
 
-        // Sort chapters by order if available
         filteredChapters.sort((a: any, b: any) => {
           if (a.order !== undefined && b.order !== undefined) {
             return a.order - b.order;
@@ -93,28 +90,37 @@ export default function ChapterDetail() {
 
         setChaptersList(filteredChapters);
 
-        // Find the current chapter index
         const index = filteredChapters.findIndex((chap: any) => chap._id === currentChapterId);
         setCurrentChapterIndex(index);
       }
     } catch (err) {
       console.error("Failed to fetch chapters list:", err);
-      // We can continue even if this fails - the user just won't have navigation
     }
   };
 
-  useEffect(() => {
-    if (chapterId) {
-      fetchChapterDetail();
-    }
-  }, [chapterId]);
+  // Function to check if chapter is completed
+  const checkChapterCompletion = () => {
+    const totalImages = chapter?.images?.length || 0;
+    const totalVideos = chapter?.videos?.length || 0;
+    
+    const allImagesViewed = totalImages === 0 || viewedImages.size === totalImages;
+    const allVideosCompleted = totalVideos === 0 || completedVideos.size === totalVideos;
+    
+    const isCompleted = allImagesViewed && allVideosCompleted;
+    setChapterCompleted(isCompleted);
+    
+    return isCompleted;
+  };
 
-
-
-
-
+  // Updated navigateToChapter function with completion check
   const navigateToChapter = (direction: 'prev' | 'next') => {
     if (currentChapterIndex === -1) return;
+
+    // For next navigation, check if current chapter is completed
+    if (direction === 'next' && !chapterCompleted) {
+      toasterError("Please view all videos and images in this chapter before proceeding to the next one.", 4000);
+      return;
+    }
 
     let targetIndex = currentChapterIndex;
     console.log('Current index:', currentChapterIndex);
@@ -128,28 +134,287 @@ export default function ChapterDetail() {
       console.log('Going to next, target index:', targetIndex);
     } else {
       console.log('No navigation possible in direction:', direction);
-      return; // No navigation possible
+      return;
     }
 
     console.log('Navigating to index:', targetIndex);
 
-    // Update the current chapter index
-    setCurrentChapterIndex(targetIndex);
+    // Reset completion tracking for new chapter
+    setViewedImages(new Set());
+    setViewedVideos(new Set());
+    setCompletedVideos(new Set());
+    setVideoProgress({});
+    setChapterCompleted(false);
 
-    // Set the chapter data directly from the chapters list
+    setCurrentChapterIndex(targetIndex);
     const targetChapter = chaptersList[targetIndex];
     setChapter(targetChapter);
 
-    // Optionally update the URL without triggering a page reload
     const chapterId = targetChapter._id || targetChapter.id;
     if (chapterId) {
       window.history.pushState(null, '', `${chapterId}`);
     }
   };
 
+  // Function to handle image viewing
+  const handleImageView = (index: number) => {
+    const newViewedImages = new Set(viewedImages);
+    newViewedImages.add(index);
+    setViewedImages(newViewedImages);
+    
+    setTimeout(checkChapterCompletion, 100);
+  };
 
+  // Function to handle video play
+  const handleVideoPlay = (index: number) => {
+    const newViewedVideos = new Set(viewedVideos);
+    newViewedVideos.add(index);
+    setViewedVideos(newViewedVideos);
+  };
 
+  // Smart video completion logic
+  const handleVideoTimeUpdate = (index: number, currentTime: number, duration: number) => {
+    if (!duration || duration === 0) return;
+    
+    const watchPercentage = (currentTime / duration) * 100;
+    const watchTimeSeconds = currentTime;
+    
+    // Allow completion if ANY of these conditions are met:
+    const conditions = {
+      watchedMost: watchPercentage >= 60,        // Watched 60% of video
+      watchedLongEnough: watchTimeSeconds >= 90, // Watched for 90+ seconds  
+      nearEnd: watchPercentage >= 80,           // Close to end
+      fullCompletion: watchPercentage >= 95     // Nearly finished
+    };
+    
+    const canComplete = Object.values(conditions).some(condition => condition);
+    
+    setVideoProgress(prev => ({
+      ...prev,
+      [index]: {
+        watchTime: currentTime,
+        canComplete
+      }
+    }));
+    
+    // Auto-complete if conditions are met and not already completed
+    if (canComplete && !completedVideos.has(index)) {
+      const newCompletedVideos = new Set(completedVideos);
+      newCompletedVideos.add(index);
+      setCompletedVideos(newCompletedVideos);
+      setTimeout(checkChapterCompletion, 100);
+    }
+  };
 
+  // Manual video completion
+  const handleManualVideoComplete = (index: number) => {
+    const newCompletedVideos = new Set(completedVideos);
+    newCompletedVideos.add(index);
+    setCompletedVideos(newCompletedVideos);
+    setTimeout(checkChapterCompletion, 100);
+  };
+
+  useEffect(() => {
+    if (chapterId) {
+      fetchChapterDetail();
+    }
+  }, [chapterId]);
+
+  // Reset completion tracking when chapter changes
+  useEffect(() => {
+    if (chapter) {
+      setViewedImages(new Set());
+      setViewedVideos(new Set());
+      setCompletedVideos(new Set());
+      setVideoProgress({});
+      setChapterCompleted(false);
+      
+      setTimeout(checkChapterCompletion, 100);
+    }
+  }, [chapter]);
+
+  // Progress indicator component
+  const ProgressIndicator = () => {
+    const totalImages = chapter?.images?.length || 0;
+    const totalVideos = chapter?.videos?.length || 0;
+    const totalMedia = totalImages + totalVideos;
+    
+    if (totalMedia === 0) {
+      return (
+        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+          <div className="flex items-center text-green-800 dark:text-green-200">
+            <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
+            <span className="text-sm font-medium">Chapter completed - No media to view</span>
+          </div>
+        </div>
+      );
+    }
+    
+    const completedCount = viewedImages.size + completedVideos.size;
+    const progressPercentage = (completedCount / totalMedia) * 100;
+    
+    return (
+      <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+            Chapter Progress
+          </span>
+          <span className="text-sm text-blue-600 dark:text-blue-300">
+            {completedCount}/{totalMedia} completed
+          </span>
+        </div>
+        <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+          <div 
+            className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+        {chapterCompleted && (
+          <div className="flex items-center mt-2 text-green-800 dark:text-green-200">
+            <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
+            <span className="text-sm font-medium">Ready to proceed to next chapter!</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Updated image rendering with tracking
+  const renderImages = () => {
+    if (!chapter.images?.length) return null;
+    
+    return (
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <ImageIcon className="h-5 w-5 mr-2" />
+          Images ({chapter.images.length}) - {viewedImages.size} viewed
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {chapter.images.map((url: string, index: number) => (
+            <div key={index} className="relative">
+              <div
+                className={`cursor-pointer transform transition-transform hover:scale-105 relative ${
+                  viewedImages.has(index) ? 'ring-2 ring-green-500' : ''
+                }`}
+                onClick={() => {
+                  handleImageView(index);
+                  setActiveMedia({ type: "image", items: [url] });
+                  setShowMediaModal(true);
+                }}
+              >
+                <img
+                  src={url}
+                  alt={`Chapter image ${index + 1}`}
+                  className="w-full h-48 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                  }}
+                />
+                {viewedImages.has(index) && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Updated video rendering with smart completion
+  const renderVideos = () => {
+    if (!chapter.videos?.length) return null;
+    
+    return (
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <VideoIcon className="h-5 w-5 mr-2" />
+          Videos ({chapter.videos.length}) - {completedVideos.size} completed
+        </h3>
+        <div className="grid grid-cols-1 gap-6">
+          {chapter.videos.map((url: string, index: number) => {
+            const progress = videoProgress[index];
+            const isCompleted = completedVideos.has(index);
+            const canComplete = progress?.canComplete || false;
+            
+            return (
+              <div key={index} className={`relative bg-black rounded-lg overflow-hidden ${
+                isCompleted ? 'ring-2 ring-green-500' : ''
+              }`}>
+                <video
+                  controls
+                  className="w-full h-auto max-h-96"
+                  poster={chapter.images?.[0] || undefined}
+                  onPlay={() => handleVideoPlay(index)}
+                  onTimeUpdate={(e) => handleVideoTimeUpdate(
+                    index, 
+                    e.target.currentTime, 
+                    e.target.duration
+                  )}
+                  onEnded={() => {
+                    // Auto-complete on natural end
+                    handleManualVideoComplete(index);
+                  }}
+                >
+                  <source src={url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                
+                {/* Completion indicator */}
+                {isCompleted && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-10">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+                
+                {/* Smart completion button */}
+                {canComplete && !isCompleted && (
+                  <div className="absolute bottom-4 right-4 z-10">
+                    <button
+                      onClick={() => handleManualVideoComplete(index)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm shadow-lg transition-colors"
+                    >
+                      ✓ Mark Complete
+                    </button>
+                  </div>
+                )}
+                
+                {/* Status indicator */}
+                <div className="absolute bottom-2 left-2 text-white text-xs bg-black bg-opacity-60 px-2 py-1 rounded z-10">
+                  {isCompleted ? 'Completed' : 
+                   canComplete ? 'Ready to Complete' :
+                   viewedVideos.has(index) ? 'In Progress' : 
+                   'Not Started'
+                  }
+                </div>
+                
+                {/* Progress bar for incomplete videos */}
+                {!isCompleted && progress && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gray-200 h-1 z-10">
+                    <div 
+                      className="bg-blue-500 h-1 transition-all duration-300"
+                      style={{ width: `${Math.min(100, (progress.watchTime / (progress.watchTime > 0 ? Math.max(progress.watchTime * 2, 300) : 300)) * 100)}%` }}
+                    ></div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Helpful message */}
+        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm text-blue-800 dark:text-blue-200">
+          <p>💡 <strong>Tip:</strong> Videos are automatically marked complete when you watch 60% of the content, watch for 90+ seconds, or reach near the end. You can also use the "Mark Complete" button when it appears.</p>
+        </div>
+      </div>
+    );
+  };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "Unknown date";
@@ -182,40 +447,30 @@ export default function ChapterDetail() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <button
-            onClick={(courseId: number) => 
-              router.back()
-            //  router.push(`/user-panel/courses/${courseId}/chapter`)
-            }
+            onClick={() => router.back()}
             className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Chapters
-          </button>  
-
-
-          
-
-
-
-
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Unable to load chapter
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {error || "Chapter not found or inaccessible"}
-          </p>
-          <button
-            onClick={fetchChapterDetail}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Try Again
           </button>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Unable to load chapter
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              {error || "Chapter not found or inaccessible"}
+            </p>
+            <button
+              onClick={fetchChapterDetail}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
-      </div >
     );
   }
 
@@ -233,21 +488,13 @@ export default function ChapterDetail() {
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          {/* <button
-            onClick={() => router.back()}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
+          <button 
+            onClick={() => router.push(`/user-panel/courses/${chapter.course_id}/chapter`)}
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Chapters
-          </button> */}
-
-          <button 
-  onClick={() => router.push(`/user-panel/courses/${chapter.course_id}/chapter`)}
-  className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
->
-  <ArrowLeft className="h-5 w-5 mr-2" />
-  Back to Chapters
-</button>
+          </button>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
@@ -290,6 +537,9 @@ export default function ChapterDetail() {
           </div>
         </div>
 
+        {/* Progress Indicator */}
+        <ProgressIndicator />
+
         {/* Navigation Buttons */}
         <div className="flex justify-between mb-8">
           <button
@@ -312,24 +562,35 @@ export default function ChapterDetail() {
               </span>
             )}
           </button>
-
+          
           <button
             onClick={() => navigateToChapter('next')}
-            disabled={!hasNext}
+            disabled={!hasNext || !chapterCompleted}
             className={cn(
-              "flex flex-col items-end px-4 py-3 rounded-lg transition-colors w-48 text-right",
+              "flex flex-col items-end px-4 py-3 rounded-lg transition-colors w-48 text-right relative",
               hasNext
-                ? "bg-blue-600 text-white hover:bg-blue-700"
+                ? chapterCompleted 
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-400 text-gray-600 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed"
                 : "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed"
             )}
+            title={!chapterCompleted && hasNext ? "Complete all media in this chapter first" : ""}
           >
             <div className="flex items-center mb-1">
               <span className="text-sm">Next Chapter</span>
               <ChevronRight className="h-4 w-4 ml-2" />
+              {!chapterCompleted && hasNext && (
+                <div className="ml-1">🔒</div>
+              )}
             </div>
             {hasNext && (
               <span className="text-xs font-light truncate w-full">
                 {nextChapter?.title || `Chapter ${nextChapter?.order}`}
+              </span>
+            )}
+            {!chapterCompleted && hasNext && (
+              <span className="text-xs text-red-300 mt-1">
+                View all media first
               </span>
             )}
           </button>
@@ -362,60 +623,11 @@ export default function ChapterDetail() {
               Media Files
             </h2>
 
-            {/* Images */}
-            {chapter.images?.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <ImageIcon className="h-5 w-5 mr-2" />
-                  Images ({chapter.images.length})
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {chapter.images.map((url: string, index: number) => (
-                    <div
-                      key={index}
-                      className="cursor-pointer transform transition-transform hover:scale-105"
-                      onClick={() => {
-                        setActiveMedia({ type: "image", items: [url] });
-                        setShowMediaModal(true);
-                      }}
-                    >
-                      <img
-                        src={url}
-                        alt={`Chapter image ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Images with tracking */}
+            {renderImages()}
 
-            {/* Videos */}
-            {chapter.videos?.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <VideoIcon className="h-5 w-5 mr-2" />
-                  Videos ({chapter.videos.length})
-                </h3>
-                <div className="grid grid-cols-1 gap-4">
-                  {chapter.videos.map((url: string, index: number) => (
-                    <div key={index} className="bg-black rounded-lg overflow-hidden">
-                      <video
-                        controls
-                        className="w-full h-auto max-h-96"
-                        poster={chapter.images?.[0] || undefined}
-                      >
-                        <source src={url} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Videos with smart completion */}
+            {renderVideos()}
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
