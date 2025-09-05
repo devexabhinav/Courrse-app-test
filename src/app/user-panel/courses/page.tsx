@@ -61,6 +61,31 @@ export default function EnrolledCourses({ className }: any) {
     router.push(`/user-panel/courses/${courseId}/chapter`);
   };
 
+
+
+const unenrollFromCourse = async (courseId: number) => {
+
+  if (!confirmUnenroll) return;
+
+  try {
+    const userId = Cookies.get("userId");
+
+    const res = await api.delete(`enroll/course/unenroll?user_id=${userId}&course_id=${courseId}`);
+
+    if (res.success) {
+      toasterSuccess("Unenrolled successfully", 2000, "unenroll");
+      fetchEnrolledCourses(); // refresh list
+    } else {
+      console.error("Unenroll failed:", res.message);
+    }
+  } catch (error) {
+    console.error("Unenroll error:", error);
+  }
+};
+
+
+
+
   const handleUnenroll = async (e: React.MouseEvent, enrollmentId: number, courseId: number) => {
     e.stopPropagation();
     const confirmUnenroll = confirm("Are you sure you want to unenroll from this course?");
@@ -140,9 +165,7 @@ export default function EnrolledCourses({ className }: any) {
             return (
               <div
                 key={enrollment.enrollment_id}
-                className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
-                onClick={() => handleCourseClick(course.id)}
-              >
+                className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 cursor-pointer"              >
                 {/* Course Image */}
                 <div className="relative h-48 w-full overflow-hidden">
                   {course.image ? (
@@ -201,14 +224,14 @@ export default function EnrolledCourses({ className }: any) {
                   {/* Action Buttons */}
                   <div className="flex items-center justify-between">
                     <button
-                      onClick={() => handleCourseClick(course.id)}
+                                    onClick={() => handleCourseClick(course.id)}
                       className="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                     >
                       <Play className="mr-1 h-4 w-4" />
                       Continue
                     </button>
                     <button
-                      onClick={(e) => handleUnenroll(e, enrollment.enrollment_id, course.id)}
+                         onClick={(e) => unenrollFromCourse(course.id)}
                       className="flex items-center rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
                     >
                       <Trash2 className="mr-1 h-4 w-4" />
