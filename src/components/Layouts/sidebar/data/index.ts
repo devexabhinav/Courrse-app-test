@@ -68,6 +68,14 @@ export const NAV_DATA = [
         items: [],
         type: "user", // Show to both admin and user
       },
+
+       {
+        title: "Progress",
+        url: "/user-panel/Progress",
+        icon: Icons.User,
+        items: [],
+        type: "user", // Show to both admin and user
+      },
        
     ],
   },

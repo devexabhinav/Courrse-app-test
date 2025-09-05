@@ -48,7 +48,7 @@ export default function ChapterDetail() {
 
           if (chapterData.course_id) {
             await fetchChaptersList(chapterData.course_id, chapterData._id);
-            await fetchChapterMcqs(chapterData._id); // Fetch MCQs for this chapter
+            await fetchChapterMcqs(chapterData.id); // Fetch MCQs for this chapter
           }
         } else {
           setError("Chapter data not found in response");
@@ -105,22 +105,30 @@ export default function ChapterDetail() {
     }
   };
 
-  // Fetch MCQs for this chapter
-  const fetchChapterMcqs = async (chapterId: string) => {
-    try {
-      const res = await api.get(`mcq?chapter_id=${chapterId}&limit=100`);
-      
-      if (res.success) {
-        const mcqData = res.data?.data?.data || [];
-        setMcqs(mcqData);
-        
-      }
-    } catch (err) {
-      console.error("Failed to fetch chapter MCQs:", err);
-    }
-  };
 
-  
+
+  // fetch MCQs using the new student API
+  const fetchChapterMcqs = async (chapterId: string) => {
+  console.log("")
+  try {
+    // Use the new student-specific endpoint
+    const res = await api.get(`mcq/student/chapter/${chapterId}`);
+    
+    if (res.success) {
+      // Get MCQs from the response
+      const mcqData = res.data?.data?.mcqs ;
+      setMcqs(mcqData);
+      
+    } else {
+      console.error("Failed to fetch MCQs:", res.error?.message);
+      setMcqs([]); // Clear MCQs on error
+    }
+  } catch (err) {
+    console.error("Failed to fetch chapter MCQs:", err);
+    setMcqs([]); // Clear MCQs on error
+  }
+};
+
 
   // Function to check if chapter is completed
   const checkChapterCompletion = () => {
@@ -381,17 +389,7 @@ export default function ChapterDetail() {
 
 
 
-   const filteredMcqs = mcqs.filter(mcq => {
-        // Log each MCQ's chapter_id for debugging
-        console.log("MCQ chapter_id:", mcq.chapter_id, "Route ID:", chapterId);
-        
-        // Handle both string and number comparisons
-        const mcqChapterId = mcq.chapter_id;
-        
-        // Compare as strings to avoid type issues
-        return mcqChapterId.toString() === chapterId.toString();
-    });
-    console.log("filtered mcq", filteredMcqs)
+  
     
 
     if (!mcqs.length) return null;
@@ -399,11 +397,11 @@ export default function ChapterDetail() {
     return (
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Quiz Questions ({filteredMcqs.length}) - {submittedMcqs.size} completed
+          Quiz Questions ({mcqs.length}) - {submittedMcqs.size} completed
         </h3>
         
         <div className="space-y-6">
-          {filteredMcqs.map((mcq, index) => {
+          {mcqs.map((mcq, index) => {
             const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
             const isCorrect = mcqResults[mcq._id || mcq.id];
             
