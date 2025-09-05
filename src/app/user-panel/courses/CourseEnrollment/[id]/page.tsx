@@ -30,12 +30,37 @@ export default function Dashboard() {
   const [enrolling, setEnrolling] = useState(false);
   const [enrollmentStatus, setEnrollmentStatus] = useState(null);
   const [user, setUser] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+
 
   const params = useParams();
   const courseId = params.id;
   const userId = Cookies.get("userId");
 
+useEffect(() => {
+  const fetchEnrollmentStatus = async () => {
+    if (!userId || !courseId) return;
 
+    try {
+      const response = await api.get(`enroll/course/status?user_id=${userId}&course_id=${courseId}`);
+
+      if ( response.data?.data?.enrolled) {
+        setIsEnrolled(true);
+        // Optionally store progress if you want:
+        // setProgress(response.data.progress);
+      } else {
+        setIsEnrolled(false);
+      }
+    } catch (err) {
+      console.error("Failed to fetch enrollment status:", err);
+    }
+  };
+
+  console.log("isEnrolled",isEnrolled)
+
+  fetchEnrollmentStatus();
+}, []); // ✅ Empty dependency array
+console.log("isEnrolled",isEnrolled)
   
   useEffect(() => {
     // Fetch user data from localStorage or your auth context
@@ -180,6 +205,8 @@ export default function Dashboard() {
         </div>
       </div>
 
+
+  
       <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Course App</div>
 
       {/* Main Content */}
@@ -273,8 +300,32 @@ export default function Dashboard() {
                 {enrollmentStatus && enrollmentStatus !== "success" && (
                   <div className="text-sm  text-green-600 mt-1">{enrollmentStatus}</div>
                 )}
+
+
+                
               </div>
-              <button 
+
+              {isEnrolled ? (
+
+               
+
+
+
+ <button 
+                // onClick={handleEnroll}
+                // disabled={enrolling || formattedCourse.isEnrolled}
+                className={`bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all transform hover:scale-105 ${
+                  enrolling || formattedCourse.isEnrolled ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                Enrolled
+              </button>
+
+
+
+              ) : 
+              (
+                  <button 
                 onClick={handleEnroll}
                 disabled={enrolling || formattedCourse.isEnrolled}
                 className={`bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all transform hover:scale-105 ${
@@ -283,6 +334,10 @@ export default function Dashboard() {
               >
                 {enrolling ? "Enrolling..." : formattedCourse.isEnrolled ? "Enrolled" : "Enroll Now"}
               </button>
+
+              )
+            }
+             
             </div>
           </div>
 
