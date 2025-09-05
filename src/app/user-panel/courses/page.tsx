@@ -64,8 +64,7 @@ export default function EnrolledCourses({ className }: any) {
 
 
 const unenrollFromCourse = async (courseId: number) => {
-  // const confirmUnenroll = confirm("Are you sure you want to unenroll from this course?");
-  // if (!confirmUnenroll) return;
+
 
   try {
     const userId = Cookies.get("userId");
