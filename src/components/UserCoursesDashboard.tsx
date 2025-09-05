@@ -196,7 +196,7 @@ const handleCourseClick = (id: number) => {
                   </div>
                   <div className="flex items-center">
                     <Calendar className="mr-2 h-4 w-4" />
-                    <span>{formatDate(course.created_at)}</span>
+                    <span>{formatDate(course.createdAt)}</span>
                   </div>
                 </div>
 

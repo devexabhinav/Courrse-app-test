@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Pencil, SearchIcon, Trash2, ImageIcon, VideoIcon, ListOrdered } from "lucide-react";
+import { Pencil, SearchIcon, Trash2, ImageIcon, VideoIcon, ListOrdered, ChevronRight, FileText, Clock, CheckCircle, Lock } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter, useParams } from "next/navigation";
 
@@ -18,7 +18,7 @@ export default function Chapters({ className }: any) {
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [limit] = useState(8); // Increased limit for better grid layout
+  const [limit] = useState(10);
   const [courseName, setCourseName] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +46,9 @@ export default function Chapters({ className }: any) {
           );
         }
         
+        // Sort chapters by order
+        filteredChapters.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+        
         setChapters(filteredChapters);
         setTotalPages(res.data?.data?.pagination?.totalPages || 1);
         
@@ -62,10 +65,18 @@ export default function Chapters({ className }: any) {
     }
   };
 
-  const handleChapterClick = (chapterId: number) => {
-  router.push(`/user-panel/chapters/${chapterId}`);
-};
-
+  const handleChapterClick = async (chapterId: number) => {
+    try {
+      const res = await api.get(`chapter/${chapterId}`);
+      if (res.success) {
+        router.push(`/user-panel/chapters/${chapterId}`);
+      } else {
+        console.error("Failed to fetch chapter:", res.message);
+      }
+    } catch (error) {
+      console.error("Error fetching chapter:", error);
+    }
+  };
 
   const fetchCourseName = async () => {
     try {
@@ -81,8 +92,6 @@ export default function Chapters({ className }: any) {
   useEffect(() => {
     fetchChapters();
   }, [page, search, courseId]);
-
-
 
   if (loading) {
     return (
@@ -126,8 +135,6 @@ export default function Chapters({ className }: any) {
               className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
             />
           </div>
-
-    
         </div>
       </div>
 
@@ -210,72 +217,69 @@ export default function Chapters({ className }: any) {
         </div>
       )}
 
-      {/* Chapters Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Chapters List */}
+      <div className="space-y-4">
         {chapters.length > 0 ? (
           chapters.map((chapter: any) => (
             <div
               key={chapter.id}
-              onClick={() => handleChapterClick(chapter.id)}
               className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
             >
-              {/* Chapter Content */}
               <div className="p-5">
-                {/* Header with Order and Actions */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center">
-                    <ListOrdered className="h-4 w-4 text-gray-500 mr-2" />
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Order: {chapter.order}
-                    </span>
+                <div className="flex items-start justify-between">
+                  {/* Left side - Chapter info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center mb-2">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-medium mr-3">
+                        {chapter.order}
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                        {chapter.title}
+                      </h3>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                      {chapter.content?.slice(0, 120)}...
+                    </p>
+
+                    {/* Media stats */}
+                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center">
+                        <ImageIcon className="h-3 w-3 mr-1" />
+                        <span>{chapter.images?.length || 0} Images</span>
+                      </div>
+                      <div className="flex items-center">
+                        <VideoIcon className="h-3 w-3 mr-1" />
+                        <span>{chapter.videos?.length || 0} Videos</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FileText className="h-3 w-3 mr-1" />
+                        <span>{Math.ceil((chapter.content?.length || 0) / 1000)}k words</span>
+                      </div>
+                    </div>
                   </div>
-                  
+
+                  {/* Right side - Actions and status */}
+                  <div className="flex flex-col items-end gap-2 ml-4">
+                    <button
+                      onClick={() => handleChapterClick(chapter.id)}
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Start Chapter
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </button>
+                    
+                    {/* Status indicator */}
+                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>Not started</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Title */}
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2">
-                  {chapter.title}
-                </h3>
-
-                {/* Content Preview */}
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                  {chapter.content?.slice(0, 100)}...
-                </p>
-
-                {/* Course Name (if not filtered by course) */}
-                {!courseId && chapter.course?.title && (
-                  <div className="mb-4">
-                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      Course: {chapter.course.title}
-                    </span>
-                  </div>
-                )}
-
-                {/* Media Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => {
-                      setActiveMedia({ type: "image", items: chapter.images });
-                      setShowMediaModal(true);
-                    }}
-                    disabled={!chapter.images?.length}
-                    className="flex items-center text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed"
-                  >
-                    <ImageIcon className="h-4 w-4 mr-1" />
-                    {chapter.images?.length || 0} Images
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setActiveMedia({ type: "video", items: chapter.videos });
-                      setShowMediaModal(true);
-                    }}
-                    disabled={!chapter.videos?.length}
-                    className="flex items-center text-sm text-green-600 hover:text-green-800 disabled:text-gray-400 disabled:cursor-not-allowed"
-                  >
-                    <VideoIcon className="h-4 w-4 mr-1" />
-                    {chapter.videos?.length || 0} Videos
-                  </button>
+                {/* Progress bar (optional) */}
+                <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                  <div className="bg-green-600 h-1.5 rounded-full" style={{ width: '0%' }}></div>
                 </div>
               </div>
             </div>
@@ -301,8 +305,7 @@ export default function Chapters({ className }: any) {
       {chapters.length > 0 && (
         <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-           Total Chapters {chapters.length} 
-           {/* of {totalPages * limit} chapters */}
+            Showing {chapters.length} chapters
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -346,8 +349,3 @@ export default function Chapters({ className }: any) {
     </div>
   );
 }
-
-
-
-
-

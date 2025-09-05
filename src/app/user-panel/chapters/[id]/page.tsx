@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import api from "@/lib/api";
-import { cn } from "@/lib/utils";
+
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 
 export default function ChapterDetail() {
@@ -17,7 +17,6 @@ export default function ChapterDetail() {
   const [error, setError] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [chaptersList, setChaptersList] = useState<any[]>([]);
   const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(-1);
 
   // Media completion tracking
@@ -33,6 +32,9 @@ export default function ChapterDetail() {
   const [submittedMcqs, setSubmittedMcqs] = useState<Set<string>>(new Set());
   const [mcqResults, setMcqResults] = useState<{[key: string]: boolean}>({});
 
+  // Check if media is completed to unlock MCQs
+  const [mediaCompleted, setMediaCompleted] = useState(false);
+
   const fetchChapterDetail = async () => {
     try {
       setLoading(true);
@@ -47,8 +49,7 @@ export default function ChapterDetail() {
           setChapter(chapterData);
 
           if (chapterData.course_id) {
-            await fetchChaptersList(chapterData.course_id, chapterData._id);
-            await fetchChapterMcqs(chapterData.id); // Fetch MCQs for this chapter
+            await fetchChapterMcqs(chapterData.id);
           }
         } else {
           setError("Chapter data not found in response");
@@ -70,77 +71,44 @@ export default function ChapterDetail() {
     }
   };
 
-  const fetchChaptersList = async (courseId: string, currentChapterId: string) => {
+  const fetchChapterMcqs = async (chapterId: string) => {
     try {
-      const query = new URLSearchParams();
-      query.append("page", "1");
-      query.append("limit", "100");
-      query.append("course_id", courseId.toString());
-
-      const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
-
+      const res = await api.get(`mcq/student/chapter/${chapterId}`);
+      
       if (res.success) {
-        let filteredChapters = res.data?.data?.data || [];
-
-        if (courseId) {
-          filteredChapters = filteredChapters.filter(
-            (chapter: any) => chapter.course_id?.toString() === courseId.toString()
-          );
-        }
-
-        filteredChapters.sort((a: any, b: any) => {
-          if (a.order !== undefined && b.order !== undefined) {
-            return a.order - b.order;
-          }
-          return 0;
-        });
-
-        setChaptersList(filteredChapters);
-
-        const index = filteredChapters.findIndex((chap: any) => chap._id === currentChapterId);
-        setCurrentChapterIndex(index);
+        const mcqData = res.data?.data?.mcqs;
+        setMcqs(mcqData);
+      } else {
+        console.error("Failed to fetch MCQs:", res.error?.message);
+        setMcqs([]);
       }
     } catch (err) {
-      console.error("Failed to fetch chapters list:", err);
+      console.error("Failed to fetch chapter MCQs:", err);
+      setMcqs([]);
     }
   };
 
-
-
-  // fetch MCQs using the new student API
-  const fetchChapterMcqs = async (chapterId: string) => {
-  console.log("")
-  try {
-    // Use the new student-specific endpoint
-    const res = await api.get(`mcq/student/chapter/${chapterId}`);
-    
-    if (res.success) {
-      // Get MCQs from the response
-      const mcqData = res.data?.data?.mcqs ;
-      setMcqs(mcqData);
-      
-    } else {
-      console.error("Failed to fetch MCQs:", res.error?.message);
-      setMcqs([]); // Clear MCQs on error
-    }
-  } catch (err) {
-    console.error("Failed to fetch chapter MCQs:", err);
-    setMcqs([]); // Clear MCQs on error
-  }
-};
-
-
-  // Function to check if chapter is completed
-  const checkChapterCompletion = () => {
+  // Function to check if media is completed
+  const checkMediaCompletion = () => {
     const totalImages = chapter?.images?.length || 0;
     const totalVideos = chapter?.videos?.length || 0;
-    // const totalMcqs = mcqs.length || 0;
     
     const allImagesViewed = totalImages === 0 || viewedImages.size === totalImages;
     const allVideosCompleted = totalVideos === 0 || completedVideos.size === totalVideos;
-    // const allMcqsCompleted = totalMcqs === 0 || submittedMcqs.size === totalMcqs
     
-    const isCompleted = allImagesViewed && allVideosCompleted ;
+    const isMediaCompleted = allImagesViewed && allVideosCompleted;
+    setMediaCompleted(isMediaCompleted);
+    
+    return isMediaCompleted;
+  };
+
+  // Function to check if chapter is completed
+  const checkChapterCompletion = () => {
+    const isMediaCompleted = checkMediaCompletion();
+    const totalMcqs = mcqs.length || 0;
+    const allMcqsCompleted = totalMcqs === 0 || submittedMcqs.size === totalMcqs;
+    
+    const isCompleted = isMediaCompleted && allMcqsCompleted;
     setChapterCompleted(isCompleted);
     
     return isCompleted;
@@ -164,8 +132,6 @@ export default function ChapterDetail() {
     }
 
     try {
-      // In a real implementation, you would send this to your API
-      // For now, we'll just check against the correct answer locally
       const mcq = mcqs.find(m => m._id === mcqId || m.id === mcqId);
       const isCorrect = mcq && mcq.answer === selectedAnswer;
       
@@ -210,57 +176,16 @@ export default function ChapterDetail() {
     });
   };
 
-  // Updated navigateToChapter function with completion check
-  const navigateToChapter = (direction: 'prev' | 'next') => {
-    if (currentChapterIndex === -1) return;
-
-    // For next navigation, check if current chapter is completed
-    if (direction === 'next' && !chapterCompleted) {
-      toasterError("Please complete all media and MCQs in this chapter before proceeding to the next one.", 4000);
-      return;
-    }
-
-    let targetIndex = currentChapterIndex;
-
-    if (direction === 'prev' && currentChapterIndex > 0) {
-      targetIndex = currentChapterIndex - 1;
-    } else if (direction === 'next' && currentChapterIndex < chaptersList.length - 1) {
-      targetIndex = currentChapterIndex + 1;
-      console.log('Going to next, target index:', targetIndex);
-    } else {
-      console.log('No navigation possible in direction:', direction);
-      return;
-    }
-
-    console.log('Navigating to index:', targetIndex);
-
-    // Reset completion tracking for new chapter
-    setViewedImages(new Set());
-    setViewedVideos(new Set());
-    setCompletedVideos(new Set());
-    setVideoProgress({});
-    setChapterCompleted(false);
-    setSelectedAnswers({});
-    setSubmittedMcqs(new Set());
-    setMcqResults({});
-
-    setCurrentChapterIndex(targetIndex);
-    const targetChapter = chaptersList[targetIndex];
-    setChapter(targetChapter);
-
-    const chapterId = targetChapter._id || targetChapter.id;
-    if (chapterId) {
-      window.history.pushState(null, '', `${chapterId}`);
-    }
-  };
-
   // Function to handle image viewing
   const handleImageView = (index: number) => {
     const newViewedImages = new Set(viewedImages);
     newViewedImages.add(index);
     setViewedImages(newViewedImages);
     
-    setTimeout(checkChapterCompletion, 100);
+    setTimeout(() => {
+      checkMediaCompletion();
+      checkChapterCompletion();
+    }, 100);
   };
 
   // Function to handle video play
@@ -277,12 +202,11 @@ export default function ChapterDetail() {
     const watchPercentage = (currentTime / duration) * 100;
     const watchTimeSeconds = currentTime;
     
-    // Allow completion if ANY of these conditions are met:
     const conditions = {
-      watchedMost: watchPercentage >= 60,        // Watched 60% of video
-      watchedLongEnough: watchTimeSeconds >= 90, // Watched for 90+ seconds  
-      nearEnd: watchPercentage >= 80,           // Close to end
-      fullCompletion: watchPercentage >= 95     // Nearly finished
+      watchedMost: watchPercentage >= 60,
+      watchedLongEnough: watchTimeSeconds >= 90,
+      nearEnd: watchPercentage >= 80,
+      fullCompletion: watchPercentage >= 95
     };
     
     const canComplete = Object.values(conditions).some(condition => condition);
@@ -295,12 +219,14 @@ export default function ChapterDetail() {
       }
     }));
     
-    // Auto-complete if conditions are met and not already completed
     if (canComplete && !completedVideos.has(index)) {
       const newCompletedVideos = new Set(completedVideos);
       newCompletedVideos.add(index);
       setCompletedVideos(newCompletedVideos);
-      setTimeout(checkChapterCompletion, 100);
+      setTimeout(() => {
+        checkMediaCompletion();
+        checkChapterCompletion();
+      }, 100);
     }
   };
 
@@ -309,7 +235,10 @@ export default function ChapterDetail() {
     const newCompletedVideos = new Set(completedVideos);
     newCompletedVideos.add(index);
     setCompletedVideos(newCompletedVideos);
-    setTimeout(checkChapterCompletion, 100);
+    setTimeout(() => {
+      checkMediaCompletion();
+      checkChapterCompletion();
+    }, 100);
   };
 
   useEffect(() => {
@@ -326,11 +255,15 @@ export default function ChapterDetail() {
       setCompletedVideos(new Set());
       setVideoProgress({});
       setChapterCompleted(false);
+      setMediaCompleted(false);
       setSelectedAnswers({});
       setSubmittedMcqs(new Set());
       setMcqResults({});
       
-      setTimeout(checkChapterCompletion, 100);
+      setTimeout(() => {
+        checkMediaCompletion();
+        checkChapterCompletion();
+      }, 100);
     }
   }, [chapter]);
   
@@ -346,13 +279,13 @@ export default function ChapterDetail() {
         <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
           <div className="flex items-center text-green-800 dark:text-green-200">
             <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-sm font-medium">Chapter completed - No media or MCQs to complete</span>
+            <span className="text-sm font-medium">Media completed - Proceed to quiz</span>
           </div>
         </div>
       );
     }
     
-    const completedCount = viewedImages.size + completedVideos.size ;
+    const completedCount = viewedImages.size + completedVideos.size;
     const progressPercentage = (completedCount / totalMedia) * 100;
     
     return (
@@ -374,31 +307,61 @@ export default function ChapterDetail() {
         <div className="mt-2 text-xs text-blue-600 dark:text-blue-300">
           Images: {viewedImages.size}/{totalImages} • Videos: {completedVideos.size}/{totalVideos} 
         </div>
+        {mediaCompleted && !chapterCompleted && (
+          <div className="flex items-center mt-2 text-green-800 dark:text-green-200">
+            <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
+            <span className="text-sm font-medium">Media completed! Proceed to quiz section.</span>
+          </div>
+        )}
         {chapterCompleted && (
           <div className="flex items-center mt-2 text-green-800 dark:text-green-200">
             <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-sm font-medium">Ready to proceed to next chapter!</span>
+            <span className="text-sm font-medium">Chapter completed! Ready to proceed.</span>
           </div>
         )}
       </div>
     );
   };
 
-  // Render MCQs component
+  // Render MCQs component - Only visible when media is completed
   const renderMcqs = () => {
-
-
-
-  
-    
-
     if (!mcqs.length) return null;
+    
+    if (!mediaCompleted) {
+      return (
+        <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col items-center justify-center text-center py-8">
+            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
+              <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Quiz Locked
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+              Complete all videos and images in this chapter to unlock the quiz questions.
+            </p>
+            <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
+              <span className="mr-2">Progress:</span>
+              <span>
+                {viewedImages.size}/{chapter?.images?.length || 0} images viewed • 
+                {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
     
     return (
       <div className="mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Quiz Questions ({mcqs.length}) - {submittedMcqs.size} completed
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Quiz Questions ({mcqs.length})
+          </h3>
+          <span className="text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded-full">
+            Unlocked ✓
+          </span>
+        </div>
         
         <div className="space-y-6">
           {mcqs.map((mcq, index) => {
@@ -422,7 +385,7 @@ export default function ChapterDetail() {
                 
                 <div className="space-y-2">
                   {mcq.options && mcq.options.map((option: string, optIndex: number) => {
-                    const optionLetter = String.fromCharCode(65 + optIndex); // A, B, C, D
+                    const optionLetter = String.fromCharCode(65 + optIndex);
                     const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
                     const isCorrectAnswer = option === mcq.answer;
                     
@@ -506,7 +469,6 @@ export default function ChapterDetail() {
     );
   };
 
-
   // Updated image rendering with tracking
   const renderImages = () => {
     if (!chapter.images?.length) return null;
@@ -584,7 +546,6 @@ export default function ChapterDetail() {
                     e.target.duration
                   )}
                   onEnded={() => {
-                    // Auto-complete on natural end
                     handleManualVideoComplete(index);
                   }}
                 >
@@ -702,15 +663,146 @@ export default function ChapterDetail() {
     );
   }
 
-  // Determine if we can navigate to previous or next chapter
-  const hasPrevious = currentChapterIndex > 0;
-  const hasNext = currentChapterIndex < chaptersList.length - 1;
-
-  // Get the previous and next chapter info for display
-  const previousChapter = hasPrevious ? chaptersList[currentChapterIndex - 1] : null;
-  const nextChapter = hasNext ? chaptersList[currentChapterIndex + 1] : null;
-
   // Render chapter content
+if(!mediaCompleted){
+    return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8">
+          <button 
+            onClick={() => router.push(`/user-panel/courses/${chapter.course_id}/chapter`)}
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Chapters
+          </button>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {chapter.title || "Untitled Chapter"}
+              </h1>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                Order: {chapter.order || "N/A"}
+              </span>
+            </div>
+
+            {/* Course Info */}
+            {chapter.course_id && (
+              <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Course Information
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  <BookOpen className="inline h-4 w-4 mr-2" />
+                  Course ID: {chapter.course_id}
+                </p>
+              </div>
+            )}
+
+            {/* Meta Information */}
+            <div className="flex flex-wrap gap-4 mb-6 text-sm text-gray-600 dark:text-gray-400">
+              {chapter.createdAt && (
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Created: {formatDate(chapter.createdAt)}
+                </div>
+              )}
+              {chapter.updatedAt && (
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Updated: {formatDate(chapter.updatedAt)}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <ProgressIndicator />
+
+        {/* Content Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+            Chapter Content
+          </h2>
+          <div className="prose prose-lg max-w-none dark:prose-invert">
+            {chapter.content ? (
+              <div
+                className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line"
+              >
+                {chapter.content}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 italic">
+                No content available for this chapter.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Media Section */}
+        {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+              Media Files
+            </h2>
+
+            {/* Images with tracking */}
+            {renderImages()}
+
+            {/* Videos with smart completion */}
+            {renderVideos()}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
+            <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">
+              No media files available for this chapter
+            </p>
+          </div>
+        )}
+
+        {/* MCQs Section - Now conditionally rendered based on media completion */}
+        {renderMcqs()}
+
+        {/* Media Modal */}
+        {showMediaModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              <button
+                onClick={() => setShowMediaModal(false)}
+                className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
+              >
+                ✕
+              </button>
+
+              {activeMedia.type === "image" ? (
+                <img
+                  src={activeMedia.items[0]}
+                  alt="Chapter media"
+                  className="w-full h-auto max-h-[85vh] object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                  }}
+                />
+              ) : (
+                <video
+                  controls
+                  autoPlay
+                  className="w-full h-auto max-h-[85vh]"
+                >
+                  <source src={activeMedia.items[0]} type="video/mp4" />
+                </video>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -765,142 +857,18 @@ export default function ChapterDetail() {
           </div>
         </div>
 
-        {/* Progress Indicator */}
         <ProgressIndicator />
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mb-8">
-          <button
-            onClick={() => navigateToChapter('prev')}
-            disabled={!hasPrevious}
-            className={cn(
-              "flex flex-col items-start px-4 py-3 rounded-lg transition-colors w-48 text-left",
-              hasPrevious
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed"
-            )}
-          >
-            <div className="flex items-center mb-1">
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              <span className="text-sm">Previous Chapter</span>
-            </div>
-            {hasPrevious && (
-              <span className="text-xs font-light truncate w-full">
-                {previousChapter?.title || `Chapter ${previousChapter?.order}`}
-              </span>
-            )}
-          </button>
-          
-          <button
-            onClick={() => navigateToChapter('next')}
-            disabled={!hasNext || !chapterCompleted}
-            className={cn(
-              "flex flex-col items-end px-4 py-3 rounded-lg transition-colors w-48 text-right relative",
-              hasNext
-                ? chapterCompleted 
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-400 text-gray-600 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed"
-                : "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed"
-            )}
-            title={!chapterCompleted && hasNext ? "Complete all media and MCQs in this chapter first" : ""}
-          >
-            <div className="flex items-center mb-1">
-              <span className="text-sm">Next Chapter</span>
-              <ChevronRight className="h-4 w-4 ml-2" />
-              {!chapterCompleted && hasNext && (
-                <div className="ml-1">🔒</div>
-              )}
-            </div>
-            {hasNext && (
-              <span className="text-xs font-light truncate w-full">
-                {nextChapter?.title || `Chapter ${nextChapter?.order}`}
-              </span>
-            )}
-            {!chapterCompleted && hasNext && (
-              <span className="text-xs text-red-300 mt-1">
-                Complete all content first
-              </span>
-            )}
-          </button>
-        </div>
-
         {/* Content Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-            Chapter Content
-          </h2>
-          <div className="prose prose-lg max-w-none dark:prose-invert">
-            {chapter.content ? (
-              <div
-                className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line"
-              >
-                {chapter.content}
-              </div>
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 italic">
-                No content available for this chapter.
-              </p>
-            )}
-          </div>
-        </div>
-
+   
         {/* Media Section */}
-        {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-              Media Files
-            </h2>
+   
 
-            {/* Images with tracking */}
-            {renderImages()}
-
-            {/* Videos with smart completion */}
-            {renderVideos()}
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
-            <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">
-              No media files available for this chapter
-            </p>
-          </div>
-        )}
-
-        {/* MCQs Section */}
+        {/* MCQs Section - Now conditionally rendered based on media completion */}
         {renderMcqs()}
 
         {/* Media Modal */}
-        {showMediaModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-              <button
-                onClick={() => setShowMediaModal(false)}
-                className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
-              >
-                ✕
-              </button>
-
-              {activeMedia.type === "image" ? (
-                <img
-                  src={activeMedia.items[0]}
-                  alt="Chapter media"
-                  className="w-full h-auto max-h-[85vh] object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                  }}
-                />
-              ) : (
-                <video
-                  controls
-                  autoPlay
-                  className="w-full h-auto max-h-[85vh]"
-                >
-                  <source src={activeMedia.items[0]} type="video/mp4" />
-                </video>
-              )}
-            </div>
-          </div>
-        )}
+   
       </div>
     </div>
   );
