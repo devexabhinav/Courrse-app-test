@@ -6,6 +6,8 @@ import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, Che
 import api from "@/lib/api";
 
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
+import Cookies from 'js-cookie';
+
 
 export default function ChapterDetail() {
   const params = useParams();
@@ -115,12 +117,15 @@ export default function ChapterDetail() {
   };
 
   // Handle MCQ answer selection
-  const handleAnswerSelect = (mcqId: string, answer: string) => {
+const handleAnswerSelect = (mcqId: string, answer: string) => {
+  // Only allow selection if not submitted yet
+  if (!submittedMcqs.has(mcqId)) {
     setSelectedAnswers(prev => ({
       ...prev,
       [mcqId]: answer
     }));
-  };
+  }
+};
 
   // Submit MCQ answer
   const submitMcqAnswer = async (mcqId: string) => {
@@ -324,150 +329,360 @@ export default function ChapterDetail() {
   };
 
   // Render MCQs component - Only visible when media is completed
-  const renderMcqs = () => {
-    if (!mcqs.length) return null;
-    
-    if (!mediaCompleted) {
-      return (
-        <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col items-center justify-center text-center py-8">
-            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
-              <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Quiz Locked
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-              Complete all videos and images in this chapter to unlock the quiz questions.
-            </p>
-            <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
-              <span className="mr-2">Progress:</span>
-              <span>
-                {viewedImages.size}/{chapter?.images?.length || 0} images viewed • 
-                {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
-              </span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
+const renderMcqs = () => {
+  if (!mcqs.length) return null;
+  
+  if (!mediaCompleted) {
     return (
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Quiz Questions ({mcqs.length})
+      <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col items-center justify-center text-center py-8">
+          <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
+            <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            Quiz Locked
           </h3>
-          <span className="text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded-full">
-            Unlocked ✓
-          </span>
-        </div>
-        
-        <div className="space-y-6">
-          {mcqs.map((mcq, index) => {
-            const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
-            const isCorrect = mcqResults[mcq._id || mcq.id];
-            
-            return (
-              <div 
-                key={mcq._id || mcq.id} 
-                className={`p-4 rounded-lg border ${
-                  isSubmitted 
-                    ? isCorrect 
-                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
-                      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                }`}
-              >
-                <h4 className="font-medium text-gray-900 dark:text-white mb-3">
-                  {index + 1}. {mcq.question}
-                </h4>
-                
-                <div className="space-y-2">
-                  {mcq.options && mcq.options.map((option: string, optIndex: number) => {
-                    const optionLetter = String.fromCharCode(65 + optIndex);
-                    const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
-                    const isCorrectAnswer = option === mcq.answer;
-                    
-                    return (
-                      <label 
-                        key={optIndex}
-                        className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
-                          !isSubmitted
-                            ? isSelected
-                              ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
-                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                            : isCorrectAnswer
-                              ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
-                              : isSelected && !isCorrectAnswer
-                                ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
-                                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={`mcq-${mcq._id || mcq.id}`}
-                          value={option}
-                          checked={isSelected}
-                          onChange={() => handleAnswerSelect(mcq._id || mcq.id, option)}
-                          disabled={isSubmitted}
-                          className="mr-3"
-                        />
-                        <span className="font-medium mr-2">{optionLetter}.</span>
-                        <span>{option}</span>
-                        
-                        {isSubmitted && isCorrectAnswer && (
-                          <span className="ml-auto text-green-600 dark:text-green-400">
-                            ✓ Correct
-                          </span>
-                        )}
-                        
-                        {isSubmitted && isSelected && !isCorrectAnswer && (
-                          <span className="ml-auto text-red-600 dark:text-red-400">
-                            ✗ Incorrect
-                          </span>
-                        )}
-                      </label>
-                    );
-                  })}
-                </div>
-                
-                <div className="mt-4 flex justify-end">
-                  {!isSubmitted ? (
-                    <button
-                      onClick={() => submitMcqAnswer(mcq._id || mcq.id)}
-                      disabled={!selectedAnswers[mcq._id || mcq.id]}
-                      className={`px-4 py-2 rounded-lg ${
-                        selectedAnswers[mcq._id || mcq.id]
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
-                          : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
-                      }`}
-                    >
-                      Submit Answer
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <span className={`font-medium ${
-                        isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {isCorrect ? 'Correct!' : 'Incorrect!'}
-                      </span>
-                      <button
-                        onClick={() => resetMcq(mcq._id || mcq.id)}
-                        className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"
-                      >
-                        Try Again
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+            Complete all videos and images in this chapter to unlock the quiz questions.
+          </p>
+          <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
+            <span className="mr-2">Progress:</span>
+            <span>
+              {viewedImages.size}/{chapter?.images?.length || 0} images viewed • 
+              {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
+            </span>
+          </div>
         </div>
       </div>
     );
-  };
+  }
+  
+  // Check if all questions are answered
+  const allAnswered = mcqs.every(mcq => selectedAnswers[mcq._id || mcq.id]);
+  const someSubmitted = submittedMcqs.size > 0;
+  const allSubmitted = submittedMcqs.size === mcqs.length;
+  
+  return (
+    <div className="mt-8">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Quiz Questions ({mcqs.length})
+        </h3>
+        <span className="text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded-full">
+          Unlocked ✓
+        </span>
+      </div>
+      
+      <div className="space-y-6">
+        {mcqs.map((mcq, index) => {
+          const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
+          const isCorrect = mcqResults[mcq._id || mcq.id];
+          
+          return (
+            <div 
+              key={mcq._id || mcq.id} 
+              className={`p-4 rounded-lg border ${
+                isSubmitted 
+                  ? isCorrect 
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+              }`}
+            >
+              <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                {index + 1}. {mcq.question}
+              </h4>
+              
+              <div className="space-y-2">
+                {mcq.options && mcq.options.map((option: string, optIndex: number) => {
+                  const optionLetter = String.fromCharCode(65 + optIndex);
+                  const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
+                  const isCorrectAnswer = option === mcq.answer;
+                  
+                  return (
+                    <label 
+                      key={optIndex}
+                      className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
+                        !isSubmitted
+                          ? isSelected
+                            ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+                            : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          : isCorrectAnswer
+                            ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+                            : isSelected && !isCorrectAnswer
+                              ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
+                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name={`mcq-${mcq._id || mcq.id}`}
+                        value={option}
+                        checked={isSelected}
+                        onChange={() => handleAnswerSelect(mcq._id || mcq.id, option)}
+                        disabled={isSubmitted}
+                        className="mr-3"
+                      />
+                      <span className="font-medium mr-2">{optionLetter}.</span>
+                      <span>{option}</span>
+                      
+                      {isSubmitted && isCorrectAnswer && (
+                        <span className="ml-auto text-green-600 dark:text-green-400">
+                          ✓ Correct
+                        </span>
+                      )}
+                      
+                      {isSubmitted && isSelected && !isCorrectAnswer && (
+                        <span className="ml-auto text-red-600 dark:text-red-400">
+                          ✗ Incorrect
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+              
+              {/* Status indicator for each question */}
+              {isSubmitted && (
+                <div className={`mt-3 p-2 rounded-md text-center ${
+                  isCorrect 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                }`}>
+                  {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Single Submit Button for All MCQs */}
+      <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex-1">
+            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+              Submit All Answers
+            </h4>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              {allSubmitted 
+                ? "All questions submitted. You can reset to try again."
+                : !allAnswered 
+                  ? `Answer all ${mcqs.length - Object.keys(selectedAnswers).length} remaining questions to submit`
+                  : "Ready to submit all answers"
+              }
+            </p>
+          </div>
+          
+          <div className="flex gap-3">
+          
+              <button
+                onClick={submitAllMcqAnswers}
+                disabled={!allAnswered}
+                className={`px-6 py-3 rounded-lg transition-colors ${
+                  allAnswered
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Submit All Answers
+              </button>
+            
+          </div>
+        </div>
+        
+        {/* Progress indicator */}
+        <div className="mt-4">
+          <div className="flex justify-between text-sm text-blue-700 dark:text-blue-300 mb-2">
+            <span>Progress: {Object.keys(selectedAnswers).length}/{mcqs.length} answered</span>
+            <span>{submittedMcqs.size}/{mcqs.length} submitted</span>
+          </div>
+          <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+            <div 
+              className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(Object.keys(selectedAnswers).length / mcqs.length) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Add these functions to your component
+// const submitAllMcqAnswers = async () => {
+//   try {
+//     // Prepare answers in the required format
+//     const answers = mcqs.map(mcq => ({
+//       mcq_id: mcq._id || mcq.id,
+//       selected_option: selectedAnswers[mcq._id || mcq.id]
+//     }));
+
+//     // Call your backend API to submit all answers
+//     const res = await api.post("mcq/submit-all", {
+//       user_id: 123, // Replace with actual user ID from your auth system
+//       chapter_id: chapterId,
+//       answers
+//     });
+
+//     if (res.success) {
+//       // Mark all MCQs as submitted
+//       const allMcqIds = mcqs.map(mcq => mcq._id || mcq.id);
+//       setSubmittedMcqs(new Set(allMcqIds));
+      
+//       // Set results for each MCQ
+//       const results = res.data.data.results || [];
+//       const newResults = {};
+//       results.forEach(result => {
+//         newResults[result.mcq_id] = result.is_correct;
+//       });
+//       setMcqResults(newResults);
+      
+//       // Show success message
+//       if (res.data.data.passed) {
+//         toasterSuccess("Congratulations! You passed the quiz.", 3000);
+//       } else {
+//         toasterError(`You scored ${res.data.data.score}/${res.data.data.total_questions}. Try again to pass.`, 4000);
+//       }
+//     } else {
+//       toasterError(res.error?.message || "Failed to submit answers", 3000);
+//     }
+//   } catch (err) {
+//     console.error("Failed to submit all MCQ answers:", err);
+//     toasterError("Failed to submit answers", 3000);
+//   }
+// }; 
+
+//22
+
+// const submitAllMcqAnswers = async () => {
+//   try {
+//     // Prepare answers in the required format
+//     const answers = mcqs.map(mcq => ({
+//       mcq_id: mcq._id || mcq.id,
+//       selected_option: selectedAnswers[mcq._id || mcq.id]
+//     }));
+//      const userId = Cookies.get('userId');
+// console.log("----------------1-----------------1----------",userId)
+//     console.log("Submitting answers:", {
+//       user_id: 123, // Replace with actual user ID
+//       chapter_id: chapterId,
+//       answers
+      
+//     });
+
+//     // Call your backend API to submit all answers
+//     const res = await api.post("mcq/submit-all", {
+//       user_id: userId, // Replace with actual user ID from your auth system
+//       chapter_id: chapterId,
+//       answers
+//     });
+
+//     console.log("API Response:", res);
+
+//     if (res.success) {
+//       // Mark all MCQs as submitted
+//       const allMcqIds = mcqs.map(mcq => mcq._id || mcq.id);
+//       setSubmittedMcqs(new Set(allMcqIds));
+      
+//       // Set results for each MCQ
+//       const results = res.data.data.results || [];
+//       const newResults = {};
+//       results.forEach(result => {
+//         newResults[result.mcq_id] = result.is_correct;
+//       });
+//       setMcqResults(newResults);
+      
+//       // Show success message
+//       if (res.data.data.passed) {
+//         toasterSuccess("Congratulations! You passed the quiz.", 3000);
+//       } else {
+//         toasterError(`You scored ${res.data.data.score}/${res.data.data.total_questions}. Try again to pass.`, 4000);
+//       }
+//     } else {
+//       toasterError(res.error?.message || "Failed to submit answers", 3000);
+//     }
+//   } catch (err: any) {
+//     console.error("Failed to submit all MCQ answers:", err);
+//     console.error("Error response:", err.response?.data);
+//     toasterError(err.response?.data?.message || "Failed to submit answers", 3000);
+//   }
+// };
+
+//33
+
+const submitAllMcqAnswers = async () => {
+  try {
+    // Get user ID from cookies
+    const userId = Cookies.get('userId');
+    console.log("User ID from cookies:", userId);
+    
+    if (!userId) {
+      toasterError("User not authenticated. Please login again.", 3000);
+      return;
+    }
+
+    // Prepare answers in the required format
+    const answers = mcqs.map(mcq => ({
+      mcq_id: mcq.id || mcq._id, // Try both id and _id
+      selected_option: selectedAnswers[mcq._id || mcq.id]
+    }));
+
+    console.log("Submitting answers:", {
+      user_id: userId,
+      chapter_id: chapterId,
+      answers
+    });
+
+    // Call your backend API to submit all answers
+    const res = await api.post("mcq/submit-all", {
+      user_id: parseInt(userId), // Convert to number if backend expects integer
+      chapter_id: parseInt(chapterId as string), // Convert to number
+      answers
+    });
+
+    console.log("API Response:", res);
+
+    if (res.success) {
+      // Mark all MCQs as submitted
+      const allMcqIds = mcqs.map(mcq => mcq._id || mcq.id);
+      setSubmittedMcqs(new Set(allMcqIds));
+      
+      // Set results for each MCQ
+      const results = res.data.data.results || [];
+      const newResults = {};
+      results.forEach(result => {
+        newResults[result.mcq_id] = result.is_correct;
+      });
+      setMcqResults(newResults);
+      
+      // Show success message
+      if (res.data.data.passed) {
+        toasterSuccess("Congratulations! You passed the quiz.", 3000);
+      } else {
+       toasterSuccess(`You scored is calculating.`, 3000);
+
+      }
+    } else {
+      toasterError(res.error?.message || "Failed to submit answers", 3000);
+    }
+  } catch (err: any) {
+    console.error("Failed to submit all MCQ answers:", err);
+    console.error("Error response:", err.response?.data);
+    toasterError(err.response?.data?.message || "Failed to submit answers", 3000);
+  }
+};
+
+
+const resetAllMcqs = () => {
+  setSelectedAnswers({});
+  setSubmittedMcqs(new Set());
+  setMcqResults({});
+  toasterSuccess("All questions reset. You can try again.", 2000);
+};
+
+
+
 
   // Updated image rendering with tracking
   const renderImages = () => {
