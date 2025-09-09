@@ -329,7 +329,7 @@ const handleAnswerSelect = (mcqId: string, answer: string) => {
       </div>
     );
   };
-console.log(submissionData,"subad========")
+
 
 
 const renderResultsSection = () => {
@@ -466,6 +466,11 @@ const renderMcqs = () => {
   const someSubmitted = submittedMcqs.size > 0;
   const allSubmitted = submittedMcqs.size === mcqs.length;
   
+
+
+
+
+
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
@@ -489,7 +494,7 @@ const renderMcqs = () => {
                 isSubmitted 
                   ? isCorrect 
                     ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
-                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                    : 'bg-green-50  dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
               }`}
             >
@@ -501,57 +506,65 @@ const renderMcqs = () => {
                 {mcq.options && mcq.options.map((option: string, optIndex: number) => {
                   const optionLetter = String.fromCharCode(65 + optIndex);
                   const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
+                  // Find the result for this specific MCQ from submissionData
+const result = submissionData?.results?.find(
+  (r: any) => r.mcq_id.toString() === (mcq.id || mcq._id).toString()
+);
+
+                  // const isCorrectAnswer = option == result;
                   
-                  const isCorrectAnswer = option == mcq.correct_option;
-                  
-                  
-                  
+
+// Check if this option is the correct answer based on submission data
+const isCorrectAnswer = result ? option === result.correct_option : false;
+
+
+// Check if this option was selected by the user
+const isUserSelected = result ? option === result.selected_option : false;
+
+
+     
                 return (
+                  
+
                     <label 
-                      key={optIndex}
-                      className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
-                        !isSubmitted
-                          ? isSelected
-                            ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
-                            : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                          : isCorrectAnswer
-                            ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
-                            : isSelected && !isCorrectAnswer
-                              ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
-                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name={`mcq-${mcq._id || mcq.id}`}
-                        value={option}
-                        checked={isSelected}
-                        onChange={() => handleAnswerSelect(mcq._id || mcq.id, option)}
-                        disabled={isSubmitted}
-                        className="mr-3"
-                      />
-                      <span className="font-medium mr-2">{optionLetter}.</span>
-                      <span>{option}</span>
-                      
-                      {isSubmitted && isCorrectAnswer && (
-                        <span className="ml-auto text-green-600 dark:text-green-400">
-                          ✓ Correct
-                        </span>
-                      )}
-                      
-                      {isSubmitted && isSelected && !isCorrectAnswer && (
-                        
-                        <span className="ml-auto text-red-600 dark:text-red-400">
-                          ✗ Incorrect
-                        </span>
-                      )}
-                    </label>
+  key={optIndex}
+  className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
+    !isSubmitted
+      ? isSelected
+        ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+        : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+      : isUserSelected && isCorrectAnswer
+        ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+        : isUserSelected && !isCorrectAnswer
+          ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
+          : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+  }`}
+>
+  <input
+    type="radio"
+    name={`mcq-${mcq._id || mcq.id}`}
+    value={option}
+    checked={isSelected}
+    onChange={() => handleAnswerSelect(mcq._id || mcq.id, option)}
+    disabled={isSubmitted}
+    className="mr-3"
+  />
+  <span className="font-medium mr-2">{optionLetter}.</span>
+  <span>{option}</span>
+  
+  {/* Only show correct/incorrect for the user's selected option */}
+  {isSubmitted && isUserSelected && (
+    <span className={`ml-auto ${isCorrectAnswer ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+      {isCorrectAnswer ? '✓ Correct' : '✗ Incorrect'}
+    </span>
+  )}
+</label>
                   );
                 })}
               </div>
               
               {/* Status indicator for each question */}
-              {isSubmitted && (
+              {/* {isSubmitted && (
                 <div className={`mt-3 p-2 rounded-md text-center ${
                   isCorrect 
                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
@@ -559,7 +572,7 @@ const renderMcqs = () => {
                 }`}>
                   {isCorrect ? '✓ Correct' : '✗ Incorrect'}
                 </div>
-              )}
+              )} */}
             </div>
           );
         })}
@@ -651,7 +664,7 @@ const submitAllMcqAnswers = async () => {
       // console.log(res,"=====res")
       // Mark all MCQs as submitted
       const dataallresl =  res.data?.data?.data;
-      console.log(res.data.data.data)
+
       // console.log("8989898989",dataallresl)
       setSubmissionData(res?.data?.data?.data);
       // console.log("111111111111111111111",submissionData)
@@ -674,7 +687,7 @@ const submitAllMcqAnswers = async () => {
         };
       });
       
-      console.log("Answers with results:", answersWithResults);
+
       
       // Store results for each MCQ
       results.forEach(result => {
@@ -682,11 +695,11 @@ const submitAllMcqAnswers = async () => {
       });
       
       setMcqResults(newResults);
-      console.log("---------------",mcqResults)
+
       
       // Store the full response data if needed
       setSubmissionData(dataallresl);
-      console.log("0000000",submissionData)
+
       
       // Show success message with detailed results
       if (res.data.data.passed) {
@@ -701,14 +714,7 @@ const submitAllMcqAnswers = async () => {
         );
       }
       
-      // Log detailed results for debugging
-      console.log("Detailed results:", {
-        score: res.data.data.score,
-        total: res.data.data.total_questions,
-        percentage: res.data.data.percentage,
-        passed: res.data.data.passed,
-        answersWithResults: answersWithResults
-      });
+
       
     } else {
       toasterError(res.error?.message || "Failed to submit answers", 3000);
