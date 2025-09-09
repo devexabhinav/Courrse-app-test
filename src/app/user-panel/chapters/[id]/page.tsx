@@ -32,10 +32,12 @@ export default function ChapterDetail() {
   const [mcqs, setMcqs] = useState<any[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<{[key: string]: string}>({});
   const [submittedMcqs, setSubmittedMcqs] = useState<Set<string>>(new Set());
-  const [mcqResults, setMcqResults] = useState<{[key: string]: boolean}>({});
+  const [mcqResults, setMcqResults] = useState({});
 
   // Check if media is completed to unlock MCQs
   const [mediaCompleted, setMediaCompleted] = useState(false);
+  const [submissionData, setSubmissionData] = useState<any>(null);
+
 
   const fetchChapterDetail = async () => {
     try {
@@ -327,6 +329,108 @@ const handleAnswerSelect = (mcqId: string, answer: string) => {
       </div>
     );
   };
+console.log(submissionData,"subad========")
+
+
+const renderResultsSection = () => {
+  if (!submissionData) {
+    return null;
+  }
+
+  return (
+    <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+        📊 Quiz Results
+      </h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            {submissionData.score || 0}
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Score</div>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+            {submissionData.total_questions || 0}
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Total Questions</div>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+          <div className={`text-2xl font-bold ${
+            parseFloat(submissionData.percentage || '0') >= (submissionData.passing_threshold || 70) 
+              ? 'text-green-600 dark:text-green-400' 
+              : 'text-red-600 dark:text-red-400'
+          }`}>
+            {submissionData.percentage || '0'}%
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Percentage</div>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+          <div className={`text-lg font-bold ${
+            submissionData.passed 
+              ? 'text-green-600 dark:text-green-400' 
+              : 'text-red-600 dark:text-red-400'
+          }`}>
+            {submissionData.passed ? '✅ PASSED' : '❌ FAILED'}
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Required: {submissionData.passing_threshold || 70}%
+          </div>
+        </div>
+      </div>
+      
+      {/* Progress Bar */}
+      <div className="mb-4">
+        <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300 mb-2">
+          <span>Your Score</span>
+          <span>{submissionData.percentage || '0'}% / {submissionData.passing_threshold || 70}%</span>
+        </div>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+          <div 
+            className={`h-3 rounded-full transition-all duration-500 ${
+              submissionData.passed 
+                ? 'bg-green-500' 
+                : 'bg-red-500'
+            }`}
+            style={{ width: `${Math.min(100, parseFloat(submissionData.percentage || '0'))}%` }}
+          ></div>
+        </div>
+      </div>
+      
+      {/* Message */}
+      {submissionData.message && (
+        <div className={`p-4 rounded-lg ${
+          submissionData.passed 
+            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+        }`}>
+          <p className="font-medium">{submissionData.message}</p>
+        </div>
+      )}
+      
+      {/* Additional Data (if any) */}
+      {Object.keys(submissionData).filter(key => 
+        !['score', 'total_questions', 'percentage', 'passed', 'passing_threshold', 'message', 'results'].includes(key)
+      ).length > 0 && (
+        <details className="mt-4">
+          <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300">
+            View Additional Data
+          </summary>
+          <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 rounded text-xs">
+            <pre>{JSON.stringify(submissionData, null, 2)}</pre>
+          </div>
+        </details>
+      )}
+    </div>
+  );
+};
+
+
+
 
   // Render MCQs component - Only visible when media is completed
 const renderMcqs = () => {
@@ -377,7 +481,7 @@ const renderMcqs = () => {
         {mcqs.map((mcq, index) => {
           const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
           const isCorrect = mcqResults[mcq._id || mcq.id];
-          
+        
           return (
             <div 
               key={mcq._id || mcq.id} 
@@ -397,9 +501,12 @@ const renderMcqs = () => {
                 {mcq.options && mcq.options.map((option: string, optIndex: number) => {
                   const optionLetter = String.fromCharCode(65 + optIndex);
                   const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
-                  const isCorrectAnswer = option === mcq.answer;
                   
-                  return (
+                  const isCorrectAnswer = option == mcq.correct_option;
+                  
+                  
+                  
+                return (
                     <label 
                       key={optIndex}
                       className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
@@ -433,6 +540,7 @@ const renderMcqs = () => {
                       )}
                       
                       {isSubmitted && isSelected && !isCorrectAnswer && (
+                        
                         <span className="ml-auto text-red-600 dark:text-red-400">
                           ✗ Incorrect
                         </span>
@@ -505,173 +613,118 @@ const renderMcqs = () => {
           </div>
         </div>
       </div>
+
+{renderResultsSection()}
+     
     </div>
   );
 };
 
-// Add these functions to your component
-// const submitAllMcqAnswers = async () => {
-//   try {
-//     // Prepare answers in the required format
-//     const answers = mcqs.map(mcq => ({
-//       mcq_id: mcq._id || mcq.id,
-//       selected_option: selectedAnswers[mcq._id || mcq.id]
-//     }));
-
-//     // Call your backend API to submit all answers
-//     const res = await api.post("mcq/submit-all", {
-//       user_id: 123, // Replace with actual user ID from your auth system
-//       chapter_id: chapterId,
-//       answers
-//     });
-
-//     if (res.success) {
-//       // Mark all MCQs as submitted
-//       const allMcqIds = mcqs.map(mcq => mcq._id || mcq.id);
-//       setSubmittedMcqs(new Set(allMcqIds));
-      
-//       // Set results for each MCQ
-//       const results = res.data.data.results || [];
-//       const newResults = {};
-//       results.forEach(result => {
-//         newResults[result.mcq_id] = result.is_correct;
-//       });
-//       setMcqResults(newResults);
-      
-//       // Show success message
-//       if (res.data.data.passed) {
-//         toasterSuccess("Congratulations! You passed the quiz.", 3000);
-//       } else {
-//         toasterError(`You scored ${res.data.data.score}/${res.data.data.total_questions}. Try again to pass.`, 4000);
-//       }
-//     } else {
-//       toasterError(res.error?.message || "Failed to submit answers", 3000);
-//     }
-//   } catch (err) {
-//     console.error("Failed to submit all MCQ answers:", err);
-//     toasterError("Failed to submit answers", 3000);
-//   }
-// }; 
-
-//22
-
-// const submitAllMcqAnswers = async () => {
-//   try {
-//     // Prepare answers in the required format
-//     const answers = mcqs.map(mcq => ({
-//       mcq_id: mcq._id || mcq.id,
-//       selected_option: selectedAnswers[mcq._id || mcq.id]
-//     }));
-//      const userId = Cookies.get('userId');
-// console.log("----------------1-----------------1----------",userId)
-//     console.log("Submitting answers:", {
-//       user_id: 123, // Replace with actual user ID
-//       chapter_id: chapterId,
-//       answers
-      
-//     });
-
-//     // Call your backend API to submit all answers
-//     const res = await api.post("mcq/submit-all", {
-//       user_id: userId, // Replace with actual user ID from your auth system
-//       chapter_id: chapterId,
-//       answers
-//     });
-
-//     console.log("API Response:", res);
-
-//     if (res.success) {
-//       // Mark all MCQs as submitted
-//       const allMcqIds = mcqs.map(mcq => mcq._id || mcq.id);
-//       setSubmittedMcqs(new Set(allMcqIds));
-      
-//       // Set results for each MCQ
-//       const results = res.data.data.results || [];
-//       const newResults = {};
-//       results.forEach(result => {
-//         newResults[result.mcq_id] = result.is_correct;
-//       });
-//       setMcqResults(newResults);
-      
-//       // Show success message
-//       if (res.data.data.passed) {
-//         toasterSuccess("Congratulations! You passed the quiz.", 3000);
-//       } else {
-//         toasterError(`You scored ${res.data.data.score}/${res.data.data.total_questions}. Try again to pass.`, 4000);
-//       }
-//     } else {
-//       toasterError(res.error?.message || "Failed to submit answers", 3000);
-//     }
-//   } catch (err: any) {
-//     console.error("Failed to submit all MCQ answers:", err);
-//     console.error("Error response:", err.response?.data);
-//     toasterError(err.response?.data?.message || "Failed to submit answers", 3000);
-//   }
-// };
-
-//33
 
 const submitAllMcqAnswers = async () => {
   try {
     // Get user ID from cookies
     const userId = Cookies.get('userId');
-    console.log("User ID from cookies:", userId);
     
     if (!userId) {
       toasterError("User not authenticated. Please login again.", 3000);
       return;
     }
 
+    // console.log("mcqs",mcqs)
     // Prepare answers in the required format
     const answers = mcqs.map(mcq => ({
-      mcq_id: mcq.id || mcq._id, // Try both id and _id
+      mcq_id: mcq.id || mcq._id,
       selected_option: selectedAnswers[mcq._id || mcq.id]
     }));
-
-    console.log("Submitting answers:", {
-      user_id: userId,
-      chapter_id: chapterId,
-      answers
-    });
+    
+    // console.log("Submitting answers:", answers);
 
     // Call your backend API to submit all answers
     const res = await api.post("mcq/submit-all", {
-      user_id: parseInt(userId), // Convert to number if backend expects integer
-      chapter_id: parseInt(chapterId as string), // Convert to number
+      user_id: parseInt(userId),
+      chapter_id: parseInt(chapterId as string),
       answers
     });
 
-    console.log("API Response:", res);
-
     if (res.success) {
+      // console.log(res,"=====res")
       // Mark all MCQs as submitted
+      const dataallresl =  res.data?.data?.data;
+      console.log(res.data.data.data)
+      // console.log("8989898989",dataallresl)
+      setSubmissionData(res?.data?.data?.data);
+      // console.log("111111111111111111111",submissionData)
+      
       const allMcqIds = mcqs.map(mcq => mcq._id || mcq.id);
       setSubmittedMcqs(new Set(allMcqIds));
+     
       
-      // Set results for each MCQ
+      
+      // Extract and store is_correct values from the response
       const results = res.data.data.results || [];
       const newResults = {};
+      
+      // Create a new answers array with is_correct included
+      const answersWithResults = answers.map(answer => {
+        const result = results.find(r => r.mcq_id == answer.mcq_id);
+        return {
+          ...answer,
+          is_correct: result ? result.is_correct : false
+        };
+      });
+      
+      console.log("Answers with results:", answersWithResults);
+      
+      // Store results for each MCQ
       results.forEach(result => {
         newResults[result.mcq_id] = result.is_correct;
       });
-      setMcqResults(newResults);
       
-      // Show success message
+      setMcqResults(newResults);
+      console.log("---------------",mcqResults)
+      
+      // Store the full response data if needed
+      setSubmissionData(dataallresl);
+      console.log("0000000",submissionData)
+      
+      // Show success message with detailed results
       if (res.data.data.passed) {
-        toasterSuccess("Congratulations! You passed the quiz.", 3000);
+        toasterSuccess(
+          `Congratulations! You passed with ${res.data.data.score}/${res.data.data.total_questions} correct answers (${res.data.data.percentage}%)`, 
+          5000
+        );
       } else {
-       toasterSuccess(`You scored is calculating.`, 3000);
-
+        toasterSuccess(
+          `You scored ${res.data.data.score}/${res.data.data.total_questions} (${res.data.data.percentage}%). Try again to pass.`, 
+          5000
+        );
       }
+      
+      // Log detailed results for debugging
+      console.log("Detailed results:", {
+        score: res.data.data.score,
+        total: res.data.data.total_questions,
+        percentage: res.data.data.percentage,
+        passed: res.data.data.passed,
+        answersWithResults: answersWithResults
+      });
+      
     } else {
       toasterError(res.error?.message || "Failed to submit answers", 3000);
     }
   } catch (err: any) {
     console.error("Failed to submit all MCQ answers:", err);
-    console.error("Error response:", err.response?.data);
     toasterError(err.response?.data?.message || "Failed to submit answers", 3000);
   }
 };
+
+
+
+
+
+
+
 
 
 const resetAllMcqs = () => {
