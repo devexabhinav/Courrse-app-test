@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight, Lock, Divide } from "lucide-react";
 import api from "@/lib/api";
 
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
@@ -42,7 +42,7 @@ export default function ChapterDetail() {
   const [showPreviousAttempts, setShowPreviousAttempts] = useState(false);
   const [hasPreviousAttempts, setHasPreviousAttempts] = useState(false);
   const [hisviousSubmission, sethisviousSubmission] = useState<any>(null);
-  console.log("hisviousSubmission",hisviousSubmission)
+  console.log("hisviousSubmission", hisviousSubmission)
   const fetchChapterMcqsWithPrevious = async (chapterId: string) => {
     try {
       const userId = Cookies.get('userId');
@@ -83,7 +83,7 @@ export default function ChapterDetail() {
             results: previousResults,
             submittedMcqs: previousSubmittedSet
           });
-          
+
         } else {
           setHasPreviousAttempts(false);
           setPreviousSubmission(null);
@@ -161,7 +161,7 @@ export default function ChapterDetail() {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     if (previousSubmission) {
       setSelectedAnswers(previousSubmission.selectedAnswers);
       setMcqResults(previousSubmission.results);
@@ -431,8 +431,8 @@ export default function ChapterDetail() {
 
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
             <div className={`text-2xl font-bold ${parseFloat(submissionData.percentage || '0') >= (submissionData.passing_threshold || 70)
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-red-600 dark:text-red-400'
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-red-600 dark:text-red-400'
               }`}>
               {submissionData.percentage || '0'}%
             </div>
@@ -441,8 +441,8 @@ export default function ChapterDetail() {
 
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
             <div className={`text-lg font-bold ${submissionData.passed
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-red-600 dark:text-red-400'
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-red-600 dark:text-red-400'
               }`}>
               {submissionData.passed ? '✅ PASSED' : '❌ FAILED'}
             </div>
@@ -461,8 +461,8 @@ export default function ChapterDetail() {
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
             <div
               className={`h-3 rounded-full transition-all duration-500 ${submissionData.passed
-                  ? 'bg-green-500'
-                  : 'bg-red-500'
+                ? 'bg-green-500'
+                : 'bg-red-500'
                 }`}
               style={{ width: `${Math.min(100, parseFloat(submissionData.percentage || '0'))}%` }}
             ></div>
@@ -472,8 +472,8 @@ export default function ChapterDetail() {
         {/* Message */}
         {submissionData.message && (
           <div className={`p-4 rounded-lg ${submissionData.passed
-              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
             }`}>
             <p className="font-medium">{submissionData.message}</p>
           </div>
@@ -497,48 +497,7 @@ export default function ChapterDetail() {
   };
 
 
-  const calculateLastAttemptResult = () => {
-  if (!hisviousSubmission || hisviousSubmission.length === 0) return null;
-  
-  // Assuming hisviousSubmission is an array of previous attempts
-  // Sort by date to get the most recent attempt (assuming there's a createdAt field)
-  const sortedAttempts = [...hisviousSubmission].sort((a, b) => 
-    new Date(b.createdAt || b.submitted_at) - new Date(a.createdAt || a.submitted_at)
-  );
-  
-  const lastAttempt = sortedAttempts[0];
-  
-  // Calculate score for the last attempt
-  const totalQuestions = mcqs.length;
-  const correctAnswers = hisviousSubmission.filter(answer => answer.is_correct).length;
-  const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-  
-  return (
-    <div className="mt-3 p-3 bg-white dark:bg-gray-700 rounded-lg border">
-      <h5 className="font-medium text-gray-900 dark:text-white mb-2">Last Attempt Result:</h5>
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div>Score: <span className="font-semibold">{correctAnswers}/{totalQuestions}</span></div>
-        <div>Percentage: <span className="font-semibold">{scorePercentage}%</span></div>
-        <div className="col-span-2">
-          Status: <span className={scorePercentage >= 70 ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-            {scorePercentage >= 70 ? "PASSED" : "FAILED"}
-          </span>
-        </div>
-        {lastAttempt.createdAt && (
-          <div className="col-span-2 text-xs text-gray-500">
-            Attempted on: {new Date(lastAttempt.createdAt).toLocaleDateString()}
-          </div>
-        )}
-      </div>
 
-
-      
-    </div>
-
-
-
-  );
-};
 
 
   // Render MCQs component - Only visible when media is completed
@@ -572,11 +531,7 @@ export default function ChapterDetail() {
     }
 
 
-    // if (hasPreviousAttempts){
-    //   return(
-    //     <div>hdelfkh</div>
-    //   )
-    // }
+
 
     // Check if all questions are answered
     const allAnswered = mcqs.every(mcq => selectedAnswers[mcq._id || mcq.id]);
@@ -584,7 +539,21 @@ export default function ChapterDetail() {
     const allSubmitted = submittedMcqs.size === mcqs.length;
 
 
+    if (!hisviousSubmission || hisviousSubmission.length === 0) return null;
 
+    // Assuming hisviousSubmission is an array of previous attempts
+    // Sort by date to get the most recent attempt (assuming there's a createdAt field)
+    const sortedAttempts = [...hisviousSubmission].sort((a, b) =>
+      new Date(b.createdAt || b.submitted_at) - new Date(a.createdAt || a.submitted_at)
+    );
+
+    const lastAttempt = sortedAttempts[0];
+
+    // Calculate score for the last attempt
+    const totalQuestions = mcqs.length;
+    const correctAnswers = hisviousSubmission.filter(answer => answer.is_correct).length;
+    const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+    console.log("type of scorePercentage", scorePercentage)
 
     return (
       <div className="mt-8">
@@ -600,7 +569,7 @@ export default function ChapterDetail() {
         {/* Previous Attempts Section */}
         {hasPreviousAttempts && (
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex  justify-between mb-3">
               <div>
                 <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
                   Previous Attempts Found
@@ -609,38 +578,60 @@ export default function ChapterDetail() {
                   You have already attempted this quiz. Choose how you want to proceed.
                 </p>
 
-                {calculateLastAttemptResult()}
+
+
+
+
+                <div className="mt-3 p-3 bg-white dark:bg-gray-700 rounded-lg border">
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">Last Attempt Result:</h5>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>Score: <span className="font-semibold">{correctAnswers}/{totalQuestions}</span></div>
+                    <div>Percentage: <span className="font-semibold">{scorePercentage}%</span></div>
+                    <div className="col-span-2">
+                      Status: <span className={scorePercentage >= 70 ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                        {scorePercentage >= 70 ? "PASSED" : "FAILED"}
+                      </span>
+                    </div>
+                    {lastAttempt.createdAt && (
+                      <div className="col-span-2 text-xs text-gray-500">
+                        Attempted on: {new Date(lastAttempt.createdAt).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+
+
+
+                </div>
+
               </div>
-            </div>
 
-            <div className="flex flex-wrap gap-3">
-              {!showPreviousAttempts && (
-                <button
-                  onClick={loadPreviousAttempts}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                >
-                  View Previous Attempt
-                </button>
-              )}
 
-              {showPreviousAttempts && (
+                <div className="flex flex-wrap gap-3">
+              {scorePercentage <= 70 ? (
                 <button
                   onClick={startFreshAttempt}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                 >
-                  Start Fresh Attempt
+                  Try Again
                 </button>
+              ) : (
+                <button>Next</button>
               )}
-
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                {showPreviousAttempts ? 'Showing Previous Attempt' : 'Ready for New Attempt'}
-              </span>
             </div>
+            </div>
+
+          
+
+
+
+
+
+
           </div>
         )}
 
 
-       
+
 
 
         <div className="space-y-6">
@@ -653,10 +644,10 @@ export default function ChapterDetail() {
               <div
                 key={mcq._id || mcq.id}
                 className={`p-4 rounded-lg border ${isSubmitted
-                    ? isCorrect
-                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                  ? isCorrect
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   }`}
               >
                 <div className="flex justify-between items-start mb-3">
@@ -666,8 +657,8 @@ export default function ChapterDetail() {
 
                   {showPreviousAttempts && isSubmitted && (
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${isCorrect
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                       }`}>
                       Previous: {isCorrect ? 'Correct' : 'Incorrect'}
                     </span>
@@ -684,15 +675,15 @@ export default function ChapterDetail() {
                       (r: any) => r.mcq_id.toString() === (mcq.id || mcq._id).toString()
                     );
 
-                    console.log("-1-1-1-1-1-1-1-1-1--1-1-1-1-1-",result)
+                    console.log("-1-1-1-1-1-1-1-1-1--1-1-1-1-1-", result)
                     const hisresult = hisviousSubmission.find(
                       (r: any) => r.mcq_id.toString() === (mcq.id || mcq._id).toString()
                     );
-                    console.log("2-2-2--2-2-2--2-2-2-2-2-2-2-2-2-",hisresult)
+                    console.log("2-2-2--2-2-2--2-2-2-2-2-2-2-2-2-", hisresult)
 
-                    
+
                     // Check if this option is the correct answer based on submission data
-                    const isCorrectAnswer = result ? option === result.correct_option :  hisresult ? option === hisresult.correct_option : false;
+                    const isCorrectAnswer = result ? option === result.correct_option : hisresult ? option === hisresult.correct_option : false;
                     // Check if this option was selected by the user
                     const isUserSelected = result ? option === result.selected_option : false;
                     const ishisSelected = hisresult ? option === hisresult.selected_option : false;
@@ -701,14 +692,14 @@ export default function ChapterDetail() {
                       <label
                         key={optIndex}
                         className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${!isSubmitted
-                            ? isSelected
-                              ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
-                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                            : isUserSelected && isCorrectAnswer
-                              ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
-                              : isUserSelected && !isCorrectAnswer
-                                ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
-                                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                          ? isSelected
+                            ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+                            : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          : isUserSelected && isCorrectAnswer
+                            ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+                            : isUserSelected && !isCorrectAnswer
+                              ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
+                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
                           }`}
                       >
                         <input
@@ -725,14 +716,14 @@ export default function ChapterDetail() {
 
                         {/* Only show correct/incorrect for the user's selected option */}
 
-                        {hasPreviousAttempts  && ishisSelected &&  !isSubmitted  && (
+                        {hasPreviousAttempts && ishisSelected && !isSubmitted && (
                           <span className={`ml-auto ${isCorrectAnswer ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {isCorrectAnswer ? '✓ Correct' : '✗ Incorrect'}
                           </span>
                         )}
 
 
-                        {isSubmitted && isUserSelected &&  (
+                        {isSubmitted && isUserSelected && (
                           <span className={`ml-auto ${isCorrectAnswer ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {isCorrectAnswer ? '✓ Correct' : '✗ Incorrect'}
                           </span>
@@ -747,56 +738,64 @@ export default function ChapterDetail() {
         </div>
 
         {/* Single Submit Button for All MCQs - Only show if not showing previous attempts */}
-       
+
 
         {/* Show results section for both current and previous attempts */}
         {renderResultsSection()}
 
-         <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex-1">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-                  Submit All Answers
-                </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  {allSubmitted
-                    ? "All questions submitted. You can reset to try again."
-                    : !allAnswered
-                      ? `Answer all ${mcqs.length - Object.keys(selectedAnswers).length} remaining questions to submit`
-                      : "Ready to submit all answers"
-                  }
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={submitAllMcqAnswers}
-                  disabled={!allAnswered}
-                  className={`px-6 py-3 rounded-lg transition-colors ${allAnswered
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
-                    }`}
-                >
-                  Submit All Answers
-                </button>
-              </div>
+        <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                Submit All Answers
+              </h4>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                {allSubmitted
+                  ? "All questions submitted. You can reset to try again."
+                  : !allAnswered
+                    ? `Answer all ${mcqs.length - Object.keys(selectedAnswers).length} remaining questions to submit`
+                    : "Ready to submit all answers"
+                }
+              </p>
             </div>
 
-            {/* Progress indicator */}
-            <div className="mt-4">
-              <div className="flex justify-between text-sm text-blue-700 dark:text-blue-300 mb-2">
-                <span>Progress: {Object.keys(selectedAnswers).length}/{mcqs.length} answered</span>
-                <span>{submittedMcqs.size}/{mcqs.length} submitted</span>
-              </div>
-              <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
-                <div
-                  className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(Object.keys(selectedAnswers).length / mcqs.length) * 100}%` }}
-                ></div>
-              </div>
+            <div className="flex gap-3">
+             
+
+
+
+              {scorePercentage <= 70 ? (
+ <button
+                onClick={submitAllMcqAnswers}
+                disabled={!allAnswered}
+                className={`px-6 py-3 rounded-lg transition-colors ${allAnswered
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
+                  }`}
+              >
+                Submit All Answers
+              </button>
+) : (
+  <button className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-lg transition-colors">Next Chapter</button>
+)}
             </div>
           </div>
-          
+
+          {/* Progress indicator */}
+          <div className="mt-4">
+            <div className="flex justify-between text-sm text-blue-700 dark:text-blue-300 mb-2">
+              <span>Progress: {Object.keys(selectedAnswers).length}/{mcqs.length} answered</span>
+              <span>{submittedMcqs.size}/{mcqs.length} submitted</span>
+            </div>
+            <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+              <div
+                className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(Object.keys(selectedAnswers).length / mcqs.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+
       </div>
     );
   };
