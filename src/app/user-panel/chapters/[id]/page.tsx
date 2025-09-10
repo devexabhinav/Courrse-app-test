@@ -702,14 +702,14 @@ const submitAllMcqAnswers = async () => {
 
       
       // Show success message with detailed results
-      if (res.data.data.passed) {
+      if (dataallresl.passed) {
         toasterSuccess(
-          `Congratulations! You passed with ${res.data.data.score}/${res.data.data.total_questions} correct answers (${res.data.data.percentage}%)`, 
+          `Congratulation! You passed with ${dataallresl.score}/${dataallresl.total_questions} correct answers (${dataallresl.score})`, 
           5000
         );
       } else {
-        toasterSuccess(
-          `You scored ${res.data.data.score}/${res.data.data.total_questions} (${res.data.data.percentage}%). Try again to pass.`, 
+        toasterError(
+          `You scored ${dataallresl.score}/${dataallresl.total_questions} (${dataallresl.percentage}%) try again.`, 
           5000
         );
       }
