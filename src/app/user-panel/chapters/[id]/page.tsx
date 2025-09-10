@@ -618,6 +618,8 @@ export default function ChapterDetail() {
                 <button>Next</button>
               )}
             </div>
+           
+              
             </div>
 
           
@@ -643,12 +645,7 @@ export default function ChapterDetail() {
             return (
               <div
                 key={mcq._id || mcq.id}
-                className={`p-4 rounded-lg border ${isSubmitted
-                  ? isCorrect
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                  : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                  }`}
+                className={`p-4 rounded-lg borderbg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700`}
               >
                 <div className="flex justify-between items-start mb-3">
                   <h4 className="font-medium text-gray-900 dark:text-white">
