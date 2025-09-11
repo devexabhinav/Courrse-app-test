@@ -13,57 +13,44 @@ export default function Chapters({ className }: any) {
   const courseId = params.id; 
   
   const [search, setSearch] = useState("");
-  const [chapters, setChapters] = useState<any[]>([]);
+  const [chapters, setChaptersByid] = useState<any[]>([]);
   const [showMediaModal, setShowMediaModal] = useState<any>(false);
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
   const [courseName, setCourseName] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoadingById] = useState(true);
 
-  const fetchChapters = async () => {
+const fetchChaptersByCourseId = async () => {
+    if (!courseId) return;
+    
     try {
-      setLoading(true);
-      const query = new URLSearchParams();
-      query.append("page", String(page));
-      query.append("limit", String(limit));
-      if (search) query.append("search", search);
+      setLoadingById(true);
+      const res = await api.get(`chapter?course_id=${courseId}`);
       
-      if (courseId) {
-        query.append("course_id", courseId.toString());
-      }
-
-      console.log("Fetching chapters with courseId:", courseId);
-      const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
-
       if (res.success) {
-        let filteredChapters = res.data?.data?.data || [];
+        console.log("Chapters fetched:", res);
         
-        if (courseId) {
-          filteredChapters = filteredChapters.filter(
-            (chapter: any) => chapter.course_id?.toString() === courseId.toString()
-          );
-        }
+        // Lock all chapters except the first one
+        const chaptersWithLockStatus = res?.data?.data?.map((chapter: any, index: number) => ({
+          ...chapter,
+          locked: index > 0, // First chapter (index 0) is unlocked, others locked
+        }));
         
-        // Sort chapters by order
-        filteredChapters.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
-        
-        setChapters(filteredChapters);
-        setTotalPages(res.data?.data?.pagination?.totalPages || 1);
-        
-        if (filteredChapters.length > 0 && filteredChapters[0].course) {
-          setCourseName(filteredChapters[0].course.title);
-        } else if (courseId) {
-          fetchCourseName();
-        }
+        setChaptersByid(chaptersWithLockStatus || []);
+      } else {
+        console.error("Failed to fetch chapters by course ID:", res.message);
+        toasterError("Failed to load chapters");
       }
     } catch (err) {
-      console.error("Failed to fetch chapters:", err);
+      console.error("Error fetching chapters by course ID:", err);
+      toasterError("Error loading chapters");
     } finally {
-      setLoading(false);
+      setLoadingById(false);
     }
   };
+console.log("chapterschapterschapterschapters",chapters)
 
   const handleChapterClick = async (chapterId: number) => {
     try {
@@ -90,8 +77,9 @@ export default function Chapters({ className }: any) {
   };
 
   useEffect(() => {
-    fetchChapters();
-  }, [page, search, courseId]);
+    fetchChaptersByCourseId();
+    fetchCourseName();
+  }, []);
 
   if (loading) {
     return (
@@ -211,9 +199,9 @@ export default function Chapters({ className }: any) {
       {/* Chapters List */}
       <div className="space-y-4">
         {chapters.length > 0 ? (
-          chapters.map((chapter: any) => (
+          chapters.map((chapter: any , index) => (
             <div
-              key={chapter.id}
+              key={index}
               className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
             >
               <div className="p-5">
@@ -222,7 +210,7 @@ export default function Chapters({ className }: any) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center mb-2">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-medium mr-3">
-                        {chapter.order}
+                        {index + 1}
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                         {chapter.title}
@@ -253,12 +241,17 @@ export default function Chapters({ className }: any) {
                   {/* Right side - Actions and status */}
                   <div className="flex flex-col items-end gap-2 ml-4">
                     <button
-                      onClick={() => handleChapterClick(chapter.id)}
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Start Chapter
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </button>
+                  onClick={() => !chapter.locked && handleChapterClick(chapter.id)}
+                  disabled={chapter.locked}
+                  className={`px-4 py-2 rounded-lg flex items-center ${
+                    chapter.locked
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  {chapter.locked ? "Locked" : "Start Chapter"}
+                  {!chapter.locked && <ChevronRight className="h-4 w-4 ml-1" />}
+                </button>
                     
                     {/* Status indicator */}
                     <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
