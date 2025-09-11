@@ -42,6 +42,21 @@ export default function ChapterDetail() {
   const [showPreviousAttempts, setShowPreviousAttempts] = useState(false);
   const [hasPreviousAttempts, setHasPreviousAttempts] = useState(false);
   const [hisviousSubmission, sethisviousSubmission] = useState<any>(null);
+
+  const [scorePercentage, setScorePercentage] = useState<number>(0);
+
+
+  useEffect(() => {
+  if (hisviousSubmission && hisviousSubmission.length > 0) {
+    const totalQuestions = mcqs.length;
+    const correctAnswers = hisviousSubmission.filter(answer => answer.is_correct).length;
+    const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+    setScorePercentage(scorePercentage);
+     console.log("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111scorePercentage",scorePercentage)
+    }
+}, [hisviousSubmission]);
+
+
   console.log("hisviousSubmission", hisviousSubmission)
   const fetchChapterMcqsWithPrevious = async (chapterId: string) => {
     try {
@@ -186,10 +201,12 @@ export default function ChapterDetail() {
   const checkMediaCompletion = () => {
     const totalImages = chapter?.images?.length || 0;
     const totalVideos = chapter?.videos?.length || 0;
+    
 
-    const allImagesViewed = totalImages === 0 || viewedImages.size === totalImages;
-    const allVideosCompleted = totalVideos === 0 || completedVideos.size === totalVideos;
-
+    const allImagesViewed = totalImages === 0 || viewedImages.size === totalImages || scorePercentage <= 75;
+    const allVideosCompleted = totalVideos === 0 || completedVideos.size === totalVideos || scorePercentage <= 75;
+ console.log("222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222scorePercentage",scorePercentage)
+ 
     const isMediaCompleted = allImagesViewed && allVideosCompleted;
     setMediaCompleted(isMediaCompleted);
 
@@ -342,6 +359,7 @@ export default function ChapterDetail() {
     if (chapterId) {
       fetchChapterDetail();
     }
+    checkMediaCompletion()
     // loadPreviousAttempts()
 
   }, [chapterId]);
@@ -1286,7 +1304,26 @@ export default function ChapterDetail() {
         {/* Content Section */}
 
         {/* Media Section */}
+         {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                Media Files
+              </h2>
 
+              {/* Images with tracking */}
+              {renderImages()}
+
+              {/* Videos with smart completion */}
+              {renderVideos()}
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
+              <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">
+                No media files available for this chapter
+              </p>
+            </div>
+          )}
 
         {/* MCQs Section - Now conditionally rendered based on media completion */}
         {renderMcqs()}
@@ -1294,6 +1331,8 @@ export default function ChapterDetail() {
         {/* Media Modal */}
 
       </div>
+
+
     </div>
   );
 }
