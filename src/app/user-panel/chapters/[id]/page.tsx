@@ -62,7 +62,7 @@ export default function ChapterDetail() {
         }
         else {
            if (!res.data?.data?.data.has_previous) {
-      toasterSuccess("This .", 3000);
+      toasterSuccess("this is first chapter", 3000);
     }
           const prevchapterNavigation = res.data?.data?.data.previous_chapter.id;
           router.push(`/user-panel/chapters/${prevchapterNavigation}`);
