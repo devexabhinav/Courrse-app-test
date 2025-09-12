@@ -43,6 +43,43 @@ export default function ChapterDetail() {
   const [totalnomarks, settotalnomarks] = useState(0);
   const [passfail, setpassfail] = useState(false);
 
+  const fetchChapterNavigation = async (click: any) => {
+
+    try {
+
+      const res = await api.get(`chapter/navigation/chapter-navigation?chapter_id=${chapterId}`);
+
+      if (res.success) {
+       console.log("----------------------------", res.data?.data?.data)
+       
+        if (click == "next") {
+          if (!res.data?.data?.data.has_next) {
+      toasterSuccess("This is the last chapter. You have completed all chapters.", 3000);
+    }
+          const nextchapterNavigation = res.data?.data?.data.next_chapter.id;
+          router.push(`/user-panel/chapters/${nextchapterNavigation}`);
+
+        }
+        else {
+           if (!res.data?.data?.data.has_previous) {
+      toasterSuccess("This .", 3000);
+    }
+          const prevchapterNavigation = res.data?.data?.data.previous_chapter.id;
+          router.push(`/user-panel/chapters/${prevchapterNavigation}`);
+        }
+      } else {
+        console.error("Failed to fetch navigation:", res.error?.message);
+      }
+    } catch (err: any) {
+     
+
+        // toasterSuccess("This is last chapter you completed all Chapters", 3000);
+      
+      
+    } finally {
+
+    }
+  };
 
 
 
@@ -549,10 +586,10 @@ export default function ChapterDetail() {
                 <div
                   key={mcq._id || mcq.id}
                   className={`p-4 rounded-lg border ${isSubmitted
-                      ? isCorrect
-                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                        : 'bg-green-50  dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                      : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    ? isCorrect
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                      : 'bg-green-50  dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                     }`}
                 >
                   <h4 className="font-medium text-gray-900 dark:text-white mb-3">
@@ -586,14 +623,14 @@ export default function ChapterDetail() {
                         <label
                           key={optIndex}
                           className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${!isSubmitted
-                              ? isSelected
-                                ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
-                                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                              : isUserSelected && isCorrectAnswer
-                                ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
-                                : isUserSelected && !isCorrectAnswer
-                                  ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
-                                  : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                            ? isSelected
+                              ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                            : isUserSelected && isCorrectAnswer
+                              ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+                              : isUserSelected && !isCorrectAnswer
+                                ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
+                                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
                             }`}
                         >
                           <input
@@ -657,8 +694,8 @@ export default function ChapterDetail() {
                   onClick={submitAllMcqAnswers}
                   disabled={!allAnswered}
                   className={`px-6 py-3 rounded-lg transition-colors ${allAnswered
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
                     }`}
                 >
                   Submit All Answers
@@ -814,21 +851,33 @@ export default function ChapterDetail() {
           <div className="flex  mt-5 justify-between ">
 
 
-            <button className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900 bg-gray-300  ">
-               Previous
+            <button
+              onClick={() => fetchChapterNavigation("previous")}
+              className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900 bg-gray-300  ">
+              Previous
             </button>
 
 
 
 
-            <button className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900 bg-gray-300 ">
-              Next
-            </button>
+
+
+         
+              <button
+                onClick={() => fetchChapterNavigation("next")}
+                className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
+              >
+                Next
+              </button>
+
+           
+
           </div>
 
         </div>
       );
     }
+
 
 
     return (
