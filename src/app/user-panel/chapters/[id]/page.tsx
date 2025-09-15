@@ -43,9 +43,18 @@ export default function ChapterDetail() {
   const [totalnomarks, settotalnomarks] = useState(0);
   const [passfail, setpassfail] = useState(false);
 
+const handleTryAgain = () => {
+  // Reset all MCQ-related state
+  setSelectedAnswers({});
+  setSubmittedMcqs(new Set());
+  setMcqResults({});
+  setSubmissionData(null);
+  
+  // If you want to refetch fresh MCQs (optional):
+  // fetchChapterMcqsWithPrevious(chapterId);
+};
 
 
-console.log("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{object}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}",submissionData)
   const fetchChapterNavigation = async (click: any) => {
 
     try {
@@ -54,10 +63,12 @@ console.log("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{object}}}}}}}}}}}}}}}}}}}}}}
 
       if (res.success) {
         console.log("----------------------------", res.data?.data?.data)
-
+        const userId = Cookies.get('userId');
+        const courseId = chapter?.course_id;
         if (click == "next") {
           if (!res.data?.data?.data.has_next) {
             toasterSuccess("This is the last chapter. You have completed all chapters.", 3000);
+            router.push(`/user-panel/courses_result/${userId}?course_id=${courseId}`)
           }
           const nextchapterNavigation = res.data?.data?.data.next_chapter.id;
           router.push(`/user-panel/chapters/${nextchapterNavigation}`);
@@ -459,22 +470,32 @@ console.log("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{object}}}}}}}}}}}}}}}}}}}}}}
           )}
 
 
-          {submissionData.percentage <=75 ? (
+          {submissionData.percentage <74 ? (
 <div className="flex justify-between">
     <div className="text-red-600 font-medium max-w-md">
     Unfortunately, you didn't pass this quiz. You scored {submissionData.percentage}%, 
     but needed 75% to pass. Review the material and try again!
   </div>
   <button className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
-  onClick={()=> router.push(`/user-panel/chapters/${chapterId}`)}
+  onClick={ handleTryAgain}
   >Try agian</button>
 </div>
 
 ) : (
-   <div className="text-green-600 font-medium">
+ 
+
+
+<div className="flex justify-between">
+      <div className="text-green-600 font-medium">
     Congratulations! You passed with a score of {submissionData.percentage}%. 
     Well done on mastering this chapter's content.
   </div>
+  <button className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
+  onClick={() => fetchChapterNavigation("next")}
+  >Next</button>
+</div>
+
+
 )}
 
 
