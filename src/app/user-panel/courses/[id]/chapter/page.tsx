@@ -339,9 +339,9 @@ const fetchChaptersByCourseId = async () => {
                 </div>
 
                 {/* Progress bar (optional) */}
-                <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                {/* <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                   <div className="bg-green-600 h-1.5 rounded-full" style={{ width: '0%' }}></div>
-                </div>
+                </div> */}
               </div>
             </div>}
           )

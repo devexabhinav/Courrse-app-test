@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, BookOpen, CheckCircle, XCircle, Percent, BarChart3, Calendar } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle, XCircle, Percent, BarChart3, Calendar, Download, Award } from "lucide-react";
 import api from "@/lib/api";
-import { toasterError } from "@/components/core/Toaster";
+import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import Cookies from 'js-cookie';
 
 interface ChapterResult {
@@ -36,10 +36,15 @@ export default function CourseResultsPage() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("course_id");
   const userId = Cookies.get('userId');
+  const userNames = Cookies.get('name');
+  const userName = userNames.charAt(0).toUpperCase() + userNames.slice(1);
+
+; // Get user name from cookies
 
   const [results, setResults] = useState<CourseResults | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingCertificate, setDownloadingCertificate] = useState(false);
 
   useEffect(() => {
     if (courseId && userId) {
@@ -53,31 +58,309 @@ export default function CourseResultsPage() {
     }
   }, [courseId, userId]);
 
-// In your CourseResultsPage component, update the fetchCourseResults function:
+  const fetchCourseResults = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-const fetchCourseResults = async () => {
-  try {
-    setLoading(true);
-    setError(null);
+      const res = await api.get(`mcq/course/${courseId}/passed?user_id=${userId}`);
 
-    // Updated API call to match your backend route
-    const res = await api.get(`mcq/course/${courseId}/passed?user_id=${userId}`);
-
-    if (res.success) {
-      setResults(res.data?.data);
-    } else {
-      setError(res.error?.message || "Failed to load course results");
-      toasterError(res.error?.message || "Failed to load course results", 3000);
+      if (res.success) {
+        setResults(res.data?.data);
+      } else {
+        setError(res.error?.message || "Failed to load course results");
+        toasterError(res.error?.message || "Failed to load course results", 3000);
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch course results:", err);
+      const errorMsg = err.response?.data?.error?.message ||
+        err.message ||
+        "Failed to load course results";
+      setError(errorMsg);
+      toasterError(errorMsg, 3000);
+    } finally {
+      setLoading(false);
     }
-  } catch (err: any) {
-    console.error("Failed to fetch course results:", err);
-    const errorMsg = err.response?.data?.error?.message ||
-      err.message ||
-      "Failed to load course results";
-    setError(errorMsg);
-    toasterError(errorMsg, 3000);
+  };
+
+const generateCertificate = (studentName: string, courseName: string, completionDate: string, averageScore: number) => {
+  // Create HTML content for the certificate
+
+  console.log("------------------------------------------",studentName)
+  const certificateHTML = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Certificate of Completion  devex hub</title>
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: Arial, sans-serif;
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+        
+        .certificate-container {
+          width: 1200px;
+          height: 800px;
+          position: relative;
+          background: white;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        
+        .certificate-border {
+          position: absolute;
+          top: 40px;
+          left: 40px;
+          right: 40px;
+          bottom: 40px;
+          border: 8px solid #3b82f6;
+          z-index: 1;
+        }
+        
+        .certificate-inner-border {
+          position: absolute;
+          top: 60px;
+          left: 60px;
+          right: 60px;
+          bottom: 60px;
+          border: 2px solid #60a5fa;
+          z-index: 2;
+        }
+        
+        .certificate-content {
+          position: relative;
+          z-index: 3;
+          padding: 40px;
+          text-align: center;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .certificate-header {
+          color: #1e40af;
+          font-size: 48px;
+          font-weight: bold;
+          margin-bottom: 30px;
+        }
+        
+        .decorative-line {
+          width: 600px;
+          height: 3px;
+          background-color: #3b82f6;
+          margin: 0 auto 40px;
+        }
+        
+        .certify-text {
+          color: #374151;
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        
+        .student-name {
+          color: #1f2937;
+          font-size: 40px;
+          font-weight: bold;
+          margin-bottom: 20px;
+          position: relative;
+        }
+        
+        .name-underline {
+          width: 100%;
+          height: 2px;
+          background-color: #3b82f6;
+          margin-top: 10px;
+        }
+        
+        .completion-text {
+          color: #374151;
+          font-size: 24px;
+          margin: 30px 0;
+        }
+        
+        .course-name {
+          color: #1e40af;
+          font-size: 32px;
+          font-weight: bold;
+          margin-bottom: 20px;
+          position: relative;
+        }
+        
+        .course-underline {
+          width: 100%;
+          height: 2px;
+          background-color: #3b82f6;
+          margin-top: 10px;
+        }
+        
+        .score-text {
+          color: #374151;
+          font-size: 20px;
+          margin: 20px 0;
+        }
+        
+        .date-text {
+          color: #6b7280;
+          font-size: 18px;
+          margin-bottom: 40px;
+        }
+        
+        .signature-section {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+          margin-top: 60px;
+        }
+        
+        .signature {
+          text-align: left;
+          color: #374151;
+          font-size: 16px;
+        }
+        
+        .signature-line {
+          width: 200px;
+          height: 1px;
+          background-color: #6b7280;
+          margin-top: 5px;
+        }
+        
+        .issue-date {
+          text-align: right;
+          color: #6b7280;
+          font-size: 14px;
+          margin-top: 20px;
+        }
+        
+        .award-icon {
+          position: absolute;
+          top: 40px;
+          left: 100px;
+          color: #fbbf24;
+          font-size: 60px;
+        }
+        
+        .award-icon-right {
+          position: absolute;
+          top: 40px;
+          right: 100px;
+          color: #fbbf24;
+          font-size: 60px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="certificate-container">
+        <div class="certificate-border"></div>
+        <div class="certificate-inner-border"></div>
+        
+        <div class="certificate-content">
+          <div class="award-icon">★</div>
+          <div class="award-icon-right">★</div>
+          
+          <h1 class="certificate-header">CERTIFICATE OF COMPLETION devex hub</h1>
+          
+          <div class="decorative-line"></div>
+          
+          <p class="certify-text">This is to certify that</p>
+          
+          <div class="student-name">
+            ${studentName}
+            <div class="name-underline"></div>
+          </div>
+          
+          <p class="completion-text">has successfully completed the course</p>
+          
+          <div class="course-name">
+            ${courseName}
+            <div class="course-underline"></div>
+          </div>
+          
+          <p class="score-text">with an average score of ${averageScore}%</p>
+          
+          <p class="date-text">Completed on: ${completionDate}</p>
+          
+          <div class="signature-section">
+            <div class="signature">
+              <p>Authorized Signature</p>
+              <div class="signature-line"></div>
+            </div>
+            
+            <div class="signature">
+              <p>Date of Issue</p>
+              <div class="signature-line"></div>
+              <p class="issue-date">${new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return certificateHTML;
+};
+const downloadCertificate = async () => {
+  if (!results || results.progress_percentage < 100) {
+    toasterError("Certificate can only be downloaded after completing the course", 3000);
+    return;
+  }
+
+  try {
+    setDownloadingCertificate(true);
+
+    const averageScore = results.passed_chapters.length > 0 
+      ? Math.round(results.passed_chapters.reduce((sum, ch) => sum + ch.percentage, 0) / results.passed_chapters.length)
+      : 0;
+
+    const completionDate = results.passed_chapters.length > 0
+      ? new Date(results.passed_chapters[results.passed_chapters.length - 1].passed_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+      : new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+    const certificateHTML = generateCertificate(
+      userName,
+      results.course_title,
+      completionDate,
+      averageScore
+    );
+
+    // Create a blob from the HTML content
+    const blob = new Blob([certificateHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a link to download the HTML file
+    const link = document.createElement('a');
+    link.download = `${results.course_title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_certificate.html`;
+    link.href = url;
+    link.click();
+    
+    // Clean up
+    URL.revokeObjectURL(url);
+    toasterSuccess("Certificate downloaded successfully!", 3000);
+
+  } catch (error) {
+    console.error('Error generating certificate:', error);
+    toasterError("Failed to generate certificate", 3000);
   } finally {
-    setLoading(false);
+    setDownloadingCertificate(false);
   }
 };
 
@@ -112,11 +395,11 @@ const fetchCourseResults = async () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push(`/user-panel/courses`)}
             className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
-            Go Back
+            Go Backs
           </button>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
@@ -145,7 +428,7 @@ const fetchCourseResults = async () => {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.back()}
+           onClick={() => router.push(`/user-panel/courses`)}
             className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -163,11 +446,32 @@ const fetchCourseResults = async () => {
                 </p>
               </div>
               
-              <div className="mt-4 md:mt-0">
+              <div className="mt-4 md:mt-0 flex flex-col space-y-2">
                 <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-lg text-center">
                   <div className="text-2xl font-bold">{results.progress_percentage}%</div>
                   <div className="text-sm">Overall Completion</div>
                 </div>
+                
+                {/* Certificate Download Button */}
+                {results.progress_percentage === 100 && (
+                  <button
+                    onClick={downloadCertificate}
+                    disabled={downloadingCertificate}
+                    className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {downloadingCertificate ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Award className="h-4 w-4 mr-2" />
+                        Download Certificate
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -258,7 +562,7 @@ const fetchCourseResults = async () => {
                           Passed on: {formatDate(chapter.passed_at)}
                         </div>
                         <div className="flex items-center">
-                         
+                          <Percent className="h-4 w-4 mr-1" />
                           Score: {chapter.score}/{chapter.total_questions} ({chapter.percentage}%)
                         </div>
                       </div>
@@ -327,9 +631,28 @@ const fetchCourseResults = async () => {
 
           {results.progress_percentage === 100 && (
             <div className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-lg">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                <span className="font-medium">Congratulations! You've completed this course.</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  <span className="font-medium">Congratulations! You've completed this course.</span>
+                </div>
+                <button
+                  onClick={downloadCertificate}
+                  disabled={downloadingCertificate}
+                  className="flex items-center bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {downloadingCertificate ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-3 w-3 mr-1" />
+                      Certificate
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}

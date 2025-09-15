@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight, Lock, Divide } from "lucide-react";
+import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight, Lock, Divide, Heading1 } from "lucide-react";
 import api from "@/lib/api";
 
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
@@ -839,7 +839,7 @@ const handleTryAgain = () => {
 
           <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-              📊 Quiz Results
+              📊 Quiz Result
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -1426,7 +1426,11 @@ const handleTryAgain = () => {
           </div>
         </div>
 
+
+       {totalnomarks <= 75 ? (
         <ProgressIndicator />
+       ):(<></>)}
+        
 
         {/* Content Section */}
 
