@@ -521,7 +521,7 @@ const handleTryAgain = () => {
       if (!mediaCompleted) {
         return (
 
-          <div className="max-w-4xl mx-auto ">
+          <div className=" mx-auto ">
             {/* Header */}
 
 
@@ -1345,7 +1345,7 @@ const handleTryAgain = () => {
   if (error || !chapter) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className=" mx-auto px-4">
           <button
             onClick={() => router.back()}
             className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
@@ -1376,7 +1376,7 @@ const handleTryAgain = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className=" mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <button

@@ -14,6 +14,8 @@ export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();
   const [role, setRole] = useState<string | undefined>();
 
+  const userNames = Cookies.get('name');
+  const userName = userNames.charAt(0).toUpperCase() + userNames.slice(1);
    useEffect(() => {
     setRole(Cookies.get("role"));
   }, []);
@@ -52,7 +54,7 @@ export function Header() {
         
 
           {isUser ? (
-              <p className="font-medium">Welcome students</p>
+              <p className="font-medium">Welcome {userName}</p>
             ) : (
               <p className="font-medium">Admin Dashboard For Course App</p>
             )}

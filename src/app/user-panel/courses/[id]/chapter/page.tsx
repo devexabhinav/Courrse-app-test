@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Pencil, SearchIcon, Trash2, ImageIcon, VideoIcon, ListOrdered, ChevronRight, FileText, Clock, CheckCircle, Lock } from "lucide-react";
+import { Pencil, SearchIcon, Trash2, ImageIcon, VideoIcon, ListOrdered, ChevronRight, FileText, Clock, CheckCircle, ArrowLeft } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter, useParams } from "next/navigation";
 import Cookies from 'js-cookie';
@@ -134,6 +134,14 @@ const fetchChaptersByCourseId = async () => {
         className
       )}
     >
+
+       <button
+            onClick={() => router.back()}
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Chapters
+          </button>
       {/* Header Section */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

@@ -157,7 +157,7 @@ export default function EnrolledCourses({ className }: any) {
       </div>
 
       {/* Courses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
         {enrollments.length > 0 ? (
           enrollments.map((enrollment: any) => {
             const course = enrollment.course;
@@ -225,17 +225,17 @@ export default function EnrolledCourses({ className }: any) {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-between">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
                     <button
                       onClick={() => handleCourseClick(course.id)}
                       className="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                     >
 
                       {progress >= 100 ? (
-                        <div>                      <CheckCircle className="mr-1 h-4 w-4" />
-                      completed</div>
-                      ) : (<div>                      <Play className = "mr-1 h-4 w-4" />
-                      Continue</div>)}
+                        <div className="flex items-center justify-between">                      <CheckCircle className="mr-1 h-4 w-4" />
+                     <p> completed</p></div>
+                      ) : (<div className="flex items-center justify-between">                      <Play className = "mr-1 h-4 w-4" />
+               <p>Continu</p>e</div>)}
 
                 </button>
 

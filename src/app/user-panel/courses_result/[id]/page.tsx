@@ -392,7 +392,7 @@ const downloadCertificate = async () => {
   if (error || !results) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className=" mx-auto px-4">
           <button
             onClick={() => router.push(`/user-panel/courses`)}
             className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
