@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { SearchIcon, Calendar, BookOpen, Play, Trash2 } from "lucide-react";
+import { SearchIcon, Calendar, BookOpen, Play, Trash2, CheckCircle, Award } from "lucide-react";
 import { toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
@@ -19,13 +19,17 @@ export default function EnrolledCourses({ className }: any) {
   const [limit] = useState(8);
   const [loading, setLoading] = useState(true);
 
+
+  console.log("objectenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollments", enrollments)
+
+
+
   // Fetch enrolled courses for the specific user
   const fetchEnrolledCourses = async () => {
     try {
       setLoading(true);
-      
       const targetUserId = Cookies.get("userId");
-      
+
       if (!targetUserId) {
         console.error("User ID is required to fetch enrolled courses");
         return;
@@ -38,13 +42,12 @@ export default function EnrolledCourses({ className }: any) {
       if (search) query.append("search", search);
 
       const res = await api.get(`enroll?${query.toString()}`);
-      
+
       if (res.success) {
-        // API returns enrollments array with course objects inside
         setEnrollments(res.data.data.enrollments);
-        setTotalPages(res.data?.totalPages || 1);
+        setTotalPages(res.data.data.totalPages || 1);
+
       }
-      console.log("full-info",enrollments)
     } catch (err) {
       console.error("Failed to fetch enrolled courses:", err);
     } finally {
@@ -63,24 +66,24 @@ export default function EnrolledCourses({ className }: any) {
 
 
 
-const unenrollFromCourse = async (courseId: number) => {
+  const unenrollFromCourse = async (courseId: number) => {
 
 
-  try {
-    const userId = Cookies.get("userId");
+    try {
+      const userId = Cookies.get("userId");
 
-    const res = await api.delete(`enroll/course/unenroll?user_id=${userId}&course_id=${courseId}`);
+      const res = await api.delete(`enroll/course/unenroll?user_id=${userId}&course_id=${courseId}`);
 
-    if (res.success) {
-      toasterSuccess("Unenrolled successfully", 2000, "unenroll");
-      fetchEnrolledCourses(); // refresh list
-    } else {
-      console.error("Unenroll failed:", res.message);
+      if (res.success) {
+        toasterSuccess("Unenrolled successfully", 2000, "unenroll");
+        fetchEnrolledCourses(); // refresh list
+      } else {
+        console.error("Unenroll failed:", res.message);
+      }
+    } catch (error) {
+      console.error("Unenroll error:", error);
     }
-  } catch (error) {
-    console.error("Unenroll error:", error);
-  }
-};
+  };
 
 
 
@@ -95,7 +98,7 @@ const unenrollFromCourse = async (courseId: number) => {
       const response = await api.delete(`enrollments/unenroll`, {
         data: { user_id: targetUserId, course_id: courseId }
       });
-      
+
       if (response.success) {
         toasterSuccess("Unenrolled successfully", 2000, "unenroll");
         fetchEnrolledCourses();
@@ -134,7 +137,6 @@ const unenrollFromCourse = async (courseId: number) => {
     );
   }
 
-  console.log("enrollments",enrollments)
   return (
     <div className={cn("rounded-[10px] bg-white px-6 pb-6 pt-6 shadow-1 dark:bg-gray-dark", className)}>
       {/* Header Section */}
@@ -159,8 +161,10 @@ const unenrollFromCourse = async (courseId: number) => {
         {enrollments.length > 0 ? (
           enrollments.map((enrollment: any) => {
             const course = enrollment.course;
-            const progress = calculateProgress(course);
-            
+            const progress = enrollment.progress.progress_percentage;
+
+
+
             return (
               <div
                 key={enrollment.enrollment_id}
@@ -179,7 +183,7 @@ const unenrollFromCourse = async (courseId: number) => {
                       <BookOpen className="h-12 w-12 text-gray-400" />
                     </div>
                   )}
-                  
+
                   {/* Progress Badge */}
                   <div className="absolute top-3 right-3">
                     <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -213,7 +217,7 @@ const unenrollFromCourse = async (courseId: number) => {
                       <span>{progress}%</span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                      <div 
+                      <div
                         className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       ></div>
@@ -223,92 +227,110 @@ const unenrollFromCourse = async (courseId: number) => {
                   {/* Action Buttons */}
                   <div className="flex items-center justify-between">
                     <button
-                                    onClick={() => handleCourseClick(course.id)}
+                      onClick={() => handleCourseClick(course.id)}
                       className="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                     >
-                      <Play className="mr-1 h-4 w-4" />
-                      Continue
-                    </button>
-                    <button
-                         onClick={(e) => unenrollFromCourse(course.id)}
-                      className="flex items-center rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
-                    >
-                      <Trash2 className="mr-1 h-4 w-4" />
-                      Unenroll
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="col-span-full py-12 text-center">
-            <div className="mx-auto max-w-md">
-              <div className="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">
-                <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                No enrolled courses
-              </h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                {search ? 'No courses match your search' : 'You haven\'t enrolled in any courses yet'}
-              </p>
-              <button
-                onClick={() => router.push('/courses')}
-                className="mt-4 rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-              >
-                Browse Courses
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Pagination */}
-      {enrollments.length > 0 && totalPages > 1 && (
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {enrollments.length} enrolled courses
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-            >
-              Previous
-            </button>
-            
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = i + 1;
-                return (
+                      {progress >= 100 ? (
+                        <div>                      <CheckCircle className="mr-1 h-4 w-4" />
+                      completed</div>
+                      ) : (<div>                      <Play className = "mr-1 h-4 w-4" />
+                      Continue</div>)}
+
+                </button>
+
+                {progress >= 100 ? (
+                 <button
+  onClick={() => router.push(`/user-panel/courses_result/${enrollment.user_id}?course_id=${course.id}`)}
+  className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200"
+>
+  <Award className="h-4 w-4 mr-2" />
+  Certificate
+</button>
+                ) : (
                   <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium ${
-                      page === pageNum
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
-                    }`}
+                    onClick={(e) => unenrollFromCourse(course.id)}
+                    className="flex items-center rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
                   >
-                    {pageNum}
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    Unenroll
                   </button>
-                );
-              })}
-              {totalPages > 5 && <span className="px-2">...</span>}
-            </div>
-            
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+                )}
+
+              </div>
+                </div>
     </div>
+  );
+})
+        ) : (
+  <div className="col-span-full py-12 text-center">
+    <div className="mx-auto max-w-md">
+      <div className="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">
+        <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+      </div>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+        No enrolled courses
+      </h3>
+      <p className="mt-2 text-gray-600 dark:text-gray-400">
+        {search ? 'No courses match your search' : 'You haven\'t enrolled in any courses yet'}
+      </p>
+      <button
+        onClick={() => router.push('/courses')}
+        className="mt-4 rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+      >
+        Browse Courses
+      </button>
+    </div>
+  </div>
+)}
+      </div >
+
+  {/* Pagination */ }
+{
+  enrollments.length > 0 && totalPages > 1 && (
+    <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
+      <div className="text-sm text-gray-600 dark:text-gray-400">
+        Showing {enrollments.length} enrolled courses
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+        >
+          Previous
+        </button>
+
+        <div className="flex items-center gap-1">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            const pageNum = i + 1;
+            return (
+              <button
+                key={pageNum}
+                onClick={() => setPage(pageNum)}
+                className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium ${page === pageNum
+                  ? 'bg-blue-600 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
+                  }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+          {totalPages > 5 && <span className="px-2">...</span>}
+        </div>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+          className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  )
+}
+    </div >
   );
 }

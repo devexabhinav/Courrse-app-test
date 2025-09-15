@@ -86,7 +86,6 @@ export default function CourseResultsPage() {
 const generateCertificate = (studentName: string, courseName: string, completionDate: string, averageScore: number) => {
   // Create HTML content for the certificate
 
-  console.log("------------------------------------------",studentName)
   const certificateHTML = `
     <!DOCTYPE html>
     <html lang="en">
