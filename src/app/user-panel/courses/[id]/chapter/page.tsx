@@ -6,12 +6,14 @@ import { useEffect, useState } from "react";
 import { Pencil, SearchIcon, Trash2, ImageIcon, VideoIcon, ListOrdered, ChevronRight, FileText, Clock, CheckCircle, Lock } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter, useParams } from "next/navigation";
-
+import Cookies from 'js-cookie';
 export default function Chapters({ className }: any) {
   const router = useRouter();
   const params = useParams();
   const courseId = params.id; 
-  
+  const userId = Cookies.get("userId")
+
+
   const [search, setSearch] = useState("");
   const [chapters, setChaptersByid] = useState<any[]>([]);
   const [showMediaModal, setShowMediaModal] = useState<any>(false);
@@ -21,6 +23,42 @@ export default function Chapters({ className }: any) {
   const [limit] = useState(10);
   const [courseName, setCourseName] = useState("");
   const [loading, setLoadingById] = useState(true);
+  const [passedchapter, setpassedchapter] = useState<any>(null);
+
+
+
+
+  const fetchChaptersWithStatus = async () => {
+  if (!courseId || !userId) return;
+  
+  try {
+
+    
+    // Fetch both basic chapters and MCQ status in parallel
+    const [chaptersRes, statusRes] = await Promise.all([
+      api.get(`chapter?course_id=${courseId}`),
+      api.get(`mcq/course-chapters-status?user_id=${userId}&course_id=${courseId}`)
+    ]);
+
+    // Store the complete responses
+    const chaptersResponse = chaptersRes;
+    const statusResponse = statusRes;
+
+
+    setChaptersByid( chaptersResponse?.data?.data)
+    setpassedchapter(statusResponse?.data?.data)
+
+  } catch (err) {
+    console.error("Error fetching chapters:", err)
+
+  } finally {
+
+  }
+};
+
+useEffect(() => {
+  fetchChaptersWithStatus();
+}, [courseId, userId]);
 
 const fetchChaptersByCourseId = async () => {
     if (!courseId) return;
@@ -30,15 +68,12 @@ const fetchChaptersByCourseId = async () => {
       const res = await api.get(`chapter?course_id=${courseId}`);
       
       if (res.success) {
-        console.log("Chapters fetched:", res);
+      
+         const chaptersWithLockStatus = res?.data?.data;
         
-        // Lock all chapters except the first one
-        const chaptersWithLockStatus = res?.data?.data?.map((chapter: any, index: number) => ({
-          ...chapter,
-          locked: index > 0, // First chapter (index 0) is unlocked, others locked
-        }));
+        // setChaptersByid(chaptersWithLockStatus);
         
-        setChaptersByid(chaptersWithLockStatus || []);
+        // setChaptersByid(chaptersWithLockStatus);
       } else {
         console.error("Failed to fetch chapters by course ID:", res.message);
         toasterError("Failed to load chapters");
@@ -47,10 +82,13 @@ const fetchChaptersByCourseId = async () => {
       console.error("Error fetching chapters by course ID:", err);
       toasterError("Error loading chapters");
     } finally {
-      setLoadingById(false);
+   
+       setLoadingById(false);
+     
+
     }
   };
-console.log("chapterschapterschapterschapters",chapters)
+
 
   const handleChapterClick = async (chapterId: number) => {
     try {
@@ -198,9 +236,48 @@ console.log("chapterschapterschapterschapters",chapters)
 
       {/* Chapters List */}
       <div className="space-y-4">
-        {chapters.length > 0 ? (
-          chapters.map((chapter: any , index) => (
-            <div
+        {
+          chapters.map((chapter: any , index) =>{ 
+            console.log(passedchapter)
+             const chapterProgress = passedchapter.find(
+            (progress: any) => progress.chapter_id === chapter.id
+          );
+
+
+
+
+
+           let isLocked = false;
+          if (chapter.order > 1) {
+            const prevChapter = chapters.find(c => c.order === chapter.order - 1);
+            if (prevChapter) {
+              const prevChapterProgress = passedchapter.find(
+                (progress: any) => progress.chapter_id === prevChapter.id
+              );
+              isLocked = !prevChapterProgress?.passed;
+            }
+          }
+          
+          // Determine status text and icon
+          let statusText = "Not started";
+          let StatusIcon = Clock;
+          let statusColor = "text-gray-500";
+          
+          if (chapterProgress) {
+            if (chapterProgress.passed) {
+              statusText = "Completed";
+              StatusIcon = CheckCircle;
+              statusColor = "text-green-600";
+            } else if (chapterProgress.attempted) {
+              statusText = "In progress";
+              statusColor = "text-yellow-600";
+            }
+          }
+
+
+
+
+           return <div
               key={index}
               className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
             >
@@ -240,18 +317,18 @@ console.log("chapterschapterschapterschapters",chapters)
 
                   {/* Right side - Actions and status */}
                   <div className="flex flex-col items-end gap-2 ml-4">
-                    <button
-                  onClick={() => !chapter.locked && handleChapterClick(chapter.id)}
-                  disabled={chapter.locked}
-                  className={`px-4 py-2 rounded-lg flex items-center ${
-                    chapter.locked
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  {chapter.locked ? "Locked" : "Start Chapter"}
-                  {!chapter.locked && <ChevronRight className="h-4 w-4 ml-1" />}
-                </button>
+                     <button
+                      onClick={() => handleChapterClick(chapter.id, isLocked)}
+                      disabled={isLocked}
+                      className={`px-4 py-2 rounded-lg flex items-center ${
+                        isLocked
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-blue-600 text-white hover:bg-blue-700"
+                      }`}
+                    >
+                      {isLocked ? "Locked" : "Start Chapter"}
+                      {!isLocked && <ChevronRight className="h-4 w-4 ml-1" />}
+                    </button>
                     
                     {/* Status indicator */}
                     <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
@@ -266,27 +343,13 @@ console.log("chapterschapterschapterschapters",chapters)
                   <div className="bg-green-600 h-1.5 rounded-full" style={{ width: '0%' }}></div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-full py-12 text-center">
-            <div className="mx-auto max-w-md">
-              <div className="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">
-                <SearchIcon className="mx-auto h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                No chapters found
-              </h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                {search ? 'Try adjusting your search terms' : 'No chapters available for this course'}
-              </p>
-            </div>
-          </div>
-        )}
+            </div>}
+          )
+        }
       </div>
 
       {/* Pagination */}
-      {chapters.length > 0 && (
+      
         <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="text-sm text-gray-600 dark:text-gray-400">
             Showing {chapters.length} chapters
@@ -329,7 +392,7 @@ console.log("chapterschapterschapterschapters",chapters)
             </button>
           </div>
         </div>
-      )}
+     
     </div>
   );
 }

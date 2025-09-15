@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { ArrowLeft, ImageIcon, VideoIcon, Calendar, User, BookOpen, Loader2, ChevronLeft, ChevronRight, Lock, Divide } from "lucide-react";
 import api from "@/lib/api";
 
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
@@ -43,6 +43,9 @@ export default function ChapterDetail() {
   const [totalnomarks, settotalnomarks] = useState(0);
   const [passfail, setpassfail] = useState(false);
 
+
+
+console.log("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{object}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}",submissionData)
   const fetchChapterNavigation = async (click: any) => {
 
     try {
@@ -50,20 +53,20 @@ export default function ChapterDetail() {
       const res = await api.get(`chapter/navigation/chapter-navigation?chapter_id=${chapterId}`);
 
       if (res.success) {
-       console.log("----------------------------", res.data?.data?.data)
-       
+        console.log("----------------------------", res.data?.data?.data)
+
         if (click == "next") {
           if (!res.data?.data?.data.has_next) {
-      toasterSuccess("This is the last chapter. You have completed all chapters.", 3000);
-    }
+            toasterSuccess("This is the last chapter. You have completed all chapters.", 3000);
+          }
           const nextchapterNavigation = res.data?.data?.data.next_chapter.id;
           router.push(`/user-panel/chapters/${nextchapterNavigation}`);
 
         }
         else {
-           if (!res.data?.data?.data.has_previous) {
-      toasterSuccess("this is first chapter", 3000);
-    }
+          if (!res.data?.data?.data.has_previous) {
+            toasterSuccess("this is first chapter", 3000);
+          }
           const prevchapterNavigation = res.data?.data?.data.previous_chapter.id;
           router.push(`/user-panel/chapters/${prevchapterNavigation}`);
         }
@@ -71,11 +74,11 @@ export default function ChapterDetail() {
         console.error("Failed to fetch navigation:", res.error?.message);
       }
     } catch (err: any) {
-     
 
-        // toasterSuccess("This is last chapter you completed all Chapters", 3000);
-      
-      
+
+      // toasterSuccess("This is last chapter you completed all Chapters", 3000);
+
+
     } finally {
 
     }
@@ -164,11 +167,11 @@ export default function ChapterDetail() {
           console.log("yaha")
         }
       } else {
-        console.error("Failed to fetch MCQs with previous attempts:", res.error?.message);
+        console.log("Failed to fetch MCQs with previous attempts:", res.error?.message);
         setMcqs([]);
       }
     } catch (err) {
-      console.error("Failed to fetch chapter MCQs with previous attempts:", err);
+      console.log("Failed to fetch chapter MCQs with previous attempts:", err);
       setMcqs([]);
     }
   };
@@ -454,10 +457,34 @@ export default function ChapterDetail() {
               </div>
             </details>
           )}
+
+
+          {submissionData.percentage <=75 ? (
+<div className="flex justify-between">
+    <div className="text-red-600 font-medium max-w-md">
+    Unfortunately, you didn't pass this quiz. You scored {submissionData.percentage}%, 
+    but needed 75% to pass. Review the material and try again!
+  </div>
+  <button className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
+  onClick={()=> router.push(`/user-panel/chapters/${chapterId}`)}
+  >Try agian</button>
+</div>
+
+) : (
+   <div className="text-green-600 font-medium">
+    Congratulations! You passed with a score of {submissionData.percentage}%. 
+    Well done on mastering this chapter's content.
+  </div>
+)}
+
+
+
+ 
+
+
       </div>
     );
   };
-
 
 
 
@@ -862,15 +889,15 @@ export default function ChapterDetail() {
 
 
 
-         
-              <button
-                onClick={() => fetchChapterNavigation("next")}
-                className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
-              >
-                Next
-              </button>
 
-           
+            <button
+              onClick={() => fetchChapterNavigation("next")}
+              className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
+            >
+              Next
+            </button>
+
+
 
           </div>
 
@@ -1388,6 +1415,8 @@ export default function ChapterDetail() {
         {/* MCQs Section - Now conditionally rendered based on media completion */}
         {renderMcqs()}
 
+
+       
         {/* Media Modal */}
 
       </div>
