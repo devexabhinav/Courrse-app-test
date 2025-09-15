@@ -43,6 +43,8 @@ export default function ChapterDetail() {
   const [totalnomarks, settotalnomarks] = useState(0);
   const [passfail, setpassfail] = useState(false);
 
+
+  // console.log("chapterchapterchapterchapterchapterchapterchapterchapterchapterchapter",chapter)
 const handleTryAgain = () => {
   // Reset all MCQ-related state
   setSelectedAnswers({});
@@ -1430,7 +1432,21 @@ const handleTryAgain = () => {
        {totalnomarks <= 75 ? (
         <ProgressIndicator />
        ):(<></>)}
-        
+
+
+       <div className="my-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+  <div className="flex items-center mb-4">
+    <BookOpen className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Chapter Content</h2>
+  </div>
+  
+  <div className="prose dark:prose-invert max-w-none">
+    <div 
+      className="text-gray-800 dark:text-gray-200 leading-relaxed"
+      dangerouslySetInnerHTML={{ __html: chapter.content || "<p>No content available for this chapter.</p>" }}
+    />
+  </div>
+</div>
 
         {/* Content Section */}
 
