@@ -114,7 +114,7 @@ const handleTryAgain = () => {
 
           if (chapterData.course_id) {
             await fetchChapterMcqsWithPrevious(chapterData.id);
-            console.log("welcome")
+           
           }
         } else {
           setError("Chapter data not found in response");
@@ -147,7 +147,7 @@ const handleTryAgain = () => {
       const res = await api.get(`mcq/getStudentMcqsWithPrevious?user_id=${userId}&chapter_id=${chapterId}`);
 
       if (res.success) {
-        console.log("--res-----12-23--3-1234-134-4-23-4-2", res)
+        
         const { mcqs: mcqData, previousAnswers: historepreviousAnswers } = res.data?.data;
 
 

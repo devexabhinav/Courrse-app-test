@@ -54,7 +54,7 @@ export function Header() {
         
 
           {isUser ? (
-              <p className="font-medium">Welcome {userName}</p>
+              <p className="font-medium">Welcome {userName ? (<span>{userName}</span>) : (<span>Student</span>)}</p>
             ) : (
               <p className="font-medium">Admin Dashboard For Course App</p>
             )}

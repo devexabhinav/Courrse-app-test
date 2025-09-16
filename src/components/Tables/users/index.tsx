@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+
 interface User {
   id: number;
   username: string;
@@ -26,6 +27,8 @@ interface UsersProps {
 }
 
 export function Users({ className, users }: UsersProps) {
+
+ 
   return (
     <div
       className={cn(
@@ -37,9 +40,7 @@ export function Users({ className, users }: UsersProps) {
         All Users List
       </h2>
 
-      {/* {loading ? (
-        <p className="text-center">Loading...</p>
-      ) : ( */}
+     
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
@@ -57,6 +58,8 @@ export function Users({ className, users }: UsersProps) {
               <TableRow
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={user.id}
+               
+              
               >
                 <TableCell className="!text-left">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>

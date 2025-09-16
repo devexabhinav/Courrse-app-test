@@ -48,9 +48,7 @@ export default function UsersWithProgressPage({ className }: any) {
         All Users List
       </h2>
 
-      {/* {loading ? (
-          <p className="text-center">Loading...</p>
-        ) : ( */}
+     
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
@@ -70,6 +68,7 @@ export default function UsersWithProgressPage({ className }: any) {
               <TableRow
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={user.id}
+                onClick = {() => handleMore(user.id)}
               >
                 <TableCell className="!text-left">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -114,7 +113,7 @@ export default function UsersWithProgressPage({ className }: any) {
                   )}
                 </TableCell>
 
-                <TableCell onClick={() => handleMore(user.id)} className="cursor-pointer">View More Details</TableCell>
+                {/* <TableCell onClick={() => handleMore(user.id)} className="cursor-pointer">View More Details</TableCell> */}
               </TableRow>
             ))
           ) : (
