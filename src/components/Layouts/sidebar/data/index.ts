@@ -27,17 +27,19 @@ export const NAV_DATA = [
       },
       {
         title: "CHAPTERS",
-        url: "/chapters",
+        url: "/add-chapter",
         icon: Icons.Calendar,
         items: [],
         type: "admin", // Only show to admin
       },
-      {
-        title: "MCQ",
-        url: "/mcq",
+    
+
+       {
+       title: "MCQ",
+        url: "/add-mcq",
         icon: Icons.Calendar,
         items: [],
-        type: "admin", // Only show to admin
+        type: "admin", 
       },
       {
         title: "USER DETAILS",
@@ -69,13 +71,8 @@ export const NAV_DATA = [
         type: "user", // Show to both admin and user
       },
 
-       {
-        title: "Progress",
-        url: "/user-panel/Progress",
-        icon: Icons.User,
-        items: [],
-        type: "user", // Show to both admin and user
-      },
+ 
+     
        
     ],
   },

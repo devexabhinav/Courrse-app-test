@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter ,useSearchParams  } from "next/navigation";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { toasterSuccess, toasterError } from "@/components/core/Toaster";
@@ -11,13 +11,16 @@ import api from "@/lib/api";
 
 const AddMcq = () => {
     const router = useRouter();
+      const searchParams = useSearchParams();
+  const chapterId = searchParams.get('chapter');
+  const courseId = searchParams.get('course');
     const [courses, setCourses] = useState<any>([])
     const [formData, setFormData] = useState({
         question: "",
         options: ["", "", "", ""],
         answer: "",
-        course_id: "",
-        chapter_id: ""
+        course_id: courseId??"",
+        chapter_id: chapterId??""
     });
     const [chapters, setChapters] = useState<any[]>([]);
 

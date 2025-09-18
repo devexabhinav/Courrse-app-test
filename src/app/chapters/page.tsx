@@ -25,6 +25,7 @@ export default function Chapters({ className }: any) {
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(5);
 
+  
   const fetchChapters = async () => {
     try {
       const query = new URLSearchParams();

@@ -2,7 +2,7 @@
 
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter , useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
@@ -14,11 +14,13 @@ import { BookOpen, ListOrdered } from "lucide-react";
 const AddChapter = () => {
   const router = useRouter();
   const [courses, setCourses] = useState<any>([])
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get('course_id');
 
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    course_id: "",
+    course_id: courseId ?? "",
     order: "",
   });
 
