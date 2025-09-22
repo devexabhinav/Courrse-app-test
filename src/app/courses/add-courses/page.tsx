@@ -1,6 +1,7 @@
 "use client";
 
 import api from "@/lib/api";
+import React from 'react';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -24,7 +25,15 @@ const AddCourse = () => {
   const [courseFeatures, setCourseFeatures] = useState<string[]>([]);
   const [currentFeature, setCurrentFeature] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-
+// const InputGroupWithKeyEvents = React.forwardRef<HTMLInputElement, any>(
+//   ({ onKeyDown, ...props }, ref) => {
+//     return (
+//       <div onKeyDown={onKeyDown}>
+//         <InputGroup ref={ref} {...props} />
+//       </div>
+//     );
+//   }
+// );
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
@@ -72,12 +81,12 @@ const AddCourse = () => {
     setCourseFeatures(updatedFeatures);
   };
 
-  const handleFeatureKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addFeature();
-    }
-  };
+  // const handleFeatureKeyPress = (e: React.KeyboardEvent) => {
+  //   if (e.key === 'Enter') {
+  //     e.preventDefault();
+  //     addFeature();
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,7 +197,8 @@ const AddCourse = () => {
 
           {/* Course Features Section */}
           <div className="mb-5.5">
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+            <label
+             className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
               Course Features/Highlights
             </label>
             <div className="flex gap-2 mb-3">
@@ -197,10 +207,11 @@ const AddCourse = () => {
                 placeholder="Add a feature (e.g., 'Certificate included', 'Lifetime access')"
                 value={currentFeature}
                 onChange={(e) => setCurrentFeature(e.target.value)}
-                onKeyPress={handleFeatureKeyPress}
+                // onKeyDown={handleFeatureKeyPress}
                 icon={<ListIcon />}
                 iconPosition="left"
                 height="sm"
+                label="Course Feature"
               />
               <button
                 type="button"

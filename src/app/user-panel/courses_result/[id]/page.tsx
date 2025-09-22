@@ -36,9 +36,10 @@ export default function CourseResultsPage() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("course_id");
   const userId = Cookies.get('userId');
-  const userNames = Cookies.get('name');
-  const userName = userNames.charAt(0).toUpperCase() + userNames.slice(1);
-
+const userNames = Cookies.get('name');
+const userName = userNames 
+  ? userNames.charAt(0).toUpperCase() + userNames.slice(1)
+  : 'User';
 ; // Get user name from cookies
 
   const [results, setResults] = useState<CourseResults | null>(null);
@@ -633,7 +634,7 @@ const downloadCertificate = async () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 mr-2" />
-                  <span className="font-medium">Congratulations! You've completed this course.</span>
+                  <span className="font-medium">Congratulations! You&asop;ve completed this course.</span>
                 </div>
                 <button
                   onClick={downloadCertificate}

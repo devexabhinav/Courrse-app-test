@@ -104,7 +104,7 @@ export default function CourseEnrollmentPage() {
     
     try {
       setEnrolling(true);
-      const res = await api.post(`course/${courseId}/enroll`);
+const res = await api.post(`course/${courseId}/enroll`, {});
       
       if (res.success) {
         toasterSuccess("Successfully enrolled in the course!");
@@ -345,7 +345,7 @@ export default function CourseEnrollmentPage() {
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                   <BarChart3 className="w-5 h-5 mr-2 text-blue-500" />
-                  What You'll Learn
+                  What You&asop;ll Learn
                 </h3>
                 <ul className="space-y-2">
                   {course.description.split('✅').filter(item => item.trim()).map((item, index) => (

@@ -3,14 +3,14 @@
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Pencil, SearchIcon, Trash2, ImageIcon, VideoIcon, ListOrdered, ChevronRight, FileText, Clock, CheckCircle, ArrowLeft } from "lucide-react";
+import { Pencil, Lock, BookOpen, ImageIcon, VideoIcon, ListOrdered, ChevronRight, FileText, Clock, CheckCircle, ArrowLeft } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter, useParams } from "next/navigation";
 import Cookies from 'js-cookie';
 export default function Chapters({ className }: any) {
   const router = useRouter();
   const params = useParams();
-  const courseId = params.id; 
+  const courseId = params.id;
   const userId = Cookies.get("userId")
 
 
@@ -29,62 +29,62 @@ export default function Chapters({ className }: any) {
 
 
   const fetchChaptersWithStatus = async () => {
-  if (!courseId || !userId) return;
-  
-  try {
+    if (!courseId || !userId) return;
 
-    
-    // Fetch both basic chapters and MCQ status in parallel
-    const [chaptersRes, statusRes] = await Promise.all([
-      api.get(`chapter?course_id=${courseId}`),
-      api.get(`mcq/course-chapters-status?user_id=${userId}&course_id=${courseId}`)
-    ]);
-
-    // Store the complete responses
-    const chaptersResponse = chaptersRes;
-    const statusResponse = statusRes;
+    try {
 
 
-    setChaptersByid( chaptersResponse?.data?.data)
-    setpassedchapter(statusResponse?.data?.data)
+      // Fetch both basic chapters and MCQ status in parallel
+      const [chaptersRes, statusRes] = await Promise.all([
+        api.get(`chapter?course_id=${courseId}`),
+        api.get(`mcq/course-chapters-status?user_id=${userId}&course_id=${courseId}`)
+      ]);
 
-  } catch (err) {
-    console.error("Error fetching chapters:", err)
+      // Store the complete responses
+      const chaptersResponse = chaptersRes;
+      const statusResponse = statusRes;
 
-  } finally {
 
-  }
-};
+      setChaptersByid(chaptersResponse?.data?.data)
+      setpassedchapter(statusResponse?.data?.data)
 
-useEffect(() => {
-  fetchChaptersWithStatus();
-}, [courseId, userId]);
+    } catch (err) {
+      console.error("Error fetching chapters:", err)
 
-const fetchChaptersByCourseId = async () => {
+    } finally {
+
+    }
+  };
+
+  useEffect(() => {
+    fetchChaptersWithStatus();
+  }, [courseId, userId]);
+
+  const fetchChaptersByCourseId = async () => {
     if (!courseId) return;
-    
+
     try {
       setLoadingById(true);
       const res = await api.get(`chapter?course_id=${courseId}`);
-      
+
       if (res.success) {
-      
-         const chaptersWithLockStatus = res?.data?.data;
-        
+
+        //  const chaptersWithLockStatus = res?.data?.data;
+
         // setChaptersByid(chaptersWithLockStatus);
-        
+
         // setChaptersByid(chaptersWithLockStatus);
       } else {
-        console.error("Failed to fetch chapters by course ID:", res.message);
+        console.error("Failed to fetch chapters by course ID:", res);
         toasterError("Failed to load chapters");
       }
     } catch (err) {
       console.error("Error fetching chapters by course ID:", err);
       toasterError("Error loading chapters");
     } finally {
-   
-       setLoadingById(false);
-     
+
+      setLoadingById(false);
+
 
     }
   };
@@ -96,7 +96,7 @@ const fetchChaptersByCourseId = async () => {
       if (res.success) {
         router.push(`/user-panel/chapters/${chapterId}`);
       } else {
-        console.error("Failed to fetch chapter:", res.message);
+        console.error("Failed to fetch chapter:", res);
       }
     } catch (error) {
       console.error("Error fetching chapter:", error);
@@ -135,13 +135,13 @@ const fetchChaptersByCourseId = async () => {
       )}
     >
 
-       <button
-            onClick={() => router.back()}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Chapters
-          </button>
+      <button
+        onClick={() => router.back()}
+        className="flex items-center text-blue-600 hover:text-blue-800 mb-8"
+      >
+        <ArrowLeft className="h-5 w-5 mr-2" />
+        Back to Chapters
+      </button>
       {/* Header Section */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -150,8 +150,8 @@ const fetchChaptersByCourseId = async () => {
           </h2>
           {courseId && (
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {courseName 
-                ? `Course: ${courseName}` 
+              {courseName
+                ? `Course: ${courseName}`
                 : `Course ID: ${courseId}`}
             </p>
           )}
@@ -159,7 +159,7 @@ const fetchChaptersByCourseId = async () => {
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           {/* Search Bar */}
-       
+
         </div>
       </div>
 
@@ -245,47 +245,46 @@ const fetchChaptersByCourseId = async () => {
       {/* Chapters List */}
       <div className="space-y-4">
         {
-          chapters.map((chapter: any , index) =>{ 
-            console.log(passedchapter)
-             const chapterProgress = passedchapter.find(
-            (progress: any) => progress.chapter_id === chapter.id
-          );
+          chapters.map((chapter: any, index) => {
+            const chapterProgress = passedchapter.find(
+              (progress: any) => progress.chapter_id === chapter.id
+            );
 
 
 
 
 
-           let isLocked = false;
-          if (chapter.order > 1) {
-            const prevChapter = chapters.find(c => c.order === chapter.order - 1);
-            if (prevChapter) {
-              const prevChapterProgress = passedchapter.find(
-                (progress: any) => progress.chapter_id === prevChapter.id
-              );
-              isLocked = !prevChapterProgress?.passed;
+            let isLocked = false;
+            if (chapter.order > 1) {
+              const prevChapter = chapters.find(c => c.order === chapter.order - 1);
+              if (prevChapter) {
+                const prevChapterProgress = passedchapter.find(
+                  (progress: any) => progress.chapter_id === prevChapter.id
+                );
+                isLocked = !prevChapterProgress?.passed;
+              }
             }
-          }
-          
-          // Determine status text and icon
-          let statusText = "Not started";
-          let StatusIcon = Clock;
-          let statusColor = "text-gray-500";
-          
-          if (chapterProgress) {
-            if (chapterProgress.passed) {
-              statusText = "Completed";
-              StatusIcon = CheckCircle;
-              statusColor = "text-green-600";
-            } else if (chapterProgress.attempted) {
-              statusText = "In progress";
-              statusColor = "text-yellow-600";
+
+            // Determine status text and icon
+            let statusText = "Not started";
+            let StatusIcon = Clock;
+            let statusColor = "text-gray-500";
+
+            if (chapterProgress) {
+              if (chapterProgress.passed) {
+                statusText = "Completed";
+                StatusIcon = CheckCircle;
+                statusColor = "text-green-600";
+              } else if (chapterProgress.attempted) {
+                statusText = "In progress";
+                statusColor = "text-yellow-600";
+              }
             }
-          }
 
 
 
 
-           return <div
+            return <div
               key={index}
               className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
             >
@@ -301,7 +300,7 @@ const fetchChaptersByCourseId = async () => {
                         {chapter.title}
                       </h3>
                     </div>
-                    
+
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
                       {chapter.content?.slice(0, 120)}...
                     </p>
@@ -325,24 +324,28 @@ const fetchChaptersByCourseId = async () => {
 
                   {/* Right side - Actions and status */}
                   <div className="flex flex-col items-end gap-2 ml-4">
-                     <button
-                      onClick={() => handleChapterClick(chapter.id, isLocked)}
+                    <button
+                      onClick={() => handleChapterClick(chapter.id)}
                       disabled={isLocked}
-                      className={`px-4 py-2 rounded-lg flex items-center ${
-                        isLocked
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-blue-600 text-white hover:bg-blue-700"
-                      }`}
+                      className={`px-4 py-2 rounded-lg flex items-center ${isLocked
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
+                          : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
+                        }`}
                     >
-                      {isLocked ? "Locked" : "Start Chapter"}
-                      {!isLocked && <ChevronRight className="h-4 w-4 ml-1" />}
+                      {isLocked ? (
+                        <Lock className="h-4 w-4 mr-2" />
+                      ) : (
+                        <BookOpen className="h-4 w-4 mr-2" />
+                      )}
+                      {isLocked ? 'Locked' : 'Start Learning'}
                     </button>
-                    
-                    {/* Status indicator */}
                     <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                       <Clock className="h-3 w-3 mr-1" />
                       <span>Not started</span>
                     </div>
+
+
+
                   </div>
                 </div>
 
@@ -351,59 +354,59 @@ const fetchChaptersByCourseId = async () => {
                   <div className="bg-green-600 h-1.5 rounded-full" style={{ width: '0%' }}></div>
                 </div> */}
               </div>
-            </div>}
+            </div>
+          }
           )
         }
       </div>
 
       {/* Pagination */}
-      
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {chapters.length} chapters
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-            >
-              Previous
-            </button>
-            
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium ${
-                      page === pageNum
-                        ? 'bg-green-600 text-white'
-                        : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              {totalPages > 5 && <span className="px-2 text-gray-500">...</span>}
-            </div>
-            
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-            >
-              Next
-            </button>
-          </div>
+
+      <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Showing {chapters.length} chapters
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+          >
+            Previous
+          </button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium ${page === pageNum
+                    ? 'bg-green-600 text-white'
+                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
+                    }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            {totalPages > 5 && <span className="px-2 text-gray-500">...</span>}
+          </div>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+          >
+            Next
+          </button>
+        </div>
+      </div>
 
 
-        
-     
-    </div>
+
+
+    </div >
   );
 }

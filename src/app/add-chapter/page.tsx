@@ -7,7 +7,7 @@ import { Pencil, SearchIcon, Trash2, ToggleRight, ToggleLeft } from "lucide-reac
 import { toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
 
-export default function CoursesPage({ className }) {
+export default function AddChapter() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -41,16 +41,10 @@ export default function CoursesPage({ className }) {
   }, [search, statusFilter, page]);
 
 
-
- 
-
-
-
   return (
     <div
       className={cn(
         "rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
-        className
       )}
     >
       {/* Header Section */}
@@ -96,7 +90,7 @@ export default function CoursesPage({ className }) {
       {/* Courses Grid */}
       {courses.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {courses.map((course) => (
+          {courses.map((course:any) => (
             
             <div
               key={course.id}
@@ -134,7 +128,7 @@ export default function CoursesPage({ className }) {
                   {/* Description */}
                   <div>
                     <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {course.description.split('\n').slice(0, 3).map((line, idx) => (
+                      {course.description.split('\n').slice(0, 3).map((line:any, idx:any) => (
                         <div key={idx} className="flex items-start gap-2 mb-1">
                           {line.trim().startsWith("✅") && (
                             <span className="text-green-500 text-xs mt-0.5">✅</span>

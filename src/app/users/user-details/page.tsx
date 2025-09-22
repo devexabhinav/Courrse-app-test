@@ -18,10 +18,8 @@ export default function UsersWithProgressPage({ className }: any) {
     async function fetchUsers() {
       try {
         const res = await api.get(`user/get-all-details?page=${page}&limit=${limit}`);
-        console.log(res.data.data.users )
         setUsers(res.data.data.users|| []);
         const total = res.data?.data?.totalPages || 0;
-        console.log(total,"=sh")
         setTotal(total);
       } catch (error) {
         console.error("Failed to fetch users", error);

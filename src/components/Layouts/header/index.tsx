@@ -14,8 +14,12 @@ export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();
   const [role, setRole] = useState<string | undefined>();
 
-  const userNames = Cookies.get('name');
-  const userName = userNames.charAt(0).toUpperCase() + userNames.slice(1);
+const userNames = Cookies.get('name');
+const userName = userNames 
+  ? userNames.charAt(0).toUpperCase() + userNames.slice(1)
+  : 'User';
+
+  
    useEffect(() => {
     setRole(Cookies.get("role"));
   }, []);

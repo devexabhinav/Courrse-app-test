@@ -22,13 +22,15 @@ import api from "@/lib/api";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 
+
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [course, setCourse] = useState(null);
+const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [enrolling, setEnrolling] = useState(false);
-  const [enrollmentStatus, setEnrollmentStatus] = useState(null);
+  const [enrollmentStatus, setEnrollmentStatus] = useState<any>(null);
   const [user, setUser] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
 
@@ -56,11 +58,9 @@ useEffect(() => {
     }
   };
 
-  console.log("isEnrolled",isEnrolled)
 
   fetchEnrollmentStatus();
 }, []); // ✅ Empty dependency array
-console.log("isEnrolled",isEnrolled)
   
   useEffect(() => {
     // Fetch user data from localStorage or your auth context
@@ -82,11 +82,11 @@ console.log("isEnrolled",isEnrolled)
           setCourse(res.data?.data);
           
         } else {
-          setError("Failed to fetch course data");
+          // setError("Failed to fetch course data");
         }
       } catch (err) {
         console.error("Failed to load course data:", err);
-        setError("Error loading course data");
+        // setError("Error loading course data");
       } finally {
         setLoading(false);
       }
@@ -99,8 +99,7 @@ console.log("isEnrolled",isEnrolled)
 
   const handleEnroll = async () => {
     if (!user) {
-      setEnrollmentStatus("Please log in to enroll in this course");
-      console.log("-----user-----11--",user)
+      // setEnrollmentStatus("Please log in to enroll in this course");
       return;
     }
 
@@ -122,11 +121,11 @@ console.log("isEnrolled",isEnrolled)
       if (response.success) {
         setEnrollmentStatus("success");
         // Update course data to reflect enrollment
-        setCourse(prev => ({...prev, isEnrolled: true}));
+        // setCourse(prev => ({...prev, isEnrolled: true}));
 
        
       } else {
-        setEnrollmentStatus(response.message || "Enrolled");
+        setEnrollmentStatus(response || "Enrolled");
       }
     } catch (err) {
       console.error("Enrollment error:", err);
@@ -231,7 +230,7 @@ console.log("isEnrolled",isEnrolled)
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">
-              {formattedCourse.roadmap.technologies.map((tech, index) => (
+              {formattedCourse.roadmap.technologies.map((tech: any, index: number) => (
                 <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800/30">
                   <h3 className="font-medium text-blue-800 dark:text-blue-200">{tech}</h3>
                 </div>

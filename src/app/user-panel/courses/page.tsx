@@ -20,9 +20,6 @@ export default function EnrolledCourses({ className }: any) {
   const [loading, setLoading] = useState(true);
 
 
-  console.log("objectenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollmentsenrollments", enrollments)
-
-
 
   // Fetch enrolled courses for the specific user
   const fetchEnrolledCourses = async () => {
@@ -78,7 +75,7 @@ export default function EnrolledCourses({ className }: any) {
         toasterSuccess("Unenrolled successfully", 2000, "unenroll");
         fetchEnrolledCourses(); // refresh list
       } else {
-        console.error("Unenroll failed:", res.message);
+        console.error("Unenroll failed:", res);
       }
     } catch (error) {
       console.error("Unenroll error:", error);
@@ -88,25 +85,7 @@ export default function EnrolledCourses({ className }: any) {
 
 
 
-  const handleUnenroll = async (e: React.MouseEvent, enrollmentId: number, courseId: number) => {
-    e.stopPropagation();
-    const confirmUnenroll = confirm("Are you sure you want to unenroll from this course?");
-    if (!confirmUnenroll) return;
 
-    try {
-      const targetUserId = Cookies.get("userId");
-      const response = await api.delete(`enrollments/unenroll`, {
-        data: { user_id: targetUserId, course_id: courseId }
-      });
-
-      if (response.success) {
-        toasterSuccess("Unenrolled successfully", 2000, "unenroll");
-        fetchEnrolledCourses();
-      }
-    } catch (error) {
-      console.error("Failed to unenroll from course:", error);
-    }
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

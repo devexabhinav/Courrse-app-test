@@ -26,9 +26,11 @@ export function UserInfo() {
     email: email,
     img: "/images/user2.png",
   };
-  const userNames = USER.name;
-  const userName= userNames.charAt(0).toUpperCase() + userNames.slice(1);
-
+  const userNames = Cookies.get('name');
+  const userName = userNames 
+    ? userNames.charAt(0).toUpperCase() + userNames.slice(1)
+    : 'User';
+  ; // Get user name from cookies
   useEffect(() => {
     const userId = Cookies.get("userId");
 
