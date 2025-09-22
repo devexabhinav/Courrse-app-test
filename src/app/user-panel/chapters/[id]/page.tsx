@@ -20,7 +20,7 @@ export default function ChapterDetail() {
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [mediashown, setmediashown] = useState(false);
-console.log("rfdkisbvgrdlsghlidekdte",mediashown)
+  console.log("rfdkisbvgrdlsghlidekdte", mediashown)
   // Media completion tracking
   const [viewedImages, setViewedImages] = useState<Set<number>>(new Set());
   const [viewedVideos, setViewedVideos] = useState<Set<number>>(new Set());
@@ -29,14 +29,14 @@ console.log("rfdkisbvgrdlsghlidekdte",mediashown)
   const [chapterCompleted, setChapterCompleted] = useState(false);
   const [historymcqs, sethistorymcqs] = useState(false);
 
-const [totalmedia, settotalmedia] = useState<Set<number>>(new Set());
-const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
+  const [totalmedia, settotalmedia] = useState<any>(null);
+  const [cototalmedia, setcototalmedia] = useState<any>(null);
 
   // MCQ state
   const [mcqs, setMcqs] = useState<any[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: string]: string }>({});
   const [submittedMcqs, setSubmittedMcqs] = useState<Set<string>>(new Set());
-  const [mcqResults, setMcqResults] = useState({});
+  const [mcqResults, setMcqResults] = useState<Record<string, boolean>>({});
 
   // Check if media is completed to unlock MCQs
   const [mediaCompleted, setMediaCompleted] = useState(false);
@@ -164,7 +164,7 @@ const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
           setMcqs(historepreviousAnswers)
           const totalmacks = historepreviousAnswers.length;
           settotalmcqsinhistory(totalmacks)
-          const totalCorrect = historepreviousAnswers.filter(historepreviousAnswers => historepreviousAnswers.is_correct).length;
+          const totalCorrect = historepreviousAnswers.filter((answer: any) => answer.is_correct).length;
           settotalrightmcqsinhistory(totalCorrect)
           const totalnumberof_user = totalCorrect / totalmacks * 100;
 
@@ -520,347 +520,347 @@ const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
   const renderMcqs = () => {
     if (!mcqs.length) return null;
 
-    //  if (!mediaCompleted) {
-    //     return (
+     if (!mediaCompleted) {
+        return (
 
-    //       <div className=" mx-auto ">
-    //         {/* Header */}
-
-
-
-    //         {/* Media Section */}
-           
+          <div className=" mx-auto ">
+            {/* Header */}
 
 
 
-    //         {/* Media Modal */}
-    //         {showMediaModal && (
-    //           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
-    //             <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-    //               <button
-    //                 onClick={() => setShowMediaModal(false)}
-    //                 className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
-    //               >
-    //                 ✕
-    //               </button>
-
-    //               {activeMedia.type === "image" ? (
-    //                 <img
-    //                   src={activeMedia.items[0]}
-    //                   alt="Chapter media"
-    //                   className="w-full h-auto max-h-[85vh] object-contain"
-    //                   onError={(e) => {
-    //                     (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-    //                   }}
-    //                 />
-    //               ) : (
-    //                 <video
-    //                   controls
-    //                   autoPlay
-    //                   className="w-full h-auto max-h-[85vh]"
-    //                 >
-    //                   <source src={activeMedia.items[0]} type="video/mp4" />
-    //                 </video>
-    //               )}
-    //             </div>
-    //           </div>
-    //         )}
+            {/* Media Section */}
 
 
 
 
-    //         <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-    //           <div className="flex flex-col items-center justify-center text-center py-8">
-    //             <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
-    //               <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-    //             </div>
-    //             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-    //               Quiz Locked
-    //             </h3>
-    //             <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-    //               Complete all videos and images in this chapter to unlock the quiz questions.
-    //             </p>
-    //             <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
-    //               <span className="mr-2">Progress:</span>
-    //               <span>
-    //                 {viewedImages.size}/{chapter?.images?.length || 0} images viewed •
-    //                 {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
-    //               </span>
-    //             </div>
-    //           </div>
-    //         </div>
+            {/* Media Modal */}
+            {showMediaModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
+                <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                  <button
+                    onClick={() => setShowMediaModal(false)}
+                    className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
+                  >
+                    ✕
+                  </button>
 
-
-    //       </div>
-
-    //     );
-    //   }
-
-
-    // if (totalnomarks < 75) {
-
-
-    //   if (!mediaCompleted) {
-    //     return (
-
-    //       <div className=" mx-auto ">
-    //         {/* Header */}
-
-
-
-    //         {/* Media Section */}
-    //         {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
-    //           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-    //             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-    //               Media Files
-    //             </h2>
-
-    //             {/* Images with tracking */}
-    //             {renderImages()}
-
-    //             {/* Videos with smart completion */}
-    //             {renderVideos()}
-    //           </div>
-    //         ) : (
-    //           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
-    //             <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-    //             <p className="text-gray-600 dark:text-gray-400">
-    //               No media files available for this chapter
-    //             </p>
-    //           </div>
-    //         )}
-
-
-
-    //         {/* Media Modal */}
-    //         {showMediaModal && (
-    //           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
-    //             <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-    //               <button
-    //                 onClick={() => setShowMediaModal(false)}
-    //                 className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
-    //               >
-    //                 ✕
-    //               </button>
-
-    //               {activeMedia.type === "image" ? (
-    //                 <img
-    //                   src={activeMedia.items[0]}
-    //                   alt="Chapter media"
-    //                   className="w-full h-auto max-h-[85vh] object-contain"
-    //                   onError={(e) => {
-    //                     (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-    //                   }}
-    //                 />
-    //               ) : (
-    //                 <video
-    //                   controls
-    //                   autoPlay
-    //                   className="w-full h-auto max-h-[85vh]"
-    //                 >
-    //                   <source src={activeMedia.items[0]} type="video/mp4" />
-    //                 </video>
-    //               )}
-    //             </div>
-    //           </div>
-    //         )}
+                  {activeMedia.type === "image" ? (
+                    <img
+                      src={activeMedia.items[0]}
+                      alt="Chapter media"
+                      className="w-full h-auto max-h-[85vh] object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                      }}
+                    />
+                  ) : (
+                    <video
+                      controls
+                      autoPlay
+                      className="w-full h-auto max-h-[85vh]"
+                    >
+                      <source src={activeMedia.items[0]} type="video/mp4" />
+                    </video>
+                  )}
+                </div>
+              </div>
+            )}
 
 
 
 
-    //         <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-    //           <div className="flex flex-col items-center justify-center text-center py-8">
-    //             <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
-    //               <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-    //             </div>
-    //             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-    //               Quiz Locked
-    //             </h3>
-    //             <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-    //               Complete all videos and images in this chapter to unlock the quiz questions.
-    //             </p>
-    //             <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
-    //               <span className="mr-2">Progress:</span>
-    //               <span>
-    //                 {viewedImages.size}/{chapter?.images?.length || 0} images viewed •
-    //                 {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
-    //               </span>
-    //             </div>
-    //           </div>
-    //         </div>
+            <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col items-center justify-center text-center py-8">
+                <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
+                  <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Quiz Locked
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+                  Complete all videos and images in this chapter to unlock the quiz questions.
+                </p>
+                <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
+                  <span className="mr-2">Progress:</span>
+                  <span>
+                    {viewedImages.size}/{chapter?.images?.length || 0} images viewed •
+                    {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
+                  </span>
+                </div>
+              </div>
+            </div>
 
 
-    //       </div>
+          </div>
 
-    //     );
-    //   }
-
-
-     
-    //   // Check if all questions are answered
-    //   const allAnswered = mcqs.every(mcq => selectedAnswers[mcq._id || mcq.id]);
-    //   const someSubmitted = submittedMcqs.size > 0;
-    //   const allSubmitted = submittedMcqs.size === mcqs.length;
-    //   return (
-    //     <div className="mt-8">
-    //       <div className="flex items-center justify-between mb-4">
-    //         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-    //           Quiz Questions ({mcqs.length})
-    //         </h3>
-    //         <span className="text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded-full">
-    //           Unlocked ✓
-    //         </span>
-    //       </div>
-
-    //       <div className="space-y-6">
-    //         {mcqs.map((mcq, index) => {
-    //           const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
-    //           const isCorrect = mcqResults[mcq._id || mcq.id];
-
-    //           return (
-    //             <div
-    //               key={mcq._id || mcq.id}
-    //               className={`p-4 rounded-lg border ${isSubmitted
-    //                 ? isCorrect
-    //                   ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-    //                   : 'bg-green-50  dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-    //                 : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-    //                 }`}
-    //             >
-    //               <h4 className="font-medium text-gray-900 dark:text-white mb-3">
-    //                 {index + 1}. {mcq.question}
-    //               </h4>
-
-    //               <div className="space-y-2">
-    //                 {mcq.options && mcq.options.map((option: string, optIndex: number) => {
-    //                   const optionLetter = String.fromCharCode(65 + optIndex);
-    //                   const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
-    //                   // Find the result for this specific MCQ from submissionData
-    //                   const result = submissionData?.results?.find(
-    //                     (r: any) => r.mcq_id.toString() === (mcq.id || mcq._id).toString()
-    //                   );
-
-    //                   // const isCorrectAnswer = option == result;
+        );
+      }
 
 
-    //                   // Check if this option is the correct answer based on submission data
-    //                   const isCorrectAnswer = result ? option === result.correct_option : false;
+    if (totalnomarks < 75) {
 
 
-    //                   // Check if this option was selected by the user
-    //                   const isUserSelected = result ? option === result.selected_option : false;
+      if (!mediaCompleted) {
+        return (
+
+          <div className=" mx-auto ">
+            {/* Header */}
 
 
 
-    //                   return (
+            {/* Media Section */}
+            {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                  Media Files
+                </h2>
+
+                {/* Images with tracking */}
+                {renderImages()}
+
+                {/* Videos with smart completion */}
+                {renderVideos()}
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
+                <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-400">
+                  No media files available for this chapter
+                </p>
+              </div>
+            )}
 
 
-    //                     <label
-    //                       key={optIndex}
-    //                       className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${!isSubmitted
-    //                         ? isSelected
-    //                           ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
-    //                           : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-    //                         : isUserSelected && isCorrectAnswer
-    //                           ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
-    //                           : isUserSelected && !isCorrectAnswer
-    //                             ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
-    //                             : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
-    //                         }`}
-    //                     >
-    //                       <input
-    //                         type="radio"
-    //                         name={`mcq-${mcq._id || mcq.id}`}
-    //                         value={option}
-    //                         checked={isSelected}
-    //                         onChange={() => handleAnswerSelect(mcq._id || mcq.id, option)}
-    //                         disabled={isSubmitted}
-    //                         className="mr-3"
-    //                       />
-    //                       <span className="font-medium mr-2">{optionLetter}.</span>
-    //                       <span>{option}</span>
 
-    //                       {/* Only show correct/incorrect for the user's selected option */}
-    //                       {isSubmitted && isUserSelected && (
-    //                         <span className={`ml-auto ${isCorrectAnswer ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-    //                           {isCorrectAnswer ? '✓ Correct' : '✗ Incorrect'}
-    //                         </span>
-    //                       )}
-    //                     </label>
-    //                   );
-    //                 })}
-    //               </div>
+            {/* Media Modal */}
+            {showMediaModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
+                <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                  <button
+                    onClick={() => setShowMediaModal(false)}
+                    className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
+                  >
+                    ✕
+                  </button>
 
-    //               {/* Status indicator for each question */}
-    //               {/* {isSubmitted && (
-    //             <div className={`mt-3 p-2 rounded-md text-center ${
-    //               isCorrect 
-    //                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-    //                 : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-    //             }`}>
-    //               {isCorrect ? '✓ Correct' : '✗ Incorrect'}
-    //             </div>
-    //           )} */}
-    //             </div>
-    //           );
-    //         })}
-    //       </div>
-
-    //       {/* Single Submit Button for All MCQs */}
-    //       <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-    //         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-    //           <div className="flex-1">
-    //             <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-    //               Submit All Answers
-    //             </h4>
-    //             <p className="text-sm text-blue-700 dark:text-blue-300">
-    //               {allSubmitted
-    //                 ? "All questions submitted. You can reset to try again."
-    //                 : !allAnswered
-    //                   ? `Answer all ${mcqs.length - Object.keys(selectedAnswers).length} remaining questions to submit`
-    //                   : "Ready to submit all answers"
-    //               }
-    //             </p>
-    //           </div>
-
-    //           <div className="flex gap-3">
-
-    //             <button
-    //               onClick={submitAllMcqAnswers}
-    //               disabled={!allAnswered}
-    //               className={`px-6 py-3 rounded-lg transition-colors ${allAnswered
-    //                 ? 'bg-blue-600 text-white hover:bg-blue-700'
-    //                 : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
-    //                 }`}
-    //             >
-    //               Submit All Answers
-    //             </button>
-
-    //           </div>
-    //         </div>
-
-    //         {/* Progress indicator */}
-    //         <div className="mt-4">
-    //           <div className="flex justify-between text-sm text-blue-700 dark:text-blue-300 mb-2">
-    //             <span>Progress: {Object.keys(selectedAnswers).length}/{mcqs.length} answered</span>
-    //             <span>{submittedMcqs.size}/{mcqs.length} submitted</span>
-    //           </div>
-    //           <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
-    //             <div
-    //               className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
-    //               style={{ width: `${(Object.keys(selectedAnswers).length / mcqs.length) * 100}%` }}
-    //             ></div>
-    //           </div>
-    //         </div>
-    //       </div>
-
-    //       {renderResultsSection()}
-
-    //     </div>
-    //   );
+                  {activeMedia.type === "image" ? (
+                    <img
+                      src={activeMedia.items[0]}
+                      alt="Chapter media"
+                      className="w-full h-auto max-h-[85vh] object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                      }}
+                    />
+                  ) : (
+                    <video
+                      controls
+                      autoPlay
+                      className="w-full h-auto max-h-[85vh]"
+                    >
+                      <source src={activeMedia.items[0]} type="video/mp4" />
+                    </video>
+                  )}
+                </div>
+              </div>
+            )}
 
 
-    // }
+
+
+            <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col items-center justify-center text-center py-8">
+                <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
+                  <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Quiz Locked
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+                  Complete all videos and images in this chapter to unlock the quiz questions.
+                </p>
+                <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
+                  <span className="mr-2">Progress:</span>
+                  <span>
+                    {viewedImages.size}/{chapter?.images?.length || 0} images viewed •
+                    {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
+                  </span>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+
+        );
+      }
+
+
+
+      // Check if all questions are answered
+      const allAnswered = mcqs.every(mcq => selectedAnswers[mcq._id || mcq.id]);
+      const someSubmitted = submittedMcqs.size > 0;
+      const allSubmitted = submittedMcqs.size === mcqs.length;
+      return (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Quiz Questions ({mcqs.length})
+            </h3>
+            <span className="text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded-full">
+              Unlocked ✓
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            {mcqs.map((mcq, index) => {
+              const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
+              const isCorrect = mcqResults[mcq._id || mcq.id];
+
+              return (
+                <div
+                  key={mcq._id || mcq.id}
+                  className={`p-4 rounded-lg border ${isSubmitted
+                    ? isCorrect
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                      : 'bg-green-50  dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    }`}
+                >
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                    {index + 1}. {mcq.question}
+                  </h4>
+
+                  <div className="space-y-2">
+                    {mcq.options && mcq.options.map((option: string, optIndex: number) => {
+                      const optionLetter = String.fromCharCode(65 + optIndex);
+                      const isSelected = selectedAnswers[mcq._id || mcq.id] === option;
+                      // Find the result for this specific MCQ from submissionData
+                      const result = submissionData?.results?.find(
+                        (r: any) => r.mcq_id.toString() === (mcq.id || mcq._id).toString()
+                      );
+
+                      // const isCorrectAnswer = option == result;
+
+
+                      // Check if this option is the correct answer based on submission data
+                      const isCorrectAnswer = result ? option === result.correct_option : false;
+
+
+                      // Check if this option was selected by the user
+                      const isUserSelected = result ? option === result.selected_option : false;
+
+
+
+                      return (
+
+
+                        <label
+                          key={optIndex}
+                          className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${!isSubmitted
+                            ? isSelected
+                              ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+                              : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                            : isUserSelected && isCorrectAnswer
+                              ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+                              : isUserSelected && !isCorrectAnswer
+                                ? 'bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700'
+                                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                            }`}
+                        >
+                          <input
+                            type="radio"
+                            name={`mcq-${mcq._id || mcq.id}`}
+                            value={option}
+                            checked={isSelected}
+                            onChange={() => handleAnswerSelect(mcq._id || mcq.id, option)}
+                            disabled={isSubmitted}
+                            className="mr-3"
+                          />
+                          <span className="font-medium mr-2">{optionLetter}.</span>
+                          <span>{option}</span>
+
+                          {/* Only show correct/incorrect for the user's selected option */}
+                          {isSubmitted && isUserSelected && (
+                            <span className={`ml-auto ${isCorrectAnswer ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {isCorrectAnswer ? '✓ Correct' : '✗ Incorrect'}
+                            </span>
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {/* Status indicator for each question */}
+                  {/* {isSubmitted && (
+                <div className={`mt-3 p-2 rounded-md text-center ${
+                  isCorrect 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                }`}>
+                  {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                </div>
+              )} */}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Single Submit Button for All MCQs */}
+          <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex-1">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  Submit All Answers
+                </h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  {allSubmitted
+                    ? "All questions submitted. You can reset to try again."
+                    : !allAnswered
+                      ? `Answer all ${mcqs.length - Object.keys(selectedAnswers).length} remaining questions to submit`
+                      : "Ready to submit all answers"
+                  }
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+
+                <button
+                  onClick={submitAllMcqAnswers}
+                  disabled={!allAnswered}
+                  className={`px-6 py-3 rounded-lg transition-colors ${allAnswered
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
+                    }`}
+                >
+                  Submit All Answers
+                </button>
+
+              </div>
+            </div>
+
+            {/* Progress indicator */}
+            <div className="mt-4">
+              <div className="flex justify-between text-sm text-blue-700 dark:text-blue-300 mb-2">
+                <span>Progress: {Object.keys(selectedAnswers).length}/{mcqs.length} answered</span>
+                <span>{submittedMcqs.size}/{mcqs.length} submitted</span>
+              </div>
+              <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                <div
+                  className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(Object.keys(selectedAnswers).length / mcqs.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {renderResultsSection()}
+
+        </div>
+      );
+
+
+    }
 
 
 
@@ -1027,7 +1027,7 @@ const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
         </div>
 
         <div className="space-y-6">
-          {mcqs.map((mcq, index) => {
+          {mcqs.map((mcq: any, index: number) => {
             const isSubmitted = submittedMcqs.has(mcq._id || mcq.id);
             const isCorrect = mcqResults[mcq._id || mcq.id];
 
@@ -1127,25 +1127,15 @@ const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
                 Submit All Answers
               </h4>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                {allSubmitted
-                  ? "All questions submitted. You can reset to try again."
-                  : !allAnswered
-                    ? `Answer all ${mcqs.length - Object.keys(selectedAnswers).length} remaining questions to submit`
-                    : "Ready to submit all answers"
-                }
-              </p>
+
             </div>
 
             <div className="flex gap-3">
 
               <button
                 onClick={submitAllMcqAnswers}
-                disabled={!allAnswered}
-                className={`px-6 py-3 rounded-lg transition-colors ${allAnswered
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed'
-                  }`}
+
+                className="px-6 py-3 rounded-lg transition-colors 'bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400 cursor-not-allowed"
               >
                 Submit All Answers
               </button>
@@ -1220,20 +1210,6 @@ const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
         const newResults = {};
 
         // Create a new answers array with is_correct included
-        const answersWithResults = answers.map(answer => {
-          const result = results.find(r => r.mcq_id == answer.mcq_id);
-          return {
-            ...answer,
-            is_correct: result ? result.is_correct : false
-          };
-        });
-
-
-
-        // Store results for each MCQ
-        results.forEach(result => {
-          newResults[result.mcq_id] = result.is_correct;
-        });
 
         setMcqResults(newResults);
 
@@ -1338,9 +1314,10 @@ const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
                   onPlay={() => handleVideoPlay(index)}
                   onTimeUpdate={(e) => handleVideoTimeUpdate(
                     index,
-                    e.target.currentTime,
-                    e.target.duration
+                    (e.target as HTMLVideoElement).currentTime,
+                    (e.target as HTMLVideoElement).duration
                   )}
+
                   onEnded={() => {
                     handleManualVideoComplete(index);
                   }}
@@ -1608,10 +1585,10 @@ const [cototalmedia, setcototalmedia] = useState<Set<number>>(new Set());
 
         {renderMcqs()}
 
-        { (mcqs.length <= 0) && (cototalmedia == totalmedia   || totalmedia == 0) && (
-         <div className="flex justify-end"> <button className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
-              onClick={() => fetchChapterNavigation("next")}
-            >Next</button></div>
+        {(mcqs.length <= 0) && (cototalmedia == totalmedia || totalmedia == 0) && (
+          <div className="flex justify-end"> <button className="px-6 py-3 rounded-lg transition-colors bg-blue-700 text-white hover:bg-blue-900"
+            onClick={() => fetchChapterNavigation("next")}
+          >Next</button></div>
         )}
 
       </div>
