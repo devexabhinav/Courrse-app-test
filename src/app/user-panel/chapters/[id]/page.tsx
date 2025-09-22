@@ -19,8 +19,7 @@ export default function ChapterDetail() {
   const [error, setError] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediashown, setmediashown] = useState(false);
-  console.log("rfdkisbvgrdlsghlidekdte", mediashown)
+
   // Media completion tracking
   const [viewedImages, setViewedImages] = useState<Set<number>>(new Set());
   const [viewedVideos, setViewedVideos] = useState<Set<number>>(new Set());
