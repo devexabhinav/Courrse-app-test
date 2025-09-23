@@ -13,7 +13,7 @@ import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Pencil, SearchIcon, Trash2 } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
-import { useRouter } from "next/navigation";
+import { useRouter ,useSearchParams } from "next/navigation";
 
 export default function Chapters({ className }: any) {
   const router = useRouter();
@@ -25,30 +25,44 @@ export default function Chapters({ className }: any) {
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(5);
 
-  
-  const fetchChapters = async () => {
-    try {
-      const query = new URLSearchParams();
-      query.append("page", String(page));
-      query.append("limit", String(limit));
-      if (search) query.append("search", search);
 
-      const res = await api.get(`chapter/get-all-chapters?${query.toString()}`);
 
-      if (res.success) {
-        setChapters(res.data?.data?.data || []);
-        setTotalPages(res.data?.data?.pagination?.totalPages || 1);
-      }
-    } catch (err) {
-      console.error("Failed to fetch chapters:", err);
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get("course_id");
+
+console.log("dwsdqwedrfewrf",courseId)
+
+const fetchChapters = async (course_id: string) => {
+  try {
+    const query = new URLSearchParams();
+    query.append("courseId", String(page));
+    query.append("page", String(page));
+    query.append("limit", String(limit));
+    if (search) query.append("search", search);
+    
+   
+    
+    const res = await api.get(`chapter/course/?course_id=${course_id}`);
+
+    console.log("📥 API Response:", res.data?.data?.data?.chapters);
+    
+    if (res.success) {
+      setChapters(res.data?.data?.data?.chapters);
+      setTotalPages(res.data?.data?.pagination?.totalPages || 1);
     }
-  };
+  } catch (err) {
+    console.error("❌ Failed to fetch chapters:", err);
+  }
+};
 
 
 
   useEffect(() => {
-    fetchChapters();
-  }, [page, search]);
+    if(courseId){
+
+      fetchChapters(courseId);
+    }
+  }, [page, search,courseId]);
 
   const handleEdit = (id: number) => {
     router.push(`/chapters/edit-chapters?id=${id}`);
@@ -62,7 +76,7 @@ export default function Chapters({ className }: any) {
       const response = await api.delete(`chapter/${id}`);
       if (response.success) {
         toasterSuccess("Chapter Deleted Successfully", 3000, "id");
-        await fetchChapters();
+        await fetchChapters(courseId);
       }
       else {
         toasterError(response.error.code, 3000, "id")
@@ -100,7 +114,7 @@ export default function Chapters({ className }: any) {
 
           {/* Add Course Button */}
           <button
-            onClick={() => router.push("/chapters/add-chapters")}
+            onClick={() => router.push(`/chapters/add-chapters?course_id=${courseId}`)}
             className="w-full sm:w-auto rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700"
           >
             + Add Chapter
@@ -211,7 +225,7 @@ export default function Chapters({ className }: any) {
               >
                 <TableCell className="!text-left">{chapter.title}</TableCell>
                 <TableCell>{chapter.content?.slice(0, 50)}...</TableCell>
-                <TableCell>{chapter.course.title}</TableCell>
+                <TableCell>{chapter.title}</TableCell>
                 <TableCell>{chapter.order}</TableCell>
 
                 <TableCell className="text-center">

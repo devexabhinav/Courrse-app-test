@@ -34,7 +34,7 @@ const AddChapter = () => {
 
   const fetchCourses = async () => {
     try {
-      const res = await api.get("course/list?active=true");
+      const res = await api.get("course/list");
       setCourses(res.data?.data?.courses || []);
     } catch (err) {
       console.error("Failed to fetch courses:", err);

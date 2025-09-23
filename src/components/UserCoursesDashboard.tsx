@@ -29,7 +29,7 @@ export default function Courses({ className }: any) {
       if (statusFilter === "active") query.append("active", "true");
       if (statusFilter === "inactive") query.append("active", "false");
 
-      const res = await api.get(`course/list?${query.toString()}`);
+      const res = await api.get(`course/courses?${query.toString()}`);
       if (res.success) {
         setCourses(res?.data?.data?.courses || []);
         setTotalPages(res.data?.data?.totalPages || 1);
@@ -173,7 +173,7 @@ export default function Courses({ className }: any) {
       {/* Courses Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.length > 0 ? (
-          courses.map((course: any) => (
+          courses.filter((course: any) => course.totalChapters > 0) .map((course: any) => (
             <div
               key={course.id}
               className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 cursor-pointer"

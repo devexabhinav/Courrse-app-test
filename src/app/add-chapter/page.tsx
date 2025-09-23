@@ -94,7 +94,8 @@ export default function AddChapter() {
             
             <div
               key={course.id}
-              onClick={() => router.push(`/chapters/add-chapters?course=${encodeURIComponent(course.title)}&course_id=${course.id}`)}
+              // onClick={() => router.push(`/chapters/add-chapters?course=${encodeURIComponent(course.title)}&course_id=${course.id}`)}
+              onClick={()=> router.push(`/chapters?course=${encodeURIComponent(course.title)}&course_id=${course.id}`)}
               className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow overflow-hidden"
             >
               {/* Course Image */}

@@ -253,12 +253,7 @@ export default function EnrolledCourses({ className }: any) {
       <p className="mt-2 text-gray-600 dark:text-gray-400">
         {search ? 'No courses match your search' : 'You haven\'t enrolled in any courses yet'}
       </p>
-      <button
-        onClick={() => router.push('/courses')}
-        className="mt-4 rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-      >
-        Browse Courses
-      </button>
+     
     </div>
   </div>
 )}

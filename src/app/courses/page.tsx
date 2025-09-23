@@ -72,7 +72,7 @@ export default function Courses({ className }: any) {
       await fetchCourses();
 
     } catch (error) {
-      console.error("Failed to delete course:", error);
+      console.log("Failed to delete course:", error);
     }
   };
   const handleToggleStatus = async (id: number, newStatus: boolean) => {
@@ -82,10 +82,11 @@ export default function Courses({ className }: any) {
         toasterSuccess("Status updated successfully", 2000, "status");
         fetchCourses();
       } else {
-        console.error(res.error);
+        console.log(res);
+         toasterSuccess("Add chapter then you can active this course", 2000, "status");
       }
     } catch (err) {
-      console.error("Failed to update status", err);
+      console.log("Failed to update status", err);
     }
   };
   return (

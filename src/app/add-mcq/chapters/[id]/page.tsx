@@ -113,7 +113,7 @@ export default function Chapters() {
       </div>
 
       {/* Chapters Grid */}
-      {chapters.length > 0 ? (
+      {chapters.length > 0  ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {chapters.filter((chapter: any) => chapter.course_id == courseId).map((chapter: Chapter) => (
             <div

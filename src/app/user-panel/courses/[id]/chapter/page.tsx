@@ -339,10 +339,7 @@ export default function Chapters({ className }: any) {
                       )}
                       {isLocked ? 'Locked' : 'Start Learning'}
                     </button>
-                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                      <Clock className="h-3 w-3 mr-1" />
-                      <span>Not started</span>
-                    </div>
+                    
 
 
 
