@@ -26,10 +26,22 @@ export default function Courses({ className }: any) {
       query.append("page", String(page));
       query.append("limit", String(limit));
       if (search) query.append("search", search);
-      if (statusFilter === "active") query.append("active", "true");
-      if (statusFilter === "inactive") query.append("active", "false");
 
-      const res = await api.get(`course/courses?${query.toString()}`);
+      // Check user role and call appropriate API
+      const userRole = Cookies.get("role");
+      let apiEndpoint = "";
+      
+      if (userRole === "user") {
+        // For users, only fetch active courses
+        apiEndpoint = `course/courses/active?${query.toString()}`;
+      } else {
+        // For admins, use the existing endpoint with status filter
+        if (statusFilter === "active") query.append("active", "true");
+        if (statusFilter === "inactive") query.append("active", "false");
+        apiEndpoint = `course/courses?${query.toString()}`;
+      }
+
+      const res = await api.get(apiEndpoint);
       if (res.success) {
         setCourses(res?.data?.data?.courses || []);
         setTotalPages(res.data?.data?.totalPages || 1);
