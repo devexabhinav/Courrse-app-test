@@ -228,20 +228,23 @@ export default function ChapterDetail() {
     }
   };
 
-
+// Add this useEffect to automatically check completion when viewedImages changes
+useEffect(() => {
+  checkMediaCompletion();
+  checkChapterCompletion();
+}, [viewedImages, completedVideos]); // Add all dependencies that affect completion
 
 
   // Function to handle image viewing
-  const handleImageView = (index: number) => {
-    const newViewedImages = new Set(viewedImages);
-    newViewedImages.add(index);
-    setViewedImages(newViewedImages);
-
-    setTimeout(() => {
-      checkMediaCompletion();
-      checkChapterCompletion();
-    }, 100);
-  };
+const handleImageView = (index: number) => {
+  const newViewedImages = new Set(viewedImages);
+  newViewedImages.add(index);
+  setViewedImages(newViewedImages);
+  
+  // Check completion immediately after state update
+  checkMediaCompletion();
+  checkChapterCompletion();
+};
 
   // Function to handle video play
   const handleVideoPlay = (index: number) => {
