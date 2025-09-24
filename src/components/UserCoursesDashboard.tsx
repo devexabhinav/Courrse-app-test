@@ -30,7 +30,7 @@ export default function Courses({ className }: any) {
       // Check user role and call appropriate API
       const userRole = Cookies.get("role");
       let apiEndpoint = "";
-      
+
       if (userRole === "user") {
         // For users, only fetch active courses
         apiEndpoint = `course/courses/active?${query.toString()}`;
@@ -124,28 +124,27 @@ export default function Courses({ className }: any) {
     const maxVisiblePages = 5;
     let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     // Adjust if we're near the end
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       buttons.push(
         <button
           key={i}
           onClick={() => setPage(i)}
-          className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium ${
-            page === i
+          className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium ${page === i
               ? 'bg-blue-600 text-white'
               : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
-          }`}
+            }`}
         >
           {i}
         </button>
       );
     }
-    
+
     return buttons;
   };
 
@@ -185,7 +184,7 @@ export default function Courses({ className }: any) {
       {/* Courses Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.length > 0 ? (
-          courses.filter((course: any) => course.totalChapters > 0) .map((course: any) => (
+          courses.filter((course: any) => course.totalChapters > 0).map((course: any) => (
             <div
               key={course.id}
               className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
@@ -286,17 +285,16 @@ export default function Courses({ className }: any) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              disabled={page === 1}
+              disabled={page == 1}
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+              className="flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
             >
               Previous
             </button>
-            
             <div className="flex items-center gap-1">
               {generatePaginationButtons()}
             </div>
-            
+
             <button
               disabled={page === totalPages}
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
