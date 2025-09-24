@@ -60,7 +60,7 @@ export default function EditProfile() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Edit Teacher Profile</h1>
+      <h1 className="text-2xl font-bold mb-4">Edit  Profile</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
         <div>
@@ -68,7 +68,12 @@ export default function EditProfile() {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+    const regex = /^[A-Za-z\s]*$/; 
+    if (regex.test(e.target.value)) {
+      setName(e.target.value);
+    }
+  }}
             className="border px-3 py-2 rounded w-full"
           />
         </div>

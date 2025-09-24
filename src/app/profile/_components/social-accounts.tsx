@@ -10,12 +10,12 @@ import {
 const ACCOUNTS = [
   {
     platform: "Facebook",
-    url: "#",
+    url: "https://www.facebook.com/devexhub/",
     Icon: FacebookIcon,
   },
   {
-    platform: "X",
-    url: "#",
+    platform: "Instagram",
+    url: "https://www.instagram.com/devexhub/",
     Icon: XIcon,
   },
   {
@@ -24,13 +24,13 @@ const ACCOUNTS = [
     Icon: LinkedInIcon,
   },
   {
-    platform: "Dribble",
-    url: "#",
+    platform: "Youtube",
+    url: "https://www.youtube.com/@DevexHub",
     Icon: DribbleIcon,
   },
   {
-    platform: "GitHub",
-    url: "#",
+    platform: "Website",
+    url: "https://www.devexhub.in/",
     Icon: GitHubIcon,
   },
 ];
