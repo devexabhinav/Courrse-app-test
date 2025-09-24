@@ -609,26 +609,7 @@ export default function ChapterDetail() {
 
 
             {/* Media Section */}
-            {/* {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-                  Media Filesdd
-                </h2>
-
-                {/* Images with tracking */}
-                {renderImages()}
-
-                {/* Videos with smart completion */}
-                {renderVideos()}
-              </div>
-            ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
-                <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">
-                  No media files available for this chapter
-                </p>
-              </div>
-            )} */}
+           
 
 
 
