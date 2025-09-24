@@ -15,6 +15,9 @@ const EditChapter = () => {
   const searchParams = useSearchParams();
   const chapterId = searchParams.get("id");
 
+
+  const courseId = searchParams.get('course_id');
+
   const [courses, setCourses] = useState<any>([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -174,7 +177,7 @@ const EditChapter = () => {
       const res = await api.put(`chapter/${chapterId}`, payload);
       if (res.success) {
         toasterSuccess("Chapter updated successfully", 2000, "id");
-        router.push("/chapters");
+        router.push(`/chapters?course_id=${courseId}`)
       } else {
         toasterError(res.error?.code || "Something went wrong ❌", 2000, "id");
       }

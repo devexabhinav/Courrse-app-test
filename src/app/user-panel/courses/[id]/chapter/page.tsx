@@ -14,7 +14,7 @@ export default function Chapters({ className }: any) {
   const userId = Cookies.get("userId")
 
 
-  const [search, setSearch] = useState("");
+
   const [chapters, setChaptersByid] = useState<any[]>([]);
   const [showMediaModal, setShowMediaModal] = useState<any>(false);
   const [activeMedia, setActiveMedia] = useState<any>({ type: "image", items: [] });
@@ -35,21 +35,16 @@ export default function Chapters({ className }: any) {
 
 
       // Fetch both basic chapters and MCQ status in parallel
-      const [chaptersRes, statusRes] = await Promise.all([
-        api.get(`chapter?course_id=${courseId}`),
-        api.get(`mcq/course-chapters-status?user_id=${userId}&course_id=${courseId}`)
-      ]);
+      const response = await api.get(`mcq/course-chapters-status?user_id=${userId}&course_id=${courseId}`);
 
       // Store the complete responses
-      const chaptersResponse = chaptersRes;
-      const statusResponse = statusRes;
-
-
-      setChaptersByid(chaptersResponse?.data?.data)
-      setpassedchapter(statusResponse?.data?.data)
+      console.log("------------", response?.data?.data?.chapters)
+      setLoadingById(false)
+      setChaptersByid(response?.data?.data?.chapters)
+      // setpassedchapter(statusResponse?.data?.data)
 
     } catch (err) {
-      console.error("Error fetching chapters:", err)
+      console.log("Error fetching chapters:", err)
 
     } finally {
 
@@ -60,34 +55,6 @@ export default function Chapters({ className }: any) {
     fetchChaptersWithStatus();
   }, [courseId, userId]);
 
-  const fetchChaptersByCourseId = async () => {
-    if (!courseId) return;
-
-    try {
-      setLoadingById(true);
-      const res = await api.get(`chapter?course_id=${courseId}`);
-
-      if (res.success) {
-
-        //  const chaptersWithLockStatus = res?.data?.data;
-
-        // setChaptersByid(chaptersWithLockStatus);
-
-        // setChaptersByid(chaptersWithLockStatus);
-      } else {
-        console.error("Failed to fetch chapters by course ID:", res);
-        toasterError("Failed to load chapters");
-      }
-    } catch (err) {
-      console.error("Error fetching chapters by course ID:", err);
-      toasterError("Error loading chapters");
-    } finally {
-
-      setLoadingById(false);
-
-
-    }
-  };
 
 
   const handleChapterClick = async (chapterId: number) => {
@@ -115,7 +82,7 @@ export default function Chapters({ className }: any) {
   };
 
   useEffect(() => {
-    fetchChaptersByCourseId();
+
     fetchCourseName();
   }, []);
 
@@ -245,20 +212,18 @@ export default function Chapters({ className }: any) {
       {/* Chapters List */}
       <div className="space-y-4">
         {
-          chapters.map((chapter: any, index) => {
-            const chapterProgress = passedchapter.find(
+          chapters.map((chapter: any, index: number) => {
+
+            const chapterProgress = passedchapter?.find(
               (progress: any) => progress.chapter_id === chapter.id
-            );
+            ) || null;
 
-
-
-
-
+            // Locking logic with safety checks
             let isLocked = false;
             if (chapter.order > 1) {
               const prevChapter = chapters.find(c => c.order === chapter.order - 1);
               if (prevChapter) {
-                const prevChapterProgress = passedchapter.find(
+                const prevChapterProgress = passedchapter?.find(
                   (progress: any) => progress.chapter_id === prevChapter.id
                 );
                 isLocked = !prevChapterProgress?.passed;
@@ -281,79 +246,92 @@ export default function Chapters({ className }: any) {
               }
             }
 
-
-
-
-            return <div
-              key={index}
-              className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
-            >
-              <div className="p-5">
-                <div className="flex items-start justify-between">
-                  {/* Left side - Chapter info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center mb-2">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-medium mr-3">
-                        {index + 1}
+            return (
+              <div
+                key={chapter.id} // Use chapter.id instead of index for better performance
+                className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div className="p-5">
+                  <div className="flex items-start justify-between">
+                    {/* Left side - Chapter info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center mb-2">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-medium mr-3">
+                          {chapter.order || index + 1}
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                          {chapter.chapter_title}
+                        </h3>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                        {chapter.title}
-                      </h3>
+
+
+
+                      {/* Status and Media stats */}
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                        {/* Status */}
+
+
+                        {/* Media stats */}
+                        <div className="flex items-center">
+                          <ImageIcon className="h-3 w-3 mr-1" />
+                          <span>{chapter.media_summary?.total_images} Images</span>
+                        </div>
+                        <div className="flex items-center">
+                          <VideoIcon className="h-3 w-3 mr-1" />
+                          <span>{chapter.media_summary?.total_videos} Videos</span>
+                        </div>
+                        <div className="flex items-center">
+                          <FileText className="h-3 w-3 mr-1" />
+                          <span>{Math.ceil((chapter?.chapter_content.length) / 1000)}k words</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                      {chapter.content?.slice(0, 120)}...
-                    </p>
+                    {/* Right side - Actions and status */}
+                    <div className="flex flex-col items-end gap-2 ml-4">
+                      <button
+                        onClick={() => handleChapterClick(chapter.chapter_id)}
+                        disabled={chapter.locked}
+                        className={`px-4 py-2 rounded-lg flex items-center transition-colors ${chapter.locked
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
+                            : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
+                          }`}
+                      >
+                        {chapter.locked ? (
+                          <Lock className="h-4 w-4 mr-2" />
+                        ) : (
+                          <BookOpen className="h-4 w-4 mr-2" />
+                        )}
+                        {chapter.locked ? 'Locked' : 'Start Learning'}
+                      </button>
 
-                    {/* Media stats */}
-                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center">
-                        <ImageIcon className="h-3 w-3 mr-1" />
-                        <span>{chapter.images?.length || 0} Images</span>
-                      </div>
-                      <div className="flex items-center">
-                        <VideoIcon className="h-3 w-3 mr-1" />
-                        <span>{chapter.videos?.length || 0} Videos</span>
-                      </div>
-                      <div className="flex items-center">
-                        <FileText className="h-3 w-3 mr-1" />
-                        <span>{Math.ceil((chapter.content?.length || 0) / 1000)}k words</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right side - Actions and status */}
-                  <div className="flex flex-col items-end gap-2 ml-4">
-                    <button
-                      onClick={() => handleChapterClick(chapter.id)}
-                      disabled={isLocked}
-                      className={`px-4 py-2 rounded-lg flex items-center ${isLocked
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
-                          : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
-                        }`}
-                    >
-                      {isLocked ? (
-                        <Lock className="h-4 w-4 mr-2" />
-                      ) : (
-                        <BookOpen className="h-4 w-4 mr-2" />
+                      {/* Progress indicator (optional) */}
+                      {chapterProgress && (
+                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                          <span>Progress: </span>
+                          <span className="ml-1 font-medium">
+                            {chapterProgress.passed ? '100%' : chapterProgress.attempted ? 'In Progress' : '0%'}
+                          </span>
+                        </div>
                       )}
-                      {isLocked ? 'Locked' : 'Start Learning'}
-                    </button>
-                    
-
-
-
+                    </div>
                   </div>
-                </div>
 
-                {/* Progress bar (optional) */}
-                {/* <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
-                  <div className="bg-green-600 h-1.5 rounded-full" style={{ width: '0%' }}></div>
-                </div> */}
+                  {/* Progress bar (uncomment if you want visual progress) */}
+                  {chapterProgress && (
+                    <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                      <div
+                        className="bg-green-600 h-1.5 rounded-full transition-all duration-300"
+                        style={{
+                          width: chapterProgress.passed ? '100%' : chapterProgress.attempted ? '50%' : '0%'
+                        }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          }
-          )
+            );
+          })
         }
       </div>
 

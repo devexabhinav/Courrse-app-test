@@ -54,8 +54,7 @@ export default function ChapterDetail() {
     setMcqResults({});
     setSubmissionData(null);
 
-    // If you want to refetch fresh MCQs (optional):
-    // fetchChapterMcqsWithPrevious(chapterId);
+   
   };
 
 
@@ -137,7 +136,7 @@ export default function ChapterDetail() {
       setLoading(false);
     }
   };
-
+          console.log(";;;;;;;;;;;;;;;;",totalnomarks)
   const fetchChapterMcqsWithPrevious = async (chapterId: string) => {
     try {
       const userId = Cookies.get('userId');
@@ -333,6 +332,8 @@ export default function ChapterDetail() {
     const totalMedia = totalImages + totalVideos;
 
     settotalmedia(totalMedia)
+
+    
     if (totalMedia === 0) {
       return (
         <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
@@ -519,81 +520,81 @@ export default function ChapterDetail() {
   const renderMcqs = () => {
     if (!mcqs.length) return null;
 
-     if (!mediaCompleted) {
-        return (
+    //  if (!mediaCompleted) {
+    //     return (
 
-          <div className=" mx-auto ">
-            {/* Header */}
-
-
-
-            {/* Media Section */}
+    //       <div className=" mx-auto ">
+    //         {/* Header */}
 
 
 
-
-            {/* Media Modal */}
-            {showMediaModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
-                <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                  <button
-                    onClick={() => setShowMediaModal(false)}
-                    className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
-                  >
-                    ✕
-                  </button>
-
-                  {activeMedia.type === "image" ? (
-                    <img
-                      src={activeMedia.items[0]}
-                      alt="Chapter media"
-                      className="w-full h-auto max-h-[85vh] object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                      }}
-                    />
-                  ) : (
-                    <video
-                      controls
-                      autoPlay
-                      className="w-full h-auto max-h-[85vh]"
-                    >
-                      <source src={activeMedia.items[0]} type="video/mp4" />
-                    </video>
-                  )}
-                </div>
-              </div>
-            )}
+    //         {/* Media Section */}
 
 
 
 
-            <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="flex flex-col items-center justify-center text-center py-8">
-                <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
-                  <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Quiz Locked
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-                  Complete all videos and images in this chapter to unlock the quiz questions.
-                </p>
-                <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
-                  <span className="mr-2">Progress:</span>
-                  <span>
-                    {viewedImages.size}/{chapter?.images?.length || 0} images viewed •
-                    {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
-                  </span>
-                </div>
-              </div>
-            </div>
+    //         {/* Media Modal */}
+    //         {showMediaModal && (
+    //           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 px-4">
+    //             <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    //               <button
+    //                 onClick={() => setShowMediaModal(false)}
+    //                 className="absolute top-4 right-4 z-10 text-white bg-red-600 rounded-full p-2 hover:bg-red-700"
+    //               >
+    //                 ✕
+    //               </button>
+
+    //               {activeMedia.type === "image" ? (
+    //                 <img
+    //                   src={activeMedia.items[0]}
+    //                   alt="Chapter media"
+    //                   className="w-full h-auto max-h-[85vh] object-contain"
+    //                   onError={(e) => {
+    //                     (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+    //                   }}
+    //                 />
+    //               ) : (
+    //                 <video
+    //                   controls
+    //                   autoPlay
+    //                   className="w-full h-auto max-h-[85vh]"
+    //                 >
+    //                   <source src={activeMedia.items[0]} type="video/mp4" />
+    //                 </video>
+    //               )}
+    //             </div>
+    //           </div>
+    //         )}
 
 
-          </div>
 
-        );
-      }
+
+    //         <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+    //           <div className="flex flex-col items-center justify-center text-center py-8">
+    //             <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
+    //               <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+    //             </div>
+    //             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+    //               Quiz Locked
+    //             </h3>
+    //             <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+    //               Complete all videos and images in this chapter to unlock the quiz questions.
+    //             </p>
+    //             <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
+    //               <span className="mr-2">Progress:</span>
+    //               <span>
+    //                 {viewedImages.size}/{chapter?.images?.length || 0} images viewed •
+    //                 {" "}{completedVideos.size}/{chapter?.videos?.length || 0} videos completed
+    //               </span>
+    //             </div>
+    //           </div>
+    //         </div>
+
+
+    //       </div>
+
+    //     );
+    //   }
 
 
     if (totalnomarks < 75) {
