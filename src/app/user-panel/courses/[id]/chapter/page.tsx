@@ -211,7 +211,7 @@ export default function Chapters({ className }: any) {
 
       {/* Chapters List */}
       <div className="space-y-4">
-        {
+        {chapters && 
           chapters.map((chapter: any, index: number) => {
 
             const chapterProgress = passedchapter?.find(
@@ -338,9 +338,9 @@ export default function Chapters({ className }: any) {
       {/* Pagination */}
 
       <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        {chapters && <div className="text-sm text-gray-600 dark:text-gray-400">
           Showing {chapters.length} chapters
-        </div>
+        </div>}
         <div className="flex items-center gap-2">
           <button
             disabled={page === 1}
