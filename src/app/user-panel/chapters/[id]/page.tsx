@@ -609,7 +609,7 @@ export default function ChapterDetail() {
 
 
             {/* Media Section */}
-            {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
+            {/* {(chapter.images?.length > 0 || chapter.videos?.length > 0) ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
                   Media Filesdd
@@ -628,7 +628,7 @@ export default function ChapterDetail() {
                   No media files available for this chapter
                 </p>
               </div>
-            )}
+            )} */}
 
 
 
