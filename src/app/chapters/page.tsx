@@ -13,7 +13,7 @@ import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Pencil, SearchIcon, Trash2 } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
-import { useRouter ,useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Chapters({ className }: any) {
   const router = useRouter();
@@ -30,39 +30,39 @@ export default function Chapters({ className }: any) {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("course_id");
 
-console.log("dwsdqwedrfewrf",courseId)
+  console.log("dwsdqwedrfewrf", courseId)
 
-const fetchChapters = async (course_id: string) => {
-  try {
-    const query = new URLSearchParams();
-    query.append("courseId", String(page));
-    query.append("page", String(page));
-    query.append("limit", String(limit));
-    if (search) query.append("search", search);
-    
-   
-    
-    const res = await api.get(`chapter/course/?course_id=${course_id}`);
+  const fetchChapters = async (course_id: string) => {
+    try {
+      const query = new URLSearchParams();
+      query.append("courseId", String(page));
+      query.append("page", String(page));
+      query.append("limit", String(limit));
+      if (search) query.append("search", search);
 
-    console.log("📥 API Response:", res.data?.data?.data?.chapters);
-    
-    if (res.success) {
-      setChapters(res.data?.data?.data?.chapters);
-      setTotalPages(res.data?.data?.pagination?.totalPages || 1);
+
+
+      const res = await api.get(`chapter/course/?course_id=${course_id}`);
+
+      console.log("📥 API Response:", res.data?.data?.data?.chapters);
+
+      if (res.success) {
+        setChapters(res.data?.data?.data?.chapters);
+        setTotalPages(res.data?.data?.pagination?.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch chapters:", err);
     }
-  } catch (err) {
-    console.error("❌ Failed to fetch chapters:", err);
-  }
-};
+  };
 
 
 
   useEffect(() => {
-    if(courseId){
+    if (courseId) {
 
       fetchChapters(courseId);
     }
-  }, [page, search,courseId]);
+  }, [page, search, courseId]);
 
   const handleEdit = (id: number) => {
     router.push(`/chapters/edit-chapters?id=${id}`);
@@ -76,7 +76,9 @@ const fetchChapters = async (course_id: string) => {
       const response = await api.delete(`chapter/${id}`);
       if (response.success) {
         toasterSuccess("Chapter Deleted Successfully", 3000, "id");
-        await fetchChapters(courseId);
+        if (courseId) {
+          await fetchChapters(courseId);
+        }
       }
       else {
         toasterError(response.error.code, 3000, "id")
