@@ -173,7 +173,7 @@ export default function Mcq({ className }: any) {
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           disabled={page === 1}
-          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+          className="cursor-pointer disabled:cursor-not-allowed px-3 py-1 border rounded-xl disabled:opacity-50"
         >
           Previous
         </button>
@@ -183,7 +183,7 @@ export default function Mcq({ className }: any) {
         <button
           onClick={() => setPage((prev) => (page < totalPages ? prev + 1 : prev))}
           disabled={page >= totalPages}
-          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+          className="cursor-pointer px-3 py-1 disabled:cursor-not-allowed   border rounded-xl disabled:opacity-50"
         >
           Next
         </button>

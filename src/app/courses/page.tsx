@@ -266,7 +266,7 @@ export default function Courses({ className }: any) {
           <button
             disabled={page === 1}
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+            className="cursor-pointer px-4 py-2 bg-gray-200 disabled:cursor-not-allowed rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
           >
             Previous
           </button>
@@ -276,7 +276,7 @@ export default function Courses({ className }: any) {
           <button
             disabled={page === totalPages}
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            className="cursor-pointer px-4 py-2 bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+            className="cursor-pointer px-4 py-2 disabled:cursor-not-allowed  bg-gray-200 rounded-xl disabled:opacity-50 dark:bg-gray-700 dark:text-white"
           >
             Next
           </button>

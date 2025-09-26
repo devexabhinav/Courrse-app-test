@@ -127,7 +127,7 @@ export default function UsersWithProgressPage({ className }: any) {
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           disabled={page === 1}
-          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+          className="cursor-pointer px-3 disabled:cursor-not-allowed py-1 border rounded-xl disabled:opacity-50"
         >
           Previous
         </button>
@@ -137,7 +137,7 @@ export default function UsersWithProgressPage({ className }: any) {
         <button
           onClick={() => setPage((prev) => (page < total ? prev + 1 : prev))}
           disabled={page >= total}
-          className="cursor-pointer px-3 py-1 border rounded-xl disabled:opacity-50"
+          className="cursor-pointer px-3 py-1 disabled:cursor-not-allowed border rounded-xl disabled:opacity-50"
         >
           Next
         </button>
