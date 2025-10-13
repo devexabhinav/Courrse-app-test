@@ -103,6 +103,14 @@ export const NAV_DATA = [
         items: [],
         type: "both",
       },
+
+       {
+        title: "Modules",
+        url: "/admin-panel/Modules",
+        icon: Icons.User,
+        items: [],
+        type: "admin",
+      },
     ],
   },
 ];
