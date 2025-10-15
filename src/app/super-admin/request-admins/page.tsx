@@ -26,11 +26,11 @@ export default function AdminUsersPage() {
         // Axios automatically sends cookies because of withCredentials: true
         const response = await api.get('user/admins');
 
-        console.log('API Response:', response.data);
+        console.log('API Response:', response?.data?.data?.admins);
 
         if (response.data.success && response.data.data) {
             setAdmins(response.data.data.admins || []);
-            setTotalCount(response.data.count || 0);
+            setTotalCount(response?.data?.data?.admins.length || 0);
         } else {
             setError(response.data.message || 'Failed to fetch admins');
         }
