@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, User, Mail, Calendar, Shield, RefreshCw, Check, X } from 'lucide-react';
 import { rejects } from 'assert';
+import api from '@/lib/api';
+
 
 export default function AdminUsersPage() {
     const [admins, setAdmins] = useState([]);
@@ -14,38 +16,43 @@ export default function AdminUsersPage() {
         fetchAdmins();
     }, []);
 
+   
+
     const fetchAdmins = async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    try {
+        setLoading(true);
+        setError(null);
 
-            const token = localStorage.getItem('accessToken');
+        // Axios automatically sends cookies because of withCredentials: true
+        const response = await api.get('user/admins');
 
-            const response = await fetch('http://localhost:5000/user/admins', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+        console.log('API Response:', response.data);
 
-            const data = await response.json();
-
-            console.log('API Response:', data);
-
-            if (data.success && data.data) {
-                setAdmins(data.data.admins || []);
-                setTotalCount(data.data.count || 0);
-            } else {
-                setError(data.message || 'Failed to fetch admins');
-            }
-        } catch (err) {
-            setError('An error occurred while fetching admins');
-            console.error('Fetch error:', err);
-        } finally {
-            setLoading(false);
+        if (response.data.success && response.data.data) {
+            setAdmins(response.data.data.admins || []);
+            setTotalCount(response.data.count || 0);
+        } else {
+            setError(response.data.message || 'Failed to fetch admins');
         }
-    };
+    } catch (err: any) {
+        if (err.response?.status === 401) {
+            setError('Session expired. Please login again.');
+            // Optionally redirect to login
+            setTimeout(() => {
+                window.location.href = '/auth/login';
+            }, 2000);
+        } else if (err.response?.status === 403) {
+            setError('Access denied. Super Admin privileges required.');
+        } else {
+            setError('An error occurred while fetching admins');
+        }
+        console.error('Fetch error:', err);
+    } finally {
+        setLoading(false);
+    }
+};
+
+
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
@@ -63,66 +70,195 @@ export default function AdminUsersPage() {
 
 
 
-  const handleApprove = async (adminId) => {
-        if (!confirm('Are you sure you want to approve this admin? They will receive access to create courses and manage students.')) {
-            return;
+//   const handleApprove = async (adminId) => {
+//         if (!confirm('Are you sure you want to approve this admin? They will receive access to create courses and manage students.')) {
+//             return;
+//         }
+
+//         try {
+//             const token = localStorage.getItem('accessToken');
+//             const response = await fetch(`http://localhost:5000/user/admins/${adminId}/approve`, {
+//                 method: 'PUT',
+//                 headers: {
+//                     'Authorization': `Bearer ${token}`,
+//                     'Content-Type': 'application/json'
+//                 }
+//             });
+
+//             const data = await response.json();
+
+//             if (data.success) {
+//                 alert('✅ Admin approved successfully! An approval email has been sent.');
+//                 // Refresh the admin list
+//                 fetchAdmins();
+//             } else {
+//                 alert(`❌ Failed to approve admin: ${data.message || 'Unknown error'}`);
+//             }
+//         } catch (err) {
+//             console.error('Approve error:', err);
+//             alert('❌ An error occurred while approving admin. Please try again.');
+//         }
+//     };
+
+const handleApprove = async (adminId: string) => {
+    if (!confirm('Are you sure you want to approve this admin? They will receive access to create courses and manage students.')) {
+        return;
+    }
+
+    try {
+        // API utility automatically sends cookies - no need to pass token manually
+        const response = await api.put(`user/admins/${adminId}/approve`);
+
+        if (response.success) {
+            alert('✅ Admin approved successfully! An approval email has been sent.');
+            // Refresh the admin list
+            fetchAdmins();
+        } else {
+            alert(`❌ Failed to approve admin: ${response.error?.message || 'Unknown error'}`);
         }
+    } catch (err) {
+        console.error('Approve error:', err);
+        alert('❌ An error occurred while approving admin. Please try again.');
+    }
+};
 
-        try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(`http://localhost:5000/user/admins/${adminId}/approve`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
 
-            const data = await response.json();
+    // const handleReject = async (adminId) => {
+    //     const confirmed = confirm('Are you sure you want to reject this admin?');
 
-            if (data.success) {
-                alert('✅ Admin approved successfully! An approval email has been sent.');
-                // Refresh the admin list
-                fetchAdmins();
-            } else {
-                alert(`❌ Failed to approve admin: ${data.message || 'Unknown error'}`);
+    //     if (!confirmed) return;
+
+    //     try {
+    //         const token = localStorage.getItem('accessToken');
+    //         const response = await fetch(`http://localhost:5000/user/admins/${adminId}/reject`, {
+    //             method: 'PATCH',
+    //             headers: {
+    //                 'Authorization': `Bearer ${token}`,
+    //                 'Content-Type': 'application/json'
+    //             }
+    //         });
+
+    //         const data = await response.json();
+
+    //         if (data.success) {
+    //             alert('Admin rejected successfully!');
+    //             fetchAdmins();
+    //         } else {
+    //             alert(`Failed to reject admin: ${data.message}`);
+    //         }
+    //     } catch (err) {
+    //         console.error('Reject error:', err);
+    //         alert('An error occurred while rejecting admin.');
+    //     }
+    // };
+
+
+
+// const handleReject = async (adminId: string) => {
+//     if (!confirm('Are you sure you want to reject this admin application?')) {
+//         return;
+//     }
+
+//     try {
+//         // API utility automatically sends cookies with the request
+//         // No body needed - reason is optional
+//         const response = await api.patch(`user/admins/${adminId}/reject`);
+
+//         console.log('Reject Response:', response);
+
+//         if (response.success && response.data) {
+//             // Backend returns: { success: true, message: "...", data: { admin: {...}, emailSent: true/false } }
+//             const { emailSent } = response.data.data || {};
+            
+//             // Show the message from backend
+//             alert(response.data.message || `✅ Admin rejected successfully! ${emailSent ? 'A rejection email has been sent.' : 'However, the email could not be sent.'}`);
+            
+//             // Refresh the admin list
+//             fetchAdmins();
+//         }
+//     } catch (err: any) {
+//         console.error('Reject error:', err);
+//         console.error('Error response:', err.response);
+        
+//         if (err.response?.status === 400) {
+//             alert('❌ Invalid request. Admin ID is required.');
+//         } else if (err.response?.status === 404) {
+//             alert('❌ Admin user not found.');
+//         } else if (err.response?.status === 403) {
+//             alert('❌ Access denied. Super Admin privileges required.');
+//         } else if (err.response?.status === 401) {
+//             alert('❌ Session expired. Please login again.');
+//             window.location.href = '/auth/login';
+//         } else if (err.response?.status === 500) {
+//             alert(`❌ Server error: ${err.response?.data?.message || 'Internal server error'}`);
+//         } else {
+//             alert('❌ An error occurred while rejecting admin. Please try again.');
+//         }
+//     }
+// };
+const handleReject = async (adminId: string) => {
+    if (!confirm('Are you sure you want to reject this admin application?')) {
+        return;
+    }
+
+    try {
+        // Get token from localStorage or cookies
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        
+        // API utility automatically sends cookies with the request
+        const response = await api.patch(`user/admins/${adminId}/reject`, {}, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
-        } catch (err) {
-            console.error('Approve error:', err);
-            alert('❌ An error occurred while approving admin. Please try again.');
+        });
+
+        console.log('Reject Response:', response);
+
+        // Check if the request was successful
+        if (response.success) {
+            // Backend returns: { success: true, message: "...", data: { admin: {...}, emailSent: true/false } }
+            const emailSent = response.data?.emailSent ?? false;
+            
+            // Show the message from backend (it already contains email status info)
+            alert(response.message || '✅ Admin rejected successfully!');
+            
+            // Refresh the admin list
+            fetchAdmins();
+        } else {
+            // Handle unexpected unsuccessful response
+            alert(response.message || '❌ Failed to reject admin.');
         }
-    };
-
-
-
-    const handleReject = async (adminId) => {
-        const confirmed = confirm('Are you sure you want to reject this admin?');
-
-        if (!confirmed) return;
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(`http://localhost:5000/user/admins/${adminId}/reject`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                alert('Admin rejected successfully!');
-                fetchAdmins();
-            } else {
-                alert(`Failed to reject admin: ${data.message}`);
-            }
-        } catch (err) {
-            console.error('Reject error:', err);
-            alert('An error occurred while rejecting admin.');
+    } catch (err: any) {
+        console.error('Reject error:', err);
+        console.error('Error response:', err.response);
+        
+        // Handle different HTTP error status codes
+        const status = err.response?.status;
+        const errorMessage = err.response?.data?.message;
+        
+        switch (status) {
+            case 400:
+                alert(errorMessage || '❌ Invalid request. Admin ID is required.');
+                break;
+            case 401:
+                alert('❌ Session expired. Please login again.');
+                window.location.href = '/auth/login';
+                break;
+            case 403:
+                alert('❌ Access denied. Super Admin privileges required.');
+                break;
+            case 404:
+                alert('❌ Admin user not found.');
+                break;
+            case 500:
+                alert(`❌ Server error: ${errorMessage || 'Internal server error'}`);
+                break;
+            default:
+                alert(errorMessage || '❌ An error occurred while rejecting admin. Please try again.');
         }
-    };
+    }
+};      
 
 
 
