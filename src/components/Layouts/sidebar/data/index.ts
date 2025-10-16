@@ -89,7 +89,7 @@ export const NAV_DATA = [
       },
       {
         title: "All Users",
-        url: "/super-admin/all-users",
+        url: "/super-admin/sliceiii",
         icon: Icons.Alphabet,
         items: [],
         type: "Super-Admin",
