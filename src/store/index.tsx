@@ -4,6 +4,9 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 // Import your reducers
 import counterReducer from './slices/userSlice';
 import adminReducer from './slices/adminSlice';
+import adminActivityReducer from './slices/adminActivitySlice';
+
+
 
 // Temporary placeholder slice until you add your own slices
 const placeholderSlice = createSlice({
@@ -19,6 +22,7 @@ export const makeStore = () => {
       counter: counterReducer,
       admin: adminReducer,  // ← Add admin reducer
       placeholder: placeholderSlice.reducer,
+      adminActivity: adminActivityReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
