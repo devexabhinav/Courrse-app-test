@@ -29,10 +29,12 @@ export default function AdminActivitiesPage() {
     (state: RootState) => state.adminActivity
   );
 
+
   const [filters, setFilters] = useState({
     activity_type: '',
     admin_id: ''
   });
+
 
 // In your component, make sure you're using the correct API endpoint
 useEffect(() => {
@@ -224,10 +226,10 @@ useEffect(() => {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {activity.admin?.username || `Admin ${activity.admin_id}`}
+                              {activity.username || `Admin ${activity.admin_id}`}
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {activity.admin?.email || 'No email'}
+                              {activity.email || 'No email'}
                             </div>
                           </div>
                         </div>
