@@ -13,14 +13,17 @@ import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Pencil, Trash2, ToggleRight, ToggleLeft } from "lucide-react";
 import { toasterSuccess } from "@/components/core/Toaster";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Mcq({ className }: any) {
   const router = useRouter();
   const [mcq, setMcq] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit] = useState(5); // items per page
+  const [limit] = useState(5);
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get("course_id");
+  const courseName = searchParams.get("name");
 
   const fetchMcq = async () => {
     try {
@@ -77,14 +80,25 @@ export default function Mcq({ className }: any) {
     <div
       className={cn(
         "grid rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
-        className
+        className,
       )}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-body-2xlg font-bold text-dark dark:text-white">All MCQs List</h2>
+        <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
+          All MCQs List
+        </h2>
+
+        <button
+          onClick={() =>
+            router.push(`/chapters?course=${name}&course_id=${courseId}`)
+          }
+          className="w-full rounded-full bg-gray-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-700 sm:w-auto"
+        >
+          ← Back to {name} Chapters
+        </button>
         <button
           onClick={() => router.push("/mcq/add-mcq")}
-          className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition"
+          className="rounded-xl bg-green-500 px-4 py-2 text-white transition hover:bg-green-600"
         >
           Add MCQ
         </button>
@@ -110,19 +124,23 @@ export default function Mcq({ className }: any) {
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={course.id}
               >
-                <TableCell className="!text-left">{course.course?.title}</TableCell>
+                <TableCell className="!text-left">
+                  {course.course?.title}
+                </TableCell>
                 <TableCell>{course.question}</TableCell>
                 <TableCell>{course.answer}</TableCell>
                 <TableCell className="flex items-center justify-center gap-2">
                   <button
-                    onClick={() => handleToggleStatus(course.id, !course.is_active)}
-                    className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                    onClick={() =>
+                      handleToggleStatus(course.id, !course.is_active)
+                    }
+                    className="rounded-full p-1 transition hover:bg-gray-200 dark:hover:bg-gray-700"
                     title="Change Status"
                   >
                     {course.is_active ? (
-                      <ToggleRight className="w-10 h-8 text-green-600" />
+                      <ToggleRight className="h-8 w-10 text-green-600" />
                     ) : (
-                      <ToggleLeft className="w-10 h-8 text-red-600" />
+                      <ToggleLeft className="h-8 w-10 text-red-600" />
                     )}
                   </button>
                 </TableCell>
@@ -169,11 +187,11 @@ export default function Mcq({ className }: any) {
       </Table>
 
       {/* Pagination Controls */}
-      <div className="mt-4 flex justify-end items-center gap-3">
+      <div className="mt-4 flex items-center justify-end gap-3">
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           disabled={page === 1}
-          className="cursor-pointer disabled:cursor-not-allowed px-3 py-1 border rounded-xl disabled:opacity-50"
+          className="cursor-pointer rounded-xl border px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Previous
         </button>
@@ -181,9 +199,11 @@ export default function Mcq({ className }: any) {
           Page {page} of {totalPages || 1}
         </span>
         <button
-          onClick={() => setPage((prev) => (page < totalPages ? prev + 1 : prev))}
+          onClick={() =>
+            setPage((prev) => (page < totalPages ? prev + 1 : prev))
+          }
           disabled={page >= totalPages}
-          className="cursor-pointer px-3 py-1 disabled:cursor-not-allowed   border rounded-xl disabled:opacity-50"
+          className="cursor-pointer rounded-xl border px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
         </button>

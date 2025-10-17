@@ -8,7 +8,12 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
-import { CallIcon, EmailIcon, PencilSquareIcon, UserIcon } from "@/assets/icons";
+import {
+  CallIcon,
+  EmailIcon,
+  PencilSquareIcon,
+  UserIcon,
+} from "@/assets/icons";
 
 const EditCourse = () => {
   const router = useRouter();
@@ -24,7 +29,6 @@ const EditCourse = () => {
     image: null as File | string | null,
   });
 
-  // 🔁 Fetch course details on mount
   useEffect(() => {
     const fetchCourse = async () => {
       if (!courseId) return;
@@ -43,7 +47,7 @@ const EditCourse = () => {
         }
       } catch (err) {
         console.error("Failed to fetch course", err);
-        toasterError("Failed to load course",2000,"id");
+        toasterError("Failed to load course", 2000, "id");
       }
     };
 
@@ -66,11 +70,11 @@ const EditCourse = () => {
           setFormData((prev) => ({ ...prev, image: imageUrl }));
           toasterSuccess("Image uploaded successfully", 2000, "id");
         } else {
-          toasterError("Upload failed ❌",2000,"id");
+          toasterError("Upload failed ❌", 2000, "id");
         }
       } catch (err) {
         console.error("Upload failed", err);
-        toasterError("Upload failed ❌",2000,"id");
+        toasterError("Upload failed ❌", 2000, "id");
       } finally {
         setIsUploading(false); // stop loader
       }
@@ -82,10 +86,9 @@ const EditCourse = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    // Validate required fields
     const { title, description, category, creator } = formData;
     if (!title || !description || !category || !creator) {
-      toasterError("Please fill in all required fields ❌",2000,"id");
+      toasterError("Please fill in all required fields ❌", 2000, "id");
       return;
     }
 
@@ -105,7 +108,7 @@ const EditCourse = () => {
       }
     } catch (error) {
       console.error("Course update failed", error);
-      toasterError("Failed to update course ❌",2000,"id");
+      toasterError("Failed to update course ❌", 2000, "id");
     }
   };
 
@@ -119,6 +122,7 @@ const EditCourse = () => {
               className="w-full sm:w-1/2"
               type="text"
               name="creator"
+              disabled
               label="Creator Name"
               placeholder="Add Your Name Here"
               value={formData.creator}
@@ -164,16 +168,16 @@ const EditCourse = () => {
             onChange={handleChange}
           />
           {isUploading || typeof formData.image === "string" ? (
-            <div className="mb-5.5 mt-2 relative w-max">
+            <div className="relative mb-5.5 mt-2 w-max">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Current Image Preview
               </label>
 
-              <div className="h-32 w-48 flex items-center justify-center rounded border bg-gray-50 dark:bg-gray-800 relative">
+              <div className="relative flex h-32 w-48 items-center justify-center rounded border bg-gray-50 dark:bg-gray-800">
                 {isUploading ? (
                   <div className="flex flex-col items-center justify-center gap-2 text-blue-600">
                     <svg
-                      className="animate-spin h-6 w-6 text-blue-600"
+                      className="h-6 w-6 animate-spin text-blue-600"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -198,8 +202,10 @@ const EditCourse = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
-                      className="absolute right-2 top-2 z-10 rounded-full bg-white dark:bg-dark-3 text-black dark:text-white border p-1 hover:bg-red-500 hover:text-white transition"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, image: null }))
+                      }
+                      className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
                       title="Remove image"
                     >
                       ×
@@ -208,14 +214,13 @@ const EditCourse = () => {
                     <img
                       src={formData.image as string}
                       alt="Course"
-                      className="h-full w-full object-cover rounded"
+                      className="h-full w-full rounded object-cover"
                     />
                   </>
                 )}
               </div>
             </div>
           ) : null}
-
 
           <TextAreaGroup
             className="mb-5.5"
@@ -237,13 +242,12 @@ const EditCourse = () => {
             </button>
 
             <button
-              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               type="submit"
               disabled={isUploading}
             >
               {isUploading ? "Uploading..." : "Edit Course"}
             </button>
-
           </div>
         </form>
       </ShowcaseSection>

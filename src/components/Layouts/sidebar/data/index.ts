@@ -35,20 +35,27 @@ export const NAV_DATA = [
         items: [],
         type: "admin",
       },
-      {
-        title: "CHAPTERS",
-        url: "/add-chapter",
-        icon: Icons.Calendar,
-        items: [],
-        type: "admin",
-      },
-      {
-        title: "MCQ",
-        url: "/add-mcq",
-        icon: Icons.Calendar,
-        items: [],
-        type: "admin",
-      },
+      // {
+      //   title: "CHAPTERS",
+      //   url: "/add-chapter",
+      //   icon: Icons.Calendar,
+      //   items: [],
+      //   type: "admin",
+      // },
+      // {
+      //   title: "LESSONS",
+      //   url: "/lessons",
+      //   icon: Icons.Calendar,
+      //   items: [],
+      //   type: "admin",
+      // },
+      // {
+      //   title: "MCQ",
+      //   url: "/add-mcq",
+      //   icon: Icons.Calendar,
+      //   items: [],
+      //   type: "admin",
+      // },
       {
         title: "USER DETAILS",
         icon: Icons.Alphabet,
@@ -104,7 +111,7 @@ export const NAV_DATA = [
         type: "both",
       },
 
-       {
+      {
         title: "Modules",
         url: "/admin-panel/Modules",
         icon: Icons.User,

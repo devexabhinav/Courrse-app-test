@@ -3,6 +3,7 @@ import * as React from "react";
 
 export function Table({
   className,
+  onClick,
   ...props
 }: React.HTMLAttributes<HTMLTableElement>) {
   return (
@@ -10,6 +11,7 @@ export function Table({
       <table
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}
+        onClick={onClick}
       />
     </div>
   );
@@ -24,10 +26,15 @@ export function TableHeader({
 
 export function TableBody({
   className,
+  onClick,
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
-    <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />
+    <tbody
+      className={cn("[&_tr:last-child]:border-0", className)}
+      {...props}
+      onClick={onClick}
+    />
   );
 }
 
@@ -48,6 +55,7 @@ export function TableFooter({
 
 export function TableRow({
   className,
+  onClick,
   ...props
 }: React.HTMLAttributes<HTMLTableRowElement>) {
   return (
@@ -57,6 +65,7 @@ export function TableRow({
         className,
       )}
       {...props}
+      onClick={onClick}
     />
   );
 }
