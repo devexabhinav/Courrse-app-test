@@ -1,7 +1,7 @@
 "use client";
 
 import api from "@/lib/api";
-import React from 'react';
+import React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -9,32 +9,36 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
-import { CallIcon, EmailIcon, PencilSquareIcon, UserIcon } from "@/assets/icons";
-import { CableIcon, DollarSign, Heading1Icon, ListIcon, TicketsPlaneIcon, TypeIcon, Plus, Trash2 } from "lucide-react";
+import { PencilSquareIcon, UserIcon } from "@/assets/icons";
+
+import {
+  DollarSign,
+  ListIcon,
+  TicketsPlaneIcon,
+  TypeIcon,
+  Plus,
+  Trash2,
+} from "lucide-react";
+
+import Cookies from "js-cookie";
 
 const AddCourse = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const name = Cookies.get("name");
+  const [formData, setFormData] = useState<any>({
     title: "",
     description: "",
     category: "",
-    creator: "",
+    creator: name,
     price: "",
     image: null as File | null,
   });
   const [courseFeatures, setCourseFeatures] = useState<string[]>([]);
   const [currentFeature, setCurrentFeature] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-// const InputGroupWithKeyEvents = React.forwardRef<HTMLInputElement, any>(
-//   ({ onKeyDown, ...props }, ref) => {
-//     return (
-//       <div onKeyDown={onKeyDown}>
-//         <InputGroup ref={ref} {...props} />
-//       </div>
-//     );
-//   }
-// );
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = async (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
     if (name === "image" && files && files[0]) {
@@ -52,7 +56,7 @@ const AddCourse = () => {
         const imageUrl = imageUploadRes.data?.data?.fileUrl;
 
         if (imageUrl) {
-          setFormData((prev) => ({ ...prev, image: imageUrl }));
+          setFormData((prev: any) => ({ ...prev, image: imageUrl }));
           toasterSuccess("Image uploaded successfully", 2000, "id");
         } else {
           toasterError("Upload failed ❌");
@@ -64,12 +68,15 @@ const AddCourse = () => {
         setIsUploading(false);
       }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev: any) => ({ ...prev, [name]: value }));
     }
   };
 
   const addFeature = () => {
-    if (currentFeature.trim() && !courseFeatures.includes(currentFeature.trim())) {
+    if (
+      currentFeature.trim() &&
+      !courseFeatures.includes(currentFeature.trim())
+    ) {
       setCourseFeatures([...courseFeatures, currentFeature.trim()]);
       setCurrentFeature("");
     }
@@ -81,19 +88,11 @@ const AddCourse = () => {
     setCourseFeatures(updatedFeatures);
   };
 
-  // const handleFeatureKeyPress = (e: React.KeyboardEvent) => {
-  //   if (e.key === 'Enter') {
-  //     e.preventDefault();
-  //     addFeature();
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const { title, description, category, creator, price } = formData;
 
-    // Check for empty required fields
     if (!title || !description || !category || !creator || !price) {
       toasterError("Please fill all the required fields ❌", 2000, "id");
       return;
@@ -118,7 +117,7 @@ const AddCourse = () => {
       const data = await api.post("course/create-course", payload);
       if (data.success) {
         toasterSuccess("Course created successfully", 2000, "id");
-        router.push("/courses");
+        router.push("/admin/courses");
       } else {
         toasterError(data.error?.code || "Failed to create course", 2000, "id");
       }
@@ -141,6 +140,7 @@ const AddCourse = () => {
               label="Creator Name"
               placeholder="Add Your Name Here"
               value={formData.creator}
+              disabled
               onChange={handleChange}
               icon={<UserIcon />}
               iconPosition="left"
@@ -195,19 +195,16 @@ const AddCourse = () => {
             />
           </div>
 
-          {/* Course Features Section */}
           <div className="mb-5.5">
-            <label
-             className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
               Course Features/Highlights
             </label>
-            <div className="flex gap-2 mb-3">
+            <div className="mb-3 flex gap-2">
               <InputGroup
                 type="text"
                 placeholder="Add a feature (e.g., 'Certificate included', 'Lifetime access')"
                 value={currentFeature}
                 onChange={(e) => setCurrentFeature(e.target.value)}
-                // onKeyDown={handleFeatureKeyPress}
                 icon={<ListIcon />}
                 iconPosition="left"
                 height="sm"
@@ -216,7 +213,7 @@ const AddCourse = () => {
               <button
                 type="button"
                 onClick={addFeature}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
               >
                 <Plus className="h-4 w-4" />
                 Add
@@ -224,18 +221,23 @@ const AddCourse = () => {
             </div>
 
             {courseFeatures.length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Added Features:
                 </h4>
                 <div className="space-y-2">
                   {courseFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-700 p-3 rounded-lg">
-                      <span className="text-gray-700 dark:text-gray-300">• {feature}</span>
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg bg-white p-3 dark:bg-gray-700"
+                    >
+                      <span className="text-gray-700 dark:text-gray-300">
+                        • {feature}
+                      </span>
                       <button
                         type="button"
                         onClick={() => removeFeature(index)}
-                        className="text-red-600 hover:text-red-700 p-1"
+                        className="p-1 text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -260,28 +262,26 @@ const AddCourse = () => {
             required
           />
           {typeof formData.image === "string" && (
-            <div className="mb-5.5 mt-2 relative w-max">
+            <div className="relative mb-5.5 mt-2 w-max">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Image Preview:
               </label>
 
-              {/* Cross Button */}
               <button
                 type="button"
                 onClick={() =>
-                  setFormData((prev) => ({ ...prev, image: null }))
+                  setFormData((prev: any) => ({ ...prev, image: null }))
                 }
-                className="absolute right-2 top-2 z-10 rounded-full bg-white dark:bg-dark-3 text-black dark:text-white border p-1 hover:bg-red-500 hover:text-white transition"
+                className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
                 title="Remove image"
               >
                 ×
               </button>
 
-              {/* Image */}
               <img
                 src={formData.image}
                 alt="Course"
-                className="h-32 w-48 object-cover rounded border"
+                className="h-32 w-48 rounded border object-cover"
               />
             </div>
           )}
@@ -304,15 +304,15 @@ const AddCourse = () => {
               type="button"
               onClick={() => router.back()}
             >
-              Cancel
+              BACK
             </button>
 
             <button
-              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               type="submit"
               disabled={isUploading || courseFeatures.length === 0}
             >
-              {isUploading ? "Uploading..." : "Add Course"}
+              {isUploading ? "Uploading..." : "ADD COURSE"}
             </button>
           </div>
         </form>

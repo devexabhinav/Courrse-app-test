@@ -2,7 +2,7 @@
 
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
-import { useRouter , useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
@@ -13,10 +13,10 @@ import { BookOpen, ListOrdered } from "lucide-react";
 
 const AddChapter = () => {
   const router = useRouter();
-  const [courses, setCourses] = useState<any>([])
+  const [courses, setCourses] = useState<any>([]);
   const searchParams = useSearchParams();
-  const courseId = searchParams.get('course_id');
-
+  const courseId = searchParams.get("course_id");
+  const courseName = searchParams.get("course");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -31,6 +31,9 @@ const AddChapter = () => {
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [videoUploadLoading, setVideoUploadLoading] = useState(false);
 
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   const fetchCourses = async () => {
     try {
@@ -41,12 +44,10 @@ const AddChapter = () => {
     }
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
-
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -55,7 +56,7 @@ const AddChapter = () => {
   const handleDynamicFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number,
-    type: "image" | "video"
+    type: "image" | "video",
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -106,11 +107,9 @@ const AddChapter = () => {
     }
   };
 
-
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    // ✅ Simple validation (only required fields)
     const { title, content, course_id, order } = formData;
 
     if (!title.trim() || !content.trim() || !course_id || !order) {
@@ -132,8 +131,9 @@ const AddChapter = () => {
 
       if (res.success) {
         toasterSuccess("Chapter created successfully", 2000, "id");
-        // router.push("/chapters");
-        router.push(`/chapters?course_id=${courseId}`)
+        router.push(
+          `/admin/chapters?course=${courseName}&course_id=${courseId}`,
+        );
       } else {
         toasterError(res.error?.code || "Something went wrong ❌", 2000, "id");
       }
@@ -142,7 +142,6 @@ const AddChapter = () => {
       toasterError("Failed to create chapter ❌");
     }
   };
-
 
   return (
     <>
@@ -185,8 +184,9 @@ const AddChapter = () => {
             <select
               name="course_id"
               value={formData.course_id}
+              disabled
               onChange={handleChange}
-              className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2 text-sm outline-none dark:border-dark-3 dark:bg-boxdark"
+              className="dark:bg-boxdark w-full rounded-lg border border-stroke bg-transparent px-4 py-2 text-sm outline-none disabled:cursor-not-allowed dark:border-dark-3"
             >
               <option value="">-- Select Course --</option>
               {courses.map((course: any) => (
@@ -207,17 +207,19 @@ const AddChapter = () => {
             onChange={handleChange}
           />
           <div className="mb-10">
-            <label className="block text-lg font-semibold text-gray-800 dark:text-white mb-3">
+            <label className="mb-3 block text-lg font-semibold text-gray-800 dark:text-white">
               📷 Upload Chapter Images
             </label>
             <div className="space-y-5">
               {imageFiles.map((file, index) => (
                 <div key={index} className="flex items-center gap-5">
-                  <label className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+                  <label className="w-full cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center transition hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => handleDynamicFileChange(e, index, "image")}
+                      onChange={(e) =>
+                        handleDynamicFileChange(e, index, "image")
+                      }
                       className="hidden"
                     />
                     <span className="text-sm text-gray-600 dark:text-gray-300">
@@ -226,23 +228,24 @@ const AddChapter = () => {
                   </label>
 
                   {imageUploadLoading && index === uploadedImageUrls.length ? (
-                    <div className="w-20 h-20 flex items-center justify-center rounded-lg bg-gray-100 border animate-pulse">
-                      <div className="loader border-4 border-primary border-t-transparent rounded-full w-6 h-6 animate-spin" />
+                    <div className="flex h-20 w-20 animate-pulse items-center justify-center rounded-lg border bg-gray-100">
+                      <div className="loader h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                     </div>
-                  ) : uploadedImageUrls[index] && (
-                    <a
-                      href={uploadedImageUrls[index]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <img
-                        src={uploadedImageUrls[index]}
-                        alt={`preview-${index}`}
-                        className="w-20 h-20 object-cover rounded-lg shadow cursor-pointer"
-                      />
-                    </a>
+                  ) : (
+                    uploadedImageUrls[index] && (
+                      <a
+                        href={uploadedImageUrls[index]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src={uploadedImageUrls[index]}
+                          alt={`preview-${index}`}
+                          className="h-20 w-20 cursor-pointer rounded-lg object-cover shadow"
+                        />
+                      </a>
+                    )
                   )}
-
                 </div>
               ))}
             </div>
@@ -252,29 +255,35 @@ const AddChapter = () => {
               onClick={() => {
                 const lastIndex = imageFiles.length - 1;
                 if (!uploadedImageUrls[lastIndex]) {
-                  toasterError("Please upload the current image before adding another.", 2000, "id");
+                  toasterError(
+                    "Please upload the current image before adding another.",
+                    2000,
+                    "id",
+                  );
                   return;
                 }
                 setImageFiles([...imageFiles, null]);
               }}
-              className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow transition"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-700"
             >
               ➕ Add Image
             </button>
           </div>
 
           <div className="mb-10">
-            <label className="block text-lg font-semibold text-gray-800 dark:text-white mb-3">
+            <label className="mb-3 block text-lg font-semibold text-gray-800 dark:text-white">
               🎥 Upload Chapter Videos
             </label>
             <div className="space-y-5">
               {videoFiles.map((file, index) => (
                 <div key={index} className="flex items-center gap-5">
-                  <label className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+                  <label className="w-full cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center transition hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">
                     <input
                       type="file"
                       accept="video/*"
-                      onChange={(e) => handleDynamicFileChange(e, index, "video")}
+                      onChange={(e) =>
+                        handleDynamicFileChange(e, index, "video")
+                      }
                       className="hidden"
                     />
                     <span className="text-sm text-gray-600 dark:text-gray-300">
@@ -283,25 +292,27 @@ const AddChapter = () => {
                   </label>
 
                   {videoUploadLoading && index === uploadedVideoUrls.length ? (
-                    <div className="w-28 h-20 flex items-center justify-center rounded-lg bg-gray-100 border animate-pulse">
-                      <div className="loader border-4 border-blue-600 border-t-transparent rounded-full w-6 h-6 animate-spin" />
+                    <div className="flex h-20 w-28 animate-pulse items-center justify-center rounded-lg border bg-gray-100">
+                      <div className="loader h-6 w-6 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
                     </div>
-                  ) : uploadedVideoUrls[index] && (
-                    <a
-                      href={uploadedVideoUrls[index]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-28 h-20 block rounded-lg shadow border overflow-hidden"
-                    >
-                      <video
-                        className="w-full h-full object-cover cursor-pointer pointer-events-none"
+                  ) : (
+                    uploadedVideoUrls[index] && (
+                      <a
+                        href={uploadedVideoUrls[index]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block h-20 w-28 overflow-hidden rounded-lg border shadow"
                       >
-                        <source src={uploadedVideoUrls[index]} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    </a>
+                        <video className="pointer-events-none h-full w-full cursor-pointer object-cover">
+                          <source
+                            src={uploadedVideoUrls[index]}
+                            type="video/mp4"
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      </a>
+                    )
                   )}
-
                 </div>
               ))}
             </div>
@@ -311,12 +322,16 @@ const AddChapter = () => {
               onClick={() => {
                 const lastIndex = videoFiles.length - 1;
                 if (!uploadedVideoUrls[lastIndex]) {
-                  toasterError("Please upload the current video before adding another.", 2000, "id");
+                  toasterError(
+                    "Please upload the current video before adding another.",
+                    2000,
+                    "id",
+                  );
                   return;
                 }
                 setVideoFiles([...videoFiles, null]);
               }}
-              className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow transition"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-blue-700"
             >
               ➕ Add Video
             </button>
@@ -336,7 +351,9 @@ const AddChapter = () => {
               type="submit"
               disabled={imageUploadLoading || videoUploadLoading}
             >
-              {imageUploadLoading || videoUploadLoading ? "Uploading..." : "Create Chapter"}
+              {imageUploadLoading || videoUploadLoading
+                ? "Uploading..."
+                : "Create Chapter"}
             </button>
           </div>
         </form>
