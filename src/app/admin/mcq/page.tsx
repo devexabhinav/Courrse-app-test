@@ -90,7 +90,7 @@ export default function Mcq({ className }: any) {
 
         <button
           onClick={() =>
-            router.push(`/chapters?course=${name}&course_id=${courseId}`)
+            router.push(`/admin/chapters?course=${name}&course_id=${courseId}`)
           }
           className="w-full rounded-full bg-gray-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-700 sm:w-auto"
         >

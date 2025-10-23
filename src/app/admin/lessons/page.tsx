@@ -89,7 +89,7 @@ export default function AddChapter() {
               key={course.id}
               onClick={() =>
                 router.push(
-                  `/lessons/all-chapters?course=${encodeURIComponent(course.title)}&course_id=${course.id}`,
+                  `/admin/lessons/all-chapters?course=${encodeURIComponent(course.title)}&course_id=${course.id}`,
                 )
               }
               className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"

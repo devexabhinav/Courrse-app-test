@@ -51,7 +51,7 @@ export default function EditLessonPage() {
       if (res.success) {
         alert("✅ Lesson updated successfully!");
         router.push(
-          `/lessons/list?chapter_id=${chapterId}&course_id=${courseId}`,
+          `/admin/lessons/list?chapter_id=${chapterId}&course_id=${courseId}`,
         );
       } else {
         alert("❌ Failed to update lesson");
@@ -114,7 +114,7 @@ export default function EditLessonPage() {
           <button
             onClick={() =>
               router.push(
-                `/lessons/list?chapter_id=${chapterId}&course_id=${courseId}`,
+                `/admin/lessons/list?chapter_id=${chapterId}&course_id=${courseId}`,
               )
             }
             className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"

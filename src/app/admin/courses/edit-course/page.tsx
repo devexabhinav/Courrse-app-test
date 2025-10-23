@@ -76,7 +76,7 @@ const EditCourse = () => {
         console.error("Upload failed", err);
         toasterError("Upload failed ❌", 2000, "id");
       } finally {
-        setIsUploading(false); // stop loader
+        setIsUploading(false);
       }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -104,7 +104,7 @@ const EditCourse = () => {
       const res = await api.put(`course/${courseId}`, payload);
       if (res.success) {
         toasterSuccess("Course updated successfully", 2000, "id");
-        router.push("/courses");
+        router.push("/admin/courses");
       }
     } catch (error) {
       console.error("Course update failed", error);

@@ -127,7 +127,7 @@ export default function Chapters({ className }: any) {
               key={chapter.id}
               onClick={() =>
                 router.push(
-                  `/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
+                  `/admin/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
                 )
               }
               className="rounded-xl border border-gray-200 bg-gray-50 p-5 shadow-sm transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"

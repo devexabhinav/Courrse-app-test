@@ -42,27 +42,12 @@ export default function Chapters({ className }: any) {
   const courseId = searchParams.get("course_id");
   const courseName = searchParams.get("course");
 
-  const fetchChapters = async (course_id: string) => {
-    try {
-      const res = await api.get(
-        `chapter/course/?course_id=${course_id}&page=${page}&limit=${limit}&search=${search}`,
-      );
-      if (res.success) {
-        setChapters(res.data?.data?.data?.chapters || []);
-        setTotalPages(res.data?.data?.data?.pagination?.totalPages || 1);
-      }
-    } catch (err) {
-      console.error("❌ Failed to fetch chapters:", err);
-    }
-  };
-
   useEffect(() => {
     if (courseId) {
       fetchChapters(courseId);
     }
   }, [page, search, courseId]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -77,6 +62,20 @@ export default function Chapters({ className }: any) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const fetchChapters = async (course_id: string) => {
+    try {
+      const res = await api.get(
+        `chapter/course/?course_id=${course_id}&page=${page}&limit=${limit}&search=${search}`,
+      );
+      if (res.success) {
+        setChapters(res.data?.data?.data?.chapters || []);
+        setTotalPages(res.data?.data?.data?.pagination?.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch chapters:", err);
+    }
+  };
+
   const toggleDropdown = (e: React.MouseEvent, chapterId: number) => {
     e.stopPropagation();
     e.preventDefault();
@@ -85,9 +84,8 @@ export default function Chapters({ className }: any) {
 
   const handleEdit = (id: number) => {
     setActiveDropdown(null);
-    router.push(`/chapters/edit-chapters?id=${id}`);
+    router.push(`/admin/chapters/edit-chapters?id=${id}`);
   };
-
   const handleDelete = async (id: number) => {
     setActiveDropdown(null);
     const confirmDelete = confirm(
@@ -99,8 +97,16 @@ export default function Chapters({ className }: any) {
       const response = await api.delete(`chapter/${id}`);
       if (response.success) {
         toasterSuccess("Chapter Deleted Successfully", 3000, "id");
-        if (courseId) {
-          await fetchChapters(courseId);
+
+        // Check if this was the last item on the current page
+        if (chapters.length === 1 && page > 1) {
+          // If it was the last item and we're not on page 1, go to previous page
+          setPage((prev) => prev - 1);
+        } else {
+          // Otherwise, refresh the current page
+          if (courseId) {
+            await fetchChapters(courseId);
+          }
         }
       } else {
         toasterError(response.error.code, 3000, "id");
@@ -112,7 +118,9 @@ export default function Chapters({ className }: any) {
 
   const handleAddLessons = (chapterId: number) => {
     setActiveDropdown(null);
-    router.push(`lessons/list?course_id=${courseId}&chapter_id=${chapterId}`);
+    router.push(
+      `/admin/lessons/list?course_id=${courseId}&chapter_id=${chapterId}`,
+    );
   };
 
   const handleAddMCQs = (chapterId: number) => {
@@ -122,7 +130,6 @@ export default function Chapters({ className }: any) {
     );
   };
 
-  // Get dropdown position - simplified version
   const getDropdownPosition = () => {
     if (!activeDropdown) return {};
 
@@ -133,8 +140,8 @@ export default function Chapters({ className }: any) {
 
     return {
       position: "fixed" as const,
-      top: rect.bottom + 5, // 5px below the button
-      left: rect.right - 192, // Align right edge of dropdown with right edge of button
+      top: rect.bottom + 5,
+      left: rect.right - 192,
       zIndex: 9999,
     };
   };
@@ -152,7 +159,6 @@ export default function Chapters({ className }: any) {
         </h2>
 
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-          {/* Search Bar */}
           <div className="relative w-full sm:w-[300px]">
             <input
               type="search"
@@ -164,9 +170,8 @@ export default function Chapters({ className }: any) {
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
 
-          {/* Add Course Button */}
           <button
-            onClick={() => router.push("/courses")}
+            onClick={() => router.push("/admin/courses")}
             className="w-full rounded-full bg-gray-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-700 sm:w-auto"
           >
             ← Back to Courses
@@ -174,7 +179,7 @@ export default function Chapters({ className }: any) {
 
           <button
             onClick={() =>
-              router.push(`/chapters/add-chapters?course_id=${courseId}`)
+              router.push(`/admin/chapters/add-chapters?course_id=${courseId}`)
             }
             className="w-full rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700 sm:w-auto"
           >
@@ -183,7 +188,6 @@ export default function Chapters({ className }: any) {
         </div>
       </div>
 
-      {/* Media Modal */}
       {showMediaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
           <div
@@ -282,7 +286,7 @@ export default function Chapters({ className }: any) {
                     className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                     onClick={() =>
                       router.push(
-                        `/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
+                        `/admin/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
                       )
                     }
                   >
@@ -292,7 +296,7 @@ export default function Chapters({ className }: any) {
                     className="cursor-pointer !text-left hover:bg-gray-50 dark:hover:bg-gray-800"
                     onClick={() =>
                       router.push(
-                        `/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
+                        `/admin/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
                       )
                     }
                   >
@@ -302,7 +306,7 @@ export default function Chapters({ className }: any) {
                     className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                     onClick={() =>
                       router.push(
-                        `/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
+                        `/admin/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
                       )
                     }
                   >
@@ -312,7 +316,7 @@ export default function Chapters({ className }: any) {
                     className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                     onClick={() =>
                       router.push(
-                        `/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
+                        `/admin/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
                       )
                     }
                   >
@@ -360,7 +364,7 @@ export default function Chapters({ className }: any) {
                     className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                     onClick={() =>
                       router.push(
-                        `/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
+                        `/admin/lessons/list?course_id=${courseId}&chapter_id=${chapter.id}`,
                       )
                     }
                   >
@@ -378,7 +382,9 @@ export default function Chapters({ className }: any) {
                     <div className="flex items-center justify-center">
                       <div className="relative">
                         <button
-                          ref={(el) => (buttonRefs.current[chapter.id] = el)}
+                          ref={(el: any) =>
+                            (buttonRefs.current[chapter.id] = el)
+                          }
                           onClick={(e) => toggleDropdown(e, chapter.id)}
                           className="flex items-center justify-center rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800"
                           title="Actions"
@@ -447,7 +453,6 @@ export default function Chapters({ className }: any) {
         )}
       </div>
 
-      {/* Pagination */}
       {chapters.length > 0 && (
         <div className="mt-6 flex items-center justify-end gap-4">
           <button

@@ -9,23 +9,19 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
+import { PencilSquareIcon, UserIcon } from "@/assets/icons";
+
 import {
-  CallIcon,
-  EmailIcon,
-  PencilSquareIcon,
-  UserIcon,
-} from "@/assets/icons";
-import {
-  CableIcon,
   DollarSign,
-  Heading1Icon,
   ListIcon,
   TicketsPlaneIcon,
   TypeIcon,
   Plus,
   Trash2,
 } from "lucide-react";
+
 import Cookies from "js-cookie";
+
 const AddCourse = () => {
   const router = useRouter();
   const name = Cookies.get("name");
@@ -60,7 +56,7 @@ const AddCourse = () => {
         const imageUrl = imageUploadRes.data?.data?.fileUrl;
 
         if (imageUrl) {
-          setFormData((prev) => ({ ...prev, image: imageUrl }));
+          setFormData((prev: any) => ({ ...prev, image: imageUrl }));
           toasterSuccess("Image uploaded successfully", 2000, "id");
         } else {
           toasterError("Upload failed ❌");
@@ -72,7 +68,7 @@ const AddCourse = () => {
         setIsUploading(false);
       }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev: any) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -121,7 +117,7 @@ const AddCourse = () => {
       const data = await api.post("course/create-course", payload);
       if (data.success) {
         toasterSuccess("Course created successfully", 2000, "id");
-        router.push("/courses");
+        router.push("/admin/courses");
       } else {
         toasterError(data.error?.code || "Failed to create course", 2000, "id");
       }
@@ -274,7 +270,7 @@ const AddCourse = () => {
               <button
                 type="button"
                 onClick={() =>
-                  setFormData((prev) => ({ ...prev, image: null }))
+                  setFormData((prev: any) => ({ ...prev, image: null }))
                 }
                 className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
                 title="Remove image"

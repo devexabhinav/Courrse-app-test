@@ -19,15 +19,23 @@ import { ToggleLeft } from "lucide-react";
 
 export default function Courses({ className }: any) {
   const router = useRouter();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
   const [courses, setCourses] = useState<any>([]);
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(5);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter]);
+
+  useEffect(() => {
+    fetchCourses();
+  }, [page, search, statusFilter]);
 
   const fetchCourses = async () => {
     try {
@@ -38,11 +46,8 @@ export default function Courses({ className }: any) {
       if (statusFilter === "inactive") query.append("active", "false");
       query.append("page", page.toString());
       query.append("limit", limit.toString());
-
       const url = `course/list?${query.toString()}`;
-
       const res = await api.get(url);
-
       if (res.success) {
         setCourses(res.data?.data?.courses || []);
         setTotalPages(res.data?.data?.totalPages || 1);
@@ -52,15 +57,10 @@ export default function Courses({ className }: any) {
     }
   };
 
-  useEffect(() => {
-    setPage(1); // Reset pagination
-    fetchCourses();
-  }, [search, statusFilter]);
-
   const handleEdit = async (id: number) => {
     try {
       if (id) {
-        router.push(`/courses/edit-course?id=${id}`);
+        router.push(`/admin/courses/edit-course?id=${id}`);
       }
     } catch (err) {
       console.error("Failed to fetch course details", err);
@@ -77,12 +77,19 @@ export default function Courses({ className }: any) {
       const response = await api.delete(`course/${id}`);
       if (response.success) {
         toasterSuccess("Course Deleted Successfully", 2000, "id");
+
+        if (courses.length === 1 && page > 1) {
+          setPage((prev) => prev - 1);
+        } else {
+          fetchCourses();
+        }
       }
-      await fetchCourses();
     } catch (error) {
       console.log("Failed to delete course:", error);
+      toasterError("Failed to delete course");
     }
   };
+
   const handleToggleStatus = async (id: number, newStatus: boolean) => {
     try {
       const res = await api.put(`course/${id}/status`, {
@@ -104,6 +111,7 @@ export default function Courses({ className }: any) {
       toasterError("Failed to update status");
     }
   };
+
   return (
     <div
       className={cn(
@@ -112,13 +120,11 @@ export default function Courses({ className }: any) {
       )}
     >
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Heading */}
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           All Courses List
         </h2>
 
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-          {/* Status Filter Dropdown */}
           <div className="relative w-full sm:w-48">
             <select
               value={statusFilter}
@@ -136,7 +142,6 @@ export default function Courses({ className }: any) {
             </div>
           </div>
 
-          {/* Search Bar */}
           <div className="relative w-full sm:w-[300px]">
             <input
               type="search"
@@ -148,9 +153,8 @@ export default function Courses({ className }: any) {
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
 
-          {/* Add Course Button */}
           <button
-            onClick={() => router.push("/courses/add-courses")}
+            onClick={() => router.push("/admin/courses/add-courses")}
             className="w-full rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700 sm:w-auto"
           >
             + Add Course
@@ -178,7 +182,7 @@ export default function Courses({ className }: any) {
               <TableRow
                 onClick={() =>
                   router.push(
-                    `chapters?course=${course.title}&course_id=${course.id}`,
+                    `/admin/chapters?course=${course.title}&course_id=${course.id}`,
                   )
                 }
                 className="cursor-pointer text-center text-base font-medium text-dark dark:text-white"
@@ -205,7 +209,7 @@ export default function Courses({ className }: any) {
                   <div className="flex items-center justify-center">
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // Stop event bubbling
+                        e.stopPropagation();
                         handleToggleStatus(course.id, !course.is_active);
                       }}
                       className="rounded-full p-1 transition hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -236,7 +240,6 @@ export default function Courses({ className }: any) {
                   )}
                 </TableCell>
 
-                {/* Created At */}
                 <TableCell className="py-6 align-top">
                   {new Intl.DateTimeFormat("en-GB", {
                     day: "2-digit",
@@ -249,13 +252,12 @@ export default function Courses({ className }: any) {
                   }).format(new Date(course.createdAt))}
                 </TableCell>
 
-                {/* Actions */}
                 <TableCell className="py-6 align-top">
                   <div className="flex items-center justify-center gap-3">
                     <button
                       className="text-blue-600 hover:text-blue-800"
                       onClick={(e) => {
-                        e.stopPropagation(); // Stop event bubbling
+                        e.stopPropagation();
                         handleEdit(course.id);
                       }}
                       title="Edit"
@@ -265,7 +267,7 @@ export default function Courses({ className }: any) {
                     <button
                       className="text-red-600 hover:text-red-800"
                       onClick={(e) => {
-                        e.stopPropagation(); // Stop event bubbling
+                        e.stopPropagation();
                         handleDelete(course.id);
                       }}
                       title="Delete"

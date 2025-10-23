@@ -30,7 +30,7 @@ export const NAV_DATA = [
       },
       {
         title: "COURSES",
-        url: "/courses",
+        url: "/admin/courses",
         icon: Icons.Calendar,
         items: [],
         type: "admin",
@@ -64,10 +64,10 @@ export const NAV_DATA = [
             title: "User List",
             url: "/users",
           },
-          {
-            title: "User Details",
-            url: "/users/user-details",
-          },
+          // {
+          //   title: "User Details",
+          //   url: "/users/user-details",
+          // },
         ],
         type: "admin",
       },

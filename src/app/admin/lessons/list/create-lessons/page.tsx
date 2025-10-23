@@ -146,7 +146,7 @@ const CreateLessons = () => {
       if (res.success) {
         toasterSuccess("Chapter created successfully", 2000, "id");
         // router.push("/chapters");
-        router.push(`/chapters?course_id=${courseId}`);
+        router.push(`/admin/chapters?course_id=${courseId}`);
       } else {
         toasterError(res.error?.code || "Something went wrong ❌", 2000, "id");
       }

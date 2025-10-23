@@ -15,8 +15,6 @@ const EditChapter = () => {
   const searchParams = useSearchParams();
   const chapterId = searchParams.get("id");
 
-  const courseId = searchParams.get("course_id");
-
   const [courses, setCourses] = useState<any>([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -44,6 +42,10 @@ const EditChapter = () => {
 
   const isUploading = imageUploadLoading || videoUploadLoading;
 
+  useEffect(() => {
+    fetchCourses();
+    fetchChapter();
+  }, [chapterId]);
   const fetchCourses = async () => {
     try {
       const res = await api.get("course/list?active=true");
@@ -78,11 +80,6 @@ const EditChapter = () => {
     }
   };
 
-  useEffect(() => {
-    fetchCourses();
-    fetchChapter();
-  }, [chapterId]);
-
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -91,6 +88,7 @@ const EditChapter = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleEditFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number,
@@ -110,7 +108,6 @@ const EditChapter = () => {
       if (res.success && res.data?.data?.fileUrl) {
         const fileUrl = res.data.data.fileUrl;
         if (type === "image") {
-          // Update editImageFiles
           const newFiles = [...editImageFiles];
           if (index >= newFiles.length) {
             for (let i = newFiles.length; i <= index; i++) newFiles[i] = null;
@@ -118,7 +115,6 @@ const EditChapter = () => {
           newFiles[index] = file;
           setEditImageFiles(newFiles);
 
-          // Update uploadedEditImageUrls
           const newUrls = [...uploadedEditImageUrls];
 
           if (index >= newUrls.length) {
@@ -128,7 +124,6 @@ const EditChapter = () => {
           setUploadedEditImageUrls(newUrls);
           setFormData((prev) => ({ ...prev, images: newUrls }));
         } else {
-          // Update editVideoFiles
           const newFiles = [...editVideoFiles];
           if (index >= newFiles.length) {
             for (let i = newFiles.length; i <= index; i++) newFiles[i] = null;
@@ -136,7 +131,6 @@ const EditChapter = () => {
           newFiles[index] = file;
           setEditVideoFiles(newFiles);
 
-          // Update uploadedEditVideoUrls
           const newUrls = [...uploadedEditVideoUrls];
           if (index >= newUrls.length) {
             for (let i = newUrls.length; i <= index; i++) newUrls[i] = "";
@@ -159,13 +153,11 @@ const EditChapter = () => {
 
     const { title, content, course_id, order } = formData;
 
-    // ✅ Validation check
     if (!title.trim() || !content.trim() || !course_id || !order) {
       toasterError("Please fill in all required fields ❌");
       return;
     }
 
-    // Filter out removed files
     const finalImages = uploadedEditImageUrls.filter(
       (_, i) => !removedImageIndexes.includes(i),
     );
@@ -186,7 +178,7 @@ const EditChapter = () => {
       const res = await api.put(`chapter/${chapterId}`, payload);
       if (res.success) {
         toasterSuccess("Chapter updated successfully", 2000, "id");
-        router.push(`/chapters?course_id=${courseId}`);
+        router.push(`/admin/chapters?course_id=${formData.course_id}`);
       } else {
         toasterError(res.error?.code || "Something went wrong ❌", 2000, "id");
       }
@@ -316,12 +308,10 @@ const EditChapter = () => {
             <button
               type="button"
               onClick={() => {
-                // Get last index that's NOT removed
                 const lastValidIndex = editImageFiles.findLastIndex(
                   (_, i) => !removedImageIndexes.includes(i),
                 );
 
-                // If there's at least one visible image and it is not uploaded yet
                 if (
                   lastValidIndex !== -1 &&
                   !uploadedEditImageUrls[lastValidIndex]
@@ -343,14 +333,13 @@ const EditChapter = () => {
             </button>
           </div>
 
-          {/* Video Uploads */}
           <div className="mb-10">
             <label className="mb-3 block text-lg font-semibold text-gray-800 dark:text-white">
               🎥 Upload Chapter Videos
             </label>
             <div className="space-y-5">
               {editVideoFiles.map((file, index) => {
-                if (removedVideoIndexes.includes(index)) return null; // 💡 skip removed
+                if (removedVideoIndexes.includes(index)) return null;
                 return (
                   <div key={index} className="flex items-center gap-5">
                     <label className="w-full cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center transition hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">

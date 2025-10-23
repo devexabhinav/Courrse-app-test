@@ -31,6 +31,10 @@ const AddChapter = () => {
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [videoUploadLoading, setVideoUploadLoading] = useState(false);
 
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
   const fetchCourses = async () => {
     try {
       const res = await api.get("course/list");
@@ -39,10 +43,6 @@ const AddChapter = () => {
       console.error("Failed to fetch courses:", err);
     }
   };
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -110,7 +110,6 @@ const AddChapter = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    // ✅ Simple validation (only required fields)
     const { title, content, course_id, order } = formData;
 
     if (!title.trim() || !content.trim() || !course_id || !order) {
@@ -132,8 +131,7 @@ const AddChapter = () => {
 
       if (res.success) {
         toasterSuccess("Chapter created successfully", 2000, "id");
-        // router.push("/chapters");
-        router.push(`/chapters?course_id=${courseId}`);
+        router.push(`/admin/chapters?course_id=${courseId}`);
       } else {
         toasterError(res.error?.code || "Something went wrong ❌", 2000, "id");
       }
@@ -186,7 +184,7 @@ const AddChapter = () => {
               value={formData.course_id}
               disabled
               onChange={handleChange}
-              className="dark:bg-boxdark w-full rounded-lg border border-stroke bg-transparent px-4 py-2 text-sm outline-none dark:border-dark-3"
+              className="dark:bg-boxdark w-full rounded-lg border border-stroke bg-transparent px-4 py-2 text-sm outline-none disabled:cursor-not-allowed dark:border-dark-3"
             >
               <option value="">-- Select Course --</option>
               {courses.map((course: any) => (

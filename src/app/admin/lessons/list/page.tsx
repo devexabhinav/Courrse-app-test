@@ -67,8 +67,15 @@ export default function Lessons({ className }: any) {
       const res = await api.delete(`lessons/${lessonId}`);
       if (res.success) {
         toasterSuccess("✅ Lesson deleted successfully!", 3000, "id");
-        // Refresh lessons after deletion
-        fetchLessons(chapterId!);
+
+        // Check if this was the last item on the current page
+        if (lessons.length === 1 && page > 1) {
+          // If it was the last item and we're not on page 1, go to previous page
+          setPage((prev) => prev - 1);
+        } else {
+          // Otherwise, refresh the current page
+          fetchLessons(chapterId!);
+        }
       } else {
         toasterError(res.error.code, 1000, "id");
       }
@@ -109,7 +116,7 @@ export default function Lessons({ className }: any) {
           <button
             onClick={() =>
               router.push(
-                `/chapters?course=${courseName}&course_id=${courseId}`,
+                `/admin/chapters?course=${courseName}&course_id=${courseId}`,
               )
             }
             className="w-full rounded-full bg-gray-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-700 sm:w-auto"
@@ -119,7 +126,7 @@ export default function Lessons({ className }: any) {
           <button
             onClick={() =>
               router.push(
-                `/lessons/list/create-lessons?chapter_id=${chapterId}&course_id=${courseId}`,
+                `/admin/lessons/list/create-lessons?chapter_id=${chapterId}&course_id=${courseId}`,
               )
             }
             className="flex items-center justify-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-green-700"
@@ -239,7 +246,7 @@ export default function Lessons({ className }: any) {
                     <button
                       onClick={() =>
                         router.push(
-                          `/lessons/list/edit-lessons?lesson_id=${lesson.id}&chapter_id=${chapterId}&course_id=${courseId}`,
+                          `/admin/lessons/list/edit-lessons?lesson_id=${lesson.id}&chapter_id=${chapterId}&course_id=${courseId}`,
                         )
                       }
                       className="flex items-center gap-1 text-yellow-600 hover:text-yellow-800"
