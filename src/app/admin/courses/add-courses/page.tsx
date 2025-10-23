@@ -2,7 +2,7 @@
 
 import api from "@/lib/api";
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import InputGroup from "@/components/FormElements/InputGroup";
@@ -18,9 +18,19 @@ import {
   TypeIcon,
   Plus,
   Trash2,
+  Clock,
+  PlayCircle,
+  ChevronDown,
+  X,
 } from "lucide-react";
 
 import Cookies from "js-cookie";
+
+interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 const AddCourse = () => {
   const router = useRouter();
@@ -29,46 +39,158 @@ const AddCourse = () => {
     title: "",
     description: "",
     category: "",
+    subtitle: "",
     creator: name,
-    price: "",
+    price: "0",
+    priceType: "free",
+    duration: "",
+    status: "draft",
     image: null as File | null,
+    introVideo: null as File | null,
   });
   const [courseFeatures, setCourseFeatures] = useState<string[]>([]);
   const [currentFeature, setCurrentFeature] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isVideoUploading, setIsVideoUploading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  // Load categories on component mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setIsLoadingCategories(true);
+      const response = await api.get("categories");
+      if (response.data?.categories) {
+        setCategories(response.data.categories);
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+      toasterError("Failed to load categories");
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    // Use formData.category instead of newCategory
+    if (!formData.category.trim()) {
+      toasterError("Please enter a category name");
+      return;
+    }
+
+    // Check if category already exists in the list
+    const categoryExists = categories.some(
+      (cat) =>
+        cat.name.toLowerCase() === formData.category.trim().toLowerCase(),
+    );
+
+    if (categoryExists) {
+      toasterError(`Category '${formData.category}' already exists`);
+      return;
+    }
+
+    try {
+      setIsCreatingCategory(true);
+      const response = await api.post("categories", {
+        name: formData.category.trim(),
+        description: `Category for ${formData.category.trim()} courses`,
+      });
+
+      if (response.data?.category) {
+        const createdCategory = response.data.category;
+        setCategories((prev) => [...prev, createdCategory]);
+        // Keep the category name in formData (no need to set it again)
+        setShowCategoryDropdown(false);
+        toasterSuccess("Category created successfully");
+      }
+    } catch (error: any) {
+      console.error("Failed to create category:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to create category";
+      toasterError(errorMessage);
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
+
+  const handleCategorySelect = (categoryName: string) => {
+    setFormData((prev: any) => ({ ...prev, category: categoryName }));
+    setShowCategoryDropdown(false);
+  };
+
+  const handleCategoryInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = e.target.value;
+    setFormData((prev: any) => ({ ...prev, category: value }));
+
+    // Show dropdown when user starts typing
+    if (value.trim() && !showCategoryDropdown) {
+      setShowCategoryDropdown(true);
+    }
+  };
+
   const handleChange = async (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
-    if (name === "image" && files && files[0]) {
-      const selectedFile = files[0];
-      if (!selectedFile.type.startsWith("image/")) {
-        toasterError("Only image files are allowed ❌");
-        return;
-      }
-      try {
-        setIsUploading(true);
-        const imageForm = new FormData();
-        imageForm.append("file", selectedFile);
-
-        const imageUploadRes = await api.postFile("upload", imageForm);
-        const imageUrl = imageUploadRes.data?.data?.fileUrl;
-
-        if (imageUrl) {
-          setFormData((prev: any) => ({ ...prev, image: imageUrl }));
-          toasterSuccess("Image uploaded successfully", 2000, "id");
-        } else {
-          toasterError("Upload failed ❌");
-        }
-      } catch (err) {
-        console.error("Upload failed", err);
-        toasterError("Upload failed ❌");
-      } finally {
-        setIsUploading(false);
-      }
-    } else {
+    if ((name === "image" || name === "introVideo") && files && files[0]) {
+      await handleFileUpload(name, files[0]);
+    } else if (name !== "category") {
+      // Skip category handling here as we have separate handler
       setFormData((prev: any) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleFileUpload = async (fieldName: string, file: File) => {
+    const isImage = fieldName === "image";
+    const isVideo = fieldName === "introVideo";
+
+    if (isImage && !file.type.startsWith("image/")) {
+      toasterError("Only image files are allowed ❌");
+      return;
+    }
+
+    if (isVideo && !file.type.startsWith("video/")) {
+      toasterError("Only video files are allowed ❌");
+      return;
+    }
+
+    try {
+      if (isImage) setIsUploading(true);
+      if (isVideo) setIsVideoUploading(true);
+
+      const fileForm = new FormData();
+      fileForm.append("file", file);
+
+      const uploadRes = await api.postFile("upload", fileForm);
+      const fileUrl = uploadRes.data?.data?.fileUrl;
+
+      if (fileUrl) {
+        setFormData((prev: any) => ({ ...prev, [fieldName]: fileUrl }));
+        toasterSuccess(
+          `${isImage ? "Image" : "Video"} uploaded successfully`,
+          2000,
+          "id",
+        );
+      } else {
+        toasterError("Upload failed ❌");
+      }
+    } catch (err) {
+      console.error("Upload failed", err);
+      toasterError("Upload failed ❌");
+    } finally {
+      if (isImage) setIsUploading(false);
+      if (isVideo) setIsVideoUploading(false);
     }
   };
 
@@ -91,10 +213,36 @@ const AddCourse = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { title, description, category, creator, price } = formData;
+    const {
+      title,
+      description,
+      category,
+      subtitle,
+      creator,
+      price,
+      priceType,
+      duration,
+      status,
+    } = formData;
 
-    if (!title || !description || !category || !creator || !price) {
+    if (
+      !title ||
+      !description ||
+      !category ||
+      !creator ||
+      !duration ||
+      !status
+    ) {
       toasterError("Please fill all the required fields ❌", 2000, "id");
+      return;
+    }
+
+    if (priceType === "paid" && (!price || Number(price) <= 0)) {
+      toasterError(
+        "Please enter a valid price for paid courses ❌",
+        2000,
+        "id",
+      );
       return;
     }
 
@@ -108,10 +256,15 @@ const AddCourse = () => {
         title,
         description,
         category,
+        subtitle,
         creator,
-        price: Number(price),
+        price: priceType === "free" ? 0 : Number(price),
+        priceType,
+        duration,
+        status,
         features: courseFeatures,
         image: formData.image || "",
+        introVideo: formData.introVideo || "",
       };
 
       const data = await api.post("course/create-course", payload);
@@ -127,11 +280,17 @@ const AddCourse = () => {
     }
   };
 
+  // Filter categories based on search input
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(formData.category.toLowerCase()),
+  );
+
   return (
     <>
-      <Breadcrumb pageName="Courses" />
+      <Breadcrumb pageName="Create Course" />
       <ShowcaseSection title="Create Course" className="!p-7">
         <form onSubmit={handleSubmit}>
+          {/* Title and Creator Row */}
           <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
             <InputGroup
               className="w-full sm:w-1/2"
@@ -163,44 +322,171 @@ const AddCourse = () => {
             />
           </div>
 
+          {/* Subtitle and Category Row */}
           <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
             <InputGroup
               className="w-full sm:w-1/2"
               type="text"
-              name="category"
-              label="Category Type"
-              placeholder="Add Category Here"
-              value={formData.category}
+              name="subtitle"
+              label="Subtitle"
+              placeholder="Add course subtitle here"
+              value={formData.subtitle}
               onChange={handleChange}
-              icon={<TypeIcon />}
+              icon={<TypeIcon className="h-4 w-4" />}
               iconPosition="left"
               height="sm"
-              required
             />
 
+            {/* Creatable Category Select */}
+            <div className="w-full sm:w-1/2">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                Category Type *
+              </label>
+              <div className="relative">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={formData.category}
+                      onChange={handleCategoryInputChange}
+                      onFocus={() => setShowCategoryDropdown(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowCategoryDropdown(false), 200)
+                      }
+                      placeholder="Select or create a category"
+                      className="w-full rounded-lg border border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowCategoryDropdown(!showCategoryDropdown)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 transform text-gray-500"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCreateCategory}
+                    disabled={isCreatingCategory || !formData.category.trim()}
+                    className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isCreatingCategory ? "Creating..." : "Create New"}
+                  </button>
+                </div>
+
+                {/* Category Dropdown */}
+                {showCategoryDropdown && (
+                  <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-stroke bg-white shadow-lg dark:border-dark-3 dark:bg-dark-2">
+                    {isLoadingCategories ? (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        Loading categories...
+                      </div>
+                    ) : filteredCategories.length > 0 ? (
+                      filteredCategories.map((category) => (
+                        <div
+                          key={category.id}
+                          onClick={() => handleCategorySelect(category.name)}
+                          className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-dark-3"
+                        >
+                          <div className="font-medium text-dark dark:text-white">
+                            {category.name}
+                          </div>
+                          {category.description && (
+                            <div className="text-sm text-gray-500">
+                              {category.description}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        No categories found. Type to create a new one.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Rest of the form remains the same */}
+          {/* Price Type, Amount and Duration Row */}
+          <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
+            <div className="w-full sm:w-1/3">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                Price Type *
+              </label>
+              <select
+                name="priceType"
+                value={formData.priceType}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+                required
+              >
+                <option value="free">Free</option>
+                <option value="paid">Paid</option>
+              </select>
+            </div>
+
+            {formData.priceType === "paid" && (
+              <InputGroup
+                className="w-full sm:w-1/3"
+                type="number"
+                name="price"
+                label="Price ($)"
+                placeholder="0.00"
+                value={formData.price}
+                onChange={handleChange}
+                icon={<DollarSign />}
+                iconPosition="left"
+                height="sm"
+                min="0.01"
+                step="0.01"
+                required={formData.priceType === "paid"}
+              />
+            )}
+
             <InputGroup
-              className="w-full sm:w-1/2"
-              type="number"
-              name="price"
-              label="Price ($)"
-              placeholder="0.00"
-              value={formData.price}
+              className="w-full sm:w-1/3"
+              type="text"
+              name="duration"
+              label="Duration"
+              placeholder="e.g., 8 weeks, 30 hours"
+              value={formData.duration}
               onChange={handleChange}
-              icon={<DollarSign />}
+              icon={<Clock className="h-4 w-4" />}
               iconPosition="left"
               height="sm"
-              min="0"
-              step="0.01"
               required
             />
           </div>
 
+          {/* Status */}
           <div className="mb-5.5">
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-              Course Features/Highlights
+              Status *
             </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+              required
+            >
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          {/* Course Features */}
+          <div className="mb-5.5">
             <div className="mb-3 flex gap-2">
               <InputGroup
+                label="Course Features/Highlights "
                 type="text"
                 placeholder="Add a feature (e.g., 'Certificate included', 'Lifetime access')"
                 value={currentFeature}
@@ -208,7 +494,6 @@ const AddCourse = () => {
                 icon={<ListIcon />}
                 iconPosition="left"
                 height="sm"
-                label="Course Feature"
               />
               <button
                 type="button"
@@ -248,47 +533,82 @@ const AddCourse = () => {
             )}
           </div>
 
-          <InputGroup
-            type="file"
-            name="image"
-            fileStyleVariant="style1"
-            label="Upload Image"
-            placeholder="Upload Image"
-            accept="image/*"
-            onChange={handleChange}
-            onClick={() => {
-              console.log("File input clicked!");
-            }}
-            required
-          />
-          {typeof formData.image === "string" && (
-            <div className="relative mb-5.5 mt-2 w-max">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-                Image Preview:
-              </label>
+          {/* Thumbnail/Cover Image */}
+          <div className="mb-5.5">
+            <InputGroup
+              type="file"
+              name="image"
+              fileStyleVariant="style1"
+              label="Upload Thumbnail/Cover Image *"
+              placeholder="Upload Image"
+              accept="image/*"
+              onChange={handleChange}
+              required
+            />
+            {typeof formData.image === "string" && (
+              <div className="relative mb-5.5 mt-2 w-max">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                  Image Preview:
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev: any) => ({ ...prev, image: null }))
+                  }
+                  className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
+                  title="Remove image"
+                >
+                  ×
+                </button>
+                <img
+                  src={formData.image}
+                  alt="Course"
+                  className="h-32 w-48 rounded border object-cover"
+                />
+              </div>
+            )}
+          </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData((prev: any) => ({ ...prev, image: null }))
-                }
-                className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
-                title="Remove image"
-              >
-                ×
-              </button>
+          {/* Intro Video */}
+          <div className="mb-5.5">
+            <InputGroup
+              type="file"
+              name="introVideo"
+              fileStyleVariant="style1"
+              label="Intro Video (Optional)"
+              placeholder="Upload Video"
+              accept="video/*"
+              onChange={handleChange}
+            />
+            {typeof formData.introVideo === "string" && (
+              <div className="relative mb-5.5 mt-2 w-max">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                  Video Preview:
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev: any) => ({ ...prev, introVideo: null }))
+                  }
+                  className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
+                  title="Remove video"
+                >
+                  ×
+                </button>
+                <div className="flex items-center gap-3 rounded border bg-gray-100 p-3 dark:bg-gray-800">
+                  <PlayCircle className="h-8 w-8 text-blue-600" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    Intro video uploaded
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
 
-              <img
-                src={formData.image}
-                alt="Course"
-                className="h-32 w-48 rounded border object-cover"
-              />
-            </div>
-          )}
-
+          {/* Description */}
           <TextAreaGroup
             className="mb-5.5"
-            label="Description"
+            label="Description *"
             name="description"
             placeholder="Write detailed description about the course..."
             icon={<PencilSquareIcon />}
@@ -310,9 +630,11 @@ const AddCourse = () => {
             <button
               className="rounded-lg bg-primary px-6 py-[7px] font-medium text-gray-2 hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               type="submit"
-              disabled={isUploading || courseFeatures.length === 0}
+              disabled={
+                isUploading || isVideoUploading || courseFeatures.length === 0
+              }
             >
-              {isUploading ? "Uploading..." : "ADD COURSE"}
+              {isUploading || isVideoUploading ? "Uploading..." : "ADD COURSE"}
             </button>
           </div>
         </form>

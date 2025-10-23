@@ -30,19 +30,27 @@ export function SidebarProvider({
   children: React.ReactNode;
   defaultOpen?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isOpen, setIsOpen] = useState(false); // Start with false to avoid hydration mismatch
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    // Set initial state after mount to avoid hydration mismatch
     if (isMobile) {
       setIsOpen(false);
     } else {
-      setIsOpen(true);
+      setIsOpen(defaultOpen);
     }
-  }, [isMobile]);
+  }, [isMobile, defaultOpen]);
 
   function toggleSidebar() {
     setIsOpen((prev) => !prev);
+  }
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return <>{children}</>;
   }
 
   return (

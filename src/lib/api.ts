@@ -90,7 +90,7 @@ const api = {
   get: (url: string) => request("GET", url),
   post: (url: string, body: any) => request("POST", url, body),
   put: (url: string, body: any) => request("PUT", url, body),
-  patch: (url: string, body?: any) => request("PATCH", url, body), 
+  patch: (url: string, body?: any) => request("PATCH", url, body),
   delete: (url: string) => request("DELETE", url),
   postFile: (url: string, formData: FormData) => request("POST", url, formData, true, true),
 };
