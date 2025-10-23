@@ -60,7 +60,7 @@ const AddCourse = () => {
           toasterSuccess("Image uploaded successfully", 2000, "id");
         } else {
           toasterError("Upload failed ❌");
-        }
+        } 
       } catch (err) {
         console.error("Upload failed", err);
         toasterError("Upload failed ❌");

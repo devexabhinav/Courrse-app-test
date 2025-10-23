@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { CheckCircle, XCircle, User, Mail, Calendar, Shield, RefreshCw, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { CheckCircle, XCircle, User, Mail, Calendar, Shield, RefreshCw, Check, X, ChevronLeft, ChevronRight, Eye, Info } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
   fetchAdmins,
@@ -17,10 +17,13 @@ import {
   selectVerifiedCount,
   selectRejectedCount,
 } from '@/store/slices/adminslice/adminSlice';
+import { useRouter } from "next/navigation";
 
 export default function AdminUsersPage() {
   const dispatch = useAppDispatch();
-  
+  const router = useRouter();
+
+
   // Redux selectors - get data from store
   const admins = useAppSelector(selectAdmins);
   const totalCount = useAppSelector(selectTotalCount);
@@ -51,7 +54,6 @@ export default function AdminUsersPage() {
     try {
       const result = await dispatch(approveAdmin(adminId)).unwrap();
       alert(`✅ ${result.message}`);
-      // Refresh the current page after successful approval
       dispatch(fetchAdmins(currentPage));
     } catch (err: any) {
       alert(`❌ ${err}`);
@@ -67,7 +69,6 @@ export default function AdminUsersPage() {
     try {
       const result = await dispatch(rejectAdmin(adminId)).unwrap();
       alert(`✅ ${result.message}`);
-      // Refresh the current page after successful rejection
       dispatch(fetchAdmins(currentPage));
     } catch (err: any) {
       if (err === 'Session expired. Please login again.') {
@@ -80,6 +81,13 @@ export default function AdminUsersPage() {
       }
     }
   };
+
+  // Handle view admin details
+  const handleViewDetails = (admin: any) => {
+    router.push(`/super-admin/admin-details/?id=${admin}`);
+  };
+
+
 
   // Format date helper function
   const formatDate = (dateString: string) => {
@@ -261,24 +269,60 @@ export default function AdminUsersPage() {
                           switch (admin.status) {
                             case "rejected":
                               return (
-                                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-500/30">
-                                  <XCircle className="h-4 w-4 mr-1.5" />
-                                  Approval Rejected
-                                </span>
+                                <div className="group relative inline-block">
+                                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-500/30 cursor-help">
+                                    <XCircle className="h-4 w-4 mr-1.5" />
+                                    Approval Rejected
+                                  </span>
+                                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-lg z-10">
+                                    <div className="flex items-start gap-2">
+                                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                      <div>
+                                        <p className="font-semibold mb-1">Rejected Admin</p>
+                                        {/* <p className="text-gray-300">This admin application has been rejected and cannot access admin features.</p> */}
+                                      </div>
+                                    </div>
+                                    <div className="absolute left-4 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                                  </div>
+                                </div>
                               );
                             case "pending":
                               return (
-                                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/30">
-                                  <RefreshCw className="h-4 w-4 mr-1.5" />
-                                  Waiting for Approval
-                                </span>
+                                <div className="group relative inline-block">
+                                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/30 cursor-help">
+                                    <RefreshCw className="h-4 w-4 mr-1.5" />
+                                    Waiting for Approval
+                                  </span>
+                                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-lg z-10">
+                                    <div className="flex items-start gap-2">
+                                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                      <div>
+                                        <p className="font-semibold mb-1">Pending Approval</p>
+                                        {/* <p className="text-gray-300">This admin is waiting for approval. Use the action buttons to approve or reject.</p> */}
+                                      </div>
+                                    </div>
+                                    <div className="absolute left-4 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                                  </div>
+                                </div>
                               );
                             case "approved":
                               return (
-                                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-400 border border-green-200 dark:border-green-500/30">
-                                  <CheckCircle className="h-4 w-4 mr-1.5" />
-                                  Approved
-                                </span>
+                                <div className="group relative inline-block">
+                                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-400 border border-green-200 dark:border-green-500/30 cursor-help">
+                                    <CheckCircle className="h-4 w-4 mr-1.5" />
+                                    Approved
+                                  </span>
+                                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-lg z-10">
+                                    <div className="flex items-start gap-2">
+                                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                      <div>
+                                        <p className="font-semibold mb-1">Approved Admin</p>
+                                        {/* <p className="text-gray-300">This admin has been approved and has full access. Click "View Details" to see more information.</p> */}
+                                      </div>
+                                    </div>
+                                    <div className="absolute left-4 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                                  </div>
+                                </div>
                               );
                             default:
                               return (
@@ -301,7 +345,7 @@ export default function AdminUsersPage() {
                           switch (admin.status) {
                             case "rejected":
                               return (
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <p className="text-sm text-gray-500 dark:text-gray-400 italic">
                                   This admin is rejected
                                 </p>
                               );
@@ -346,9 +390,13 @@ export default function AdminUsersPage() {
                               );
                             case "approved":
                               return (
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                  This admin is approved
-                                </p>
+                                <button
+                                  onClick={() => handleViewDetails(admin.id)}
+                                  className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                                >
+                                  <Eye className="h-3.5 w-3.5 mr-1" />
+                                  View Details
+                                </button>
                               );
                             default:
                               return (
@@ -374,7 +422,7 @@ export default function AdminUsersPage() {
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Page <span className="font-semibold text-gray-900 dark:text-white">{currentPage}</span> of <span className="font-semibold text-gray-900 dark:text-white">{totalPages}</span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 {/* Previous Button */}
                 <button
@@ -385,17 +433,16 @@ export default function AdminUsersPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Previous
                 </button>
-                
+
                 {/* Page Numbers */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    // Show first page, last page, current page, and pages around current
-                    const showPage = 
-                      page === 1 || 
-                      page === totalPages || 
+                    const showPage =
+                      page === 1 ||
+                      page === totalPages ||
                       (page >= currentPage - 1 && page <= currentPage + 1);
-                    
-                    const showEllipsis = 
+
+                    const showEllipsis =
                       (page === currentPage - 2 && currentPage > 3) ||
                       (page === currentPage + 2 && currentPage < totalPages - 2);
 
@@ -414,11 +461,10 @@ export default function AdminUsersPage() {
                         key={page}
                         onClick={() => handlePageChange(page)}
                         disabled={loading}
-                        className={`px-3 py-2 rounded-lg transition-colors shadow-sm ${
-                          currentPage === page
+                        className={`px-3 py-2 rounded-lg transition-colors shadow-sm ${currentPage === page
                             ? 'bg-blue-600 text-white font-semibold'
                             : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {page}
                       </button>
@@ -467,6 +513,8 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+
     </div>
   );
 }

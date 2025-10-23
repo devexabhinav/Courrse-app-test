@@ -113,7 +113,6 @@ useEffect(() => {
         payload = {
           email: formData.email,
           password: formData.password,
-          // role: formData.role, // Send selected role for validation
         };
         break;
 
