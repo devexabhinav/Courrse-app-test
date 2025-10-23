@@ -14,7 +14,7 @@ import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
 import Cookies from 'js-cookie';
 import { toasterSuccess } from "@/components/core/Toaster";
 import api from "@/lib/api";
-import { trackLogoutActivity } from '../../../../store/slices/adminActivitySlice';
+import { trackLogoutActivity } from '../../../../store/slices/adminslice/adminlogout';
 import { RootState, AppDispatch } from '../../../../store';
 import { useDispatch, useSelector } from 'react-redux';
 export function UserInfo() {

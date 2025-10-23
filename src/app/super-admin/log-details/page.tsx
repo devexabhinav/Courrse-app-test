@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllAdminActivities } from '@/store/slices/adminActivitySlice';
+import { getAllAdminActivities } from '@/store/slices/adminslice/adminActivitySlice';
 import { RootState, AppDispatch } from '@/store';
 
 // Import icons

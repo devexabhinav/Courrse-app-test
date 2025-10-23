@@ -2,9 +2,10 @@ import { configureStore, createSlice } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 // Import your reducers
-import counterReducer from './slices/userSlice';
-import adminReducer from './slices/adminSlice';
-import adminActivityReducer from './slices/adminActivitySlice';
+
+import adminReducer from './slices/adminslice/adminSlice';
+import adminActivityReducer from './slices/adminslice/adminActivitySlice';
+import usersReducer from './slices/adminslice/all-user-details';
 
 
 
@@ -19,10 +20,10 @@ export const makeStore = () => {
   return configureStore({
     reducer: {
       // Add your reducers here
-      counter: counterReducer,
-      admin: adminReducer,  // ← Add admin reducer
+      admin: adminReducer,  
       placeholder: placeholderSlice.reducer,
       adminActivity: adminActivityReducer,
+       users: usersReducer, 
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({

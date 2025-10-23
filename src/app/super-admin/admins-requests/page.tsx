@@ -16,7 +16,7 @@ import {
   selectActionLoading,
   selectVerifiedCount,
   selectRejectedCount,
-} from '@/store/slices/adminSlice';
+} from '@/store/slices/adminslice/adminSlice';
 
 export default function AdminUsersPage() {
   const dispatch = useAppDispatch();
@@ -177,7 +177,7 @@ export default function AdminUsersPage() {
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Rejected Approval</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Rejected</p>
                 <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-500 mt-1">{rejectedCount}</p>
               </div>
               <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-500/20 rounded-full flex items-center justify-center">
