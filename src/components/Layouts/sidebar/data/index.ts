@@ -74,7 +74,7 @@ export const NAV_DATA = [
         type: "Super-Admin",
       },
       {
-        title: "Admins Requests",
+        title: "Admins",
         url: "/super-admin/admins-requests",
         icon: Icons.User,
         items: [],
@@ -103,15 +103,9 @@ export const NAV_DATA = [
         items: [],
         type: "both",
       },
+     
       {
-        title: "Manage Admins",
-        url:"/super-admin/manage-admins",
-        icon: Icons.User,
-        items: [],
-        type: "Super-Admin",
-      },
-      {
-        title: "All User",
+        title: "User",
         url:"/super-admin/all-user",
         icon: Icons.User,
         items: [],

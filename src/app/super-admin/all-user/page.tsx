@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchUsers, setPage } from "../../../store/slices/adminslice/all-user-details";
+import { Key } from "lucide-react";
 
 export default function UsersWithProgressPage({ className }: any) {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function UsersWithProgressPage({ className }: any) {
           <TableRow className="border-none uppercase [&>th]:text-center">
             <TableHead className="!text-left">Name</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
+            
             <TableHead>Verified</TableHead>
           </TableRow>
         </TableHeader>
@@ -73,10 +74,11 @@ export default function UsersWithProgressPage({ className }: any) {
               <TableRow
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={user.id}
+                onClick={()=>  router.push(`/super-admin/all-user/view-details?id=${user.id}`)}
               >
                 <TableCell className="!text-left">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role || "User"}</TableCell>
+             
                 <TableCell>
                   <span className={user.verifyUser ? "text-green-600" : "text-red-500"}>
                     {user.verifyUser ? "Verified" : "Unverified"}
