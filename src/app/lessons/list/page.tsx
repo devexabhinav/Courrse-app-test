@@ -5,11 +5,13 @@ import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { PlusCircleIcon, SearchIcon, ImageIcon, VideoIcon } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 
 export default function Lessons({ className }: any) {
   const [search, setSearch] = useState("");
   const [lessons, setLessons] = useState<any[]>([]);
   const [courseName, setCourseName] = useState("");
+  const [chapterorder, setChapterOrder] = useState("");
   const [chapterName, setChapterName] = useState("");
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [activeMedia, setActiveMedia] = useState<any>({
@@ -33,23 +35,48 @@ export default function Lessons({ className }: any) {
       if (search) query.append("search", search);
 
       const res = await api.get(
-        `lessons/chapter/lessons?chapter_id=${chapter_id}`,
+        `lessons/chapter/lessons/paginated?chapter_id=${chapter_id}&${query.toString()}`,
       );
+
       if (res.success) {
-        const data = res.data.data.lessons;
-        setLessons(data || []);
-        setCourseName(res?.data?.data?.course?.title);
-        setChapterName(res?.data?.data?.chapter?.title);
-        setTotalPages(Math.ceil((data.totalLessons || 1) / limit));
+        const data = res?.data?.data?.data?.lessons || [];
+        setLessons(data);
+        setCourseName(res?.data?.data?.data?.course?.title);
+        setChapterName(res?.data?.data?.data?.chapter?.title);
+        setChapterOrder(res?.data?.data?.data?.chapter?.order);
+        const totalLessons =
+          res.data.data.data?.pagination?.total || data.length;
+        setTotalPages(Math.ceil(totalLessons / limit));
       }
     } catch (err) {
       console.error("❌ Failed to fetch lessons:", err);
     }
   };
-
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+  console.log(courseName, chapterName, "===chap");
   useEffect(() => {
     if (chapterId) fetchLessons(chapterId);
   }, [page, search, chapterId]);
+
+  const handleDelete = async (lessonId: number) => {
+    if (!confirm("🗑️ Are you sure you want to delete this lesson?")) return;
+
+    try {
+      const res = await api.delete(`lessons/${lessonId}`);
+      if (res.success) {
+        toasterSuccess("✅ Lesson deleted successfully!", 3000, "id");
+        // Refresh lessons after deletion
+        fetchLessons(chapterId!);
+      } else {
+        toasterError(res.error.code, 1000, "id");
+      }
+    } catch (err) {
+      console.error("❌ Delete failed:", err);
+      alert("⚠️ Something went wrong while deleting the lesson.");
+    }
+  };
 
   return (
     <div
@@ -62,7 +89,7 @@ export default function Lessons({ className }: any) {
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <h2 className="text-xl font-bold text-dark dark:text-white">
           Lesson List for course: {courseName}
-          <br /> chapter: {chapterName}
+          <br /> chapter: {chapterorder} {chapterName}
         </h2>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -208,6 +235,24 @@ export default function Lessons({ className }: any) {
                         <VideoIcon size={16} /> Videos
                       </button>
                     )}
+
+                    <button
+                      onClick={() =>
+                        router.push(
+                          `/lessons/list/edit-lessons?lesson_id=${lesson.id}&chapter_id=${chapterId}&course_id=${courseId}`,
+                        )
+                      }
+                      className="flex items-center gap-1 text-yellow-600 hover:text-yellow-800"
+                    >
+                      ✏️ Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(lesson.id)}
+                      className="flex items-center gap-1 text-red-600 hover:text-red-800"
+                    >
+                      🗑️ Delete
+                    </button>
                   </div>
 
                   <span className="text-xs text-gray-400">
@@ -215,7 +260,7 @@ export default function Lessons({ className }: any) {
                       day: "2-digit",
                       month: "2-digit",
                       year: "numeric",
-                    }).format(new Date(lesson.created_at))}
+                    }).format(new Date(lesson.createdAt))}
                   </span>
                 </div>
               </div>
@@ -234,7 +279,7 @@ export default function Lessons({ className }: any) {
           <button
             disabled={page === 1}
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-all hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+            className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-all hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-white"
           >
             Previous
           </button>
@@ -244,7 +289,7 @@ export default function Lessons({ className }: any) {
           <button
             disabled={page === totalPages}
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-all hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:text-white"
+            className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-all hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-white"
           >
             Next
           </button>

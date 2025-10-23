@@ -12,11 +12,7 @@ import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Pencil, SearchIcon, Trash2 } from "lucide-react";
-import {
-  toasterError,
-  toasterSuccess,
-  toasterWarning,
-} from "@/components/core/Toaster";
+import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
 import { ToggleRight } from "lucide-react";
 import { ToggleLeft } from "lucide-react";
@@ -36,24 +32,30 @@ export default function Courses({ className }: any) {
   const fetchCourses = async () => {
     try {
       const query = new URLSearchParams();
-      query.append("page", String(page));
-      query.append("limit", String(limit));
+
       if (search) query.append("search", search);
       if (statusFilter === "active") query.append("active", "true");
       if (statusFilter === "inactive") query.append("active", "false");
+      query.append("page", page.toString());
+      query.append("limit", limit.toString());
 
-      const res = await api.get(`course/list?${query.toString()}`);
+      const url = `course/list?${query.toString()}`;
+
+      const res = await api.get(url);
+
       if (res.success) {
-        setCourses(res?.data?.data?.courses || []);
+        setCourses(res.data?.data?.courses || []);
         setTotalPages(res.data?.data?.totalPages || 1);
       }
     } catch (err) {
       console.error("Failed to fetch courses:", err);
     }
   };
+
   useEffect(() => {
+    setPage(1); // Reset pagination
     fetchCourses();
-  }, [search, statusFilter, page]);
+  }, [search, statusFilter]);
 
   const handleEdit = async (id: number) => {
     try {

@@ -44,10 +44,12 @@ export default function Chapters({ className }: any) {
 
   const fetchChapters = async (course_id: string) => {
     try {
-      const res = await api.get(`chapter/course/?course_id=${course_id}`);
+      const res = await api.get(
+        `chapter/course/?course_id=${course_id}&page=${page}&limit=${limit}&search=${search}`,
+      );
       if (res.success) {
-        setChapters(res.data?.data?.data?.chapters);
-        setTotalPages(res.data?.data?.pagination?.totalPages || 1);
+        setChapters(res.data?.data?.data?.chapters || []);
+        setTotalPages(res.data?.data?.data?.pagination?.totalPages || 1);
       }
     } catch (err) {
       console.error("❌ Failed to fetch chapters:", err);
@@ -82,7 +84,6 @@ export default function Chapters({ className }: any) {
   };
 
   const handleEdit = (id: number) => {
-    console.log("Edit clicked for chapter:", id);
     setActiveDropdown(null);
     router.push(`/chapters/edit-chapters?id=${id}`);
   };
@@ -410,7 +411,6 @@ export default function Chapters({ className }: any) {
             <div className="flex flex-col">
               <button
                 onClick={() => {
-                  console.log("Edit button clicked");
                   handleEdit(activeDropdown);
                 }}
                 className="flex items-center gap-3 px-4 py-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
