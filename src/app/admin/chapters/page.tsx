@@ -126,7 +126,7 @@ export default function Chapters({ className }: any) {
   const handleAddMCQs = (chapterId: number) => {
     setActiveDropdown(null);
     router.push(
-      `/mcq?chapter_id=${chapterId}&course_id=${courseId}&name=${courseName}`,
+      `/admin/mcq?chapter_id=${chapterId}&course_id=${courseId}&name=${courseName}`,
     );
   };
 
@@ -179,7 +179,9 @@ export default function Chapters({ className }: any) {
 
           <button
             onClick={() =>
-              router.push(`/admin/chapters/add-chapters?course_id=${courseId}`)
+              router.push(
+                `/admin/chapters/add-chapters?course_id=${courseId}&course=${courseName}`,
+              )
             }
             className="w-full rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700 sm:w-auto"
           >

@@ -16,7 +16,7 @@ const AddChapter = () => {
   const [courses, setCourses] = useState<any>([]);
   const searchParams = useSearchParams();
   const courseId = searchParams.get("course_id");
-
+  const courseName = searchParams.get("course");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -131,7 +131,9 @@ const AddChapter = () => {
 
       if (res.success) {
         toasterSuccess("Chapter created successfully", 2000, "id");
-        router.push(`/admin/chapters?course_id=${courseId}`);
+        router.push(
+          `/admin/chapters?course=${courseName}&course_id=${courseId}`,
+        );
       } else {
         toasterError(res.error?.code || "Something went wrong ❌", 2000, "id");
       }

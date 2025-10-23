@@ -27,6 +27,14 @@ export default function Lessons({ className }: any) {
   const courseId = searchParams.get("course_id");
   const router = useRouter();
 
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  useEffect(() => {
+    if (chapterId) fetchLessons(chapterId);
+  }, [page, search, chapterId]);
+
   const fetchLessons = async (chapter_id: string) => {
     try {
       const query = new URLSearchParams();
@@ -52,13 +60,6 @@ export default function Lessons({ className }: any) {
       console.error("❌ Failed to fetch lessons:", err);
     }
   };
-  useEffect(() => {
-    setPage(1);
-  }, [search]);
-  console.log(courseName, chapterName, "===chap");
-  useEffect(() => {
-    if (chapterId) fetchLessons(chapterId);
-  }, [page, search, chapterId]);
 
   const handleDelete = async (lessonId: number) => {
     if (!confirm("🗑️ Are you sure you want to delete this lesson?")) return;
@@ -66,14 +67,11 @@ export default function Lessons({ className }: any) {
     try {
       const res = await api.delete(`lessons/${lessonId}`);
       if (res.success) {
-        toasterSuccess("✅ Lesson deleted successfully!", 3000, "id");
+        toasterSuccess("Lesson deleted successfully!", 3000, "id");
 
-        // Check if this was the last item on the current page
         if (lessons.length === 1 && page > 1) {
-          // If it was the last item and we're not on page 1, go to previous page
           setPage((prev) => prev - 1);
         } else {
-          // Otherwise, refresh the current page
           fetchLessons(chapterId!);
         }
       } else {
@@ -92,7 +90,6 @@ export default function Lessons({ className }: any) {
         className,
       )}
     >
-      {/* Header + Actions */}
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <h2 className="text-xl font-bold text-dark dark:text-white">
           Lesson List for course: {courseName}
@@ -100,7 +97,6 @@ export default function Lessons({ className }: any) {
         </h2>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          {/* Search Bar */}
           <div className="relative w-full sm:w-[300px]">
             <input
               type="search"
@@ -112,7 +108,6 @@ export default function Lessons({ className }: any) {
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
 
-          {/* Add Lesson Button */}
           <button
             onClick={() =>
               router.push(
@@ -137,7 +132,6 @@ export default function Lessons({ className }: any) {
         </div>
       </div>
 
-      {/* Media Modal */}
       {showMediaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
           <div
@@ -186,7 +180,6 @@ export default function Lessons({ className }: any) {
         </div>
       )}
 
-      {/* Lessons Grid */}
       {lessons.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {lessons.map((lesson: any) => {
@@ -280,7 +273,6 @@ export default function Lessons({ className }: any) {
         </div>
       )}
 
-      {/* Pagination */}
       {lessons.length > 0 && (
         <div className="mt-8 flex items-center justify-end gap-4">
           <button

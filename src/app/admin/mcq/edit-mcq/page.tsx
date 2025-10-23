@@ -13,239 +13,385 @@ const EditMcq = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mcqId = searchParams.get("id");
+  const chapterId = searchParams.get("chapter_id");
+  const courseId = searchParams.get("course_id");
+  const courseName = searchParams.get("name");
+  const chapterName = searchParams.get("chapter_name");
 
   const [courses, setCourses] = useState<any[]>([]);
   const [chapters, setChapters] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
   const [formData, setFormData] = useState({
     question: "",
     options: ["", "", "", ""],
     answer: "",
-    course_id: "",
-    chapter_id: ""
+    course_id: courseId || "",
+    chapter_id: chapterId || "",
   });
 
-  // Fetch chapters for a course
-  const fetchChapters = async (courseId: string) => {
-    try {
-      const res = await api.get(`chapter?course_id=${courseId}`);
-      setChapters(res.data?.data || []);
-    } catch (err) {
-      console.error("Failed to fetch chapters:", err);
-    }
-  };
+  const [errors, setErrors] = useState({
+    question: "",
+    options: ["", "", "", ""],
+    answer: "",
+    course_id: "",
+    chapter_id: "",
+  });
 
+  // Fetch courses and initial data
   useEffect(() => {
-    if (!mcqId) {
-      router.push("/mcq");
-      return;
-    }
+    const fetchInitialData = async () => {
+      if (!mcqId) {
+        toasterError("MCQ ID is required");
+        router.push("/admin/mcq");
+        return;
+      }
 
-    const fetchData = async () => {
       try {
-        // Fetch all courses
+        setFetching(true);
+
+        // Fetch courses
         const coursesRes = await api.get("course/list?active=true");
         setCourses(coursesRes.data?.data?.courses || []);
 
-        // Fetch MCQ
+        // Fetch MCQ data
         const mcqRes = await api.get(`mcq/${mcqId}`);
-        const data = mcqRes.data?.data;
+        const mcqData = mcqRes.data?.data;
 
+        if (!mcqData) {
+          toasterError("MCQ not found");
+          router.push("/admin/mcq");
+          return;
+        }
+
+        // Set form data from API response
         setFormData({
-          question: data.question,
-          options: data.options || ["", "", "", ""],
-          answer: data.answer,
-          course_id: data.course_id.toString(),
-          chapter_id: data.chapter_id.toString(),
+          question: mcqData.question || "",
+          options: mcqData.options || ["", "", "", ""],
+          answer: mcqData.answer || "",
+          course_id: mcqData.course_id?.toString() || courseId || "",
+          chapter_id: mcqData.chapter_id?.toString() || chapterId || "",
         });
 
-        // Fetch chapters for selected course
-        const chaptersRes = await api.get(`chapter?course_id=${data.course_id}`);
-        setChapters(chaptersRes.data?.data || []);
+        // If we have course_id, fetch chapters for that course
+        if (mcqData.course_id) {
+          await fetchChapters(mcqData.course_id.toString());
+        }
       } catch (err) {
-        console.error("Failed to fetch data:", err);
+        console.error("Failed to fetch initial data:", err);
+        toasterError("Failed to load MCQ data");
+        router.push("/admin/mcq");
+      } finally {
+        setFetching(false);
       }
     };
 
-    fetchData();
-  }, [mcqId, router]);
+    fetchInitialData();
+  }, [mcqId, courseId, chapterId, router]);
 
-  useEffect(() => {
-    if (formData.course_id) {
-      fetchChapters(formData.course_id);
-    } else {
+  const fetchChapters = async (courseId: string) => {
+    if (!courseId) {
       setChapters([]);
+      return;
     }
-  }, [formData.course_id]);
 
-  const handleChange = (e: any, index?: number) => {
-    const { name, value } = e.target;
-    if (name === "options" && typeof index === "number") {
-      const updatedOptions = [...formData.options];
-      updatedOptions[index] = value;
-      setFormData({ ...formData, options: updatedOptions });
-    } else {
-      setFormData({ ...formData, [name]: value });
+    try {
+      const res = await api.get(`chapter?course_id=${courseId}`);
+      setChapters(res.data?.data?.chapters || []);
+    } catch (err) {
+      console.error("Failed to fetch chapters:", err);
+      toasterError("Failed to load chapters");
+      setChapters([]);
     }
   };
 
-const handleSubmit = async (e: any) => {
-  e.preventDefault();
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+    index?: number,
+  ) => {
+    const { name, value } = e.target;
 
-  const trimmedQuestion = formData.question.trim();
-  const trimmedAnswer = formData.answer.trim();
-  const trimmedOptions = formData.options.map(opt => opt.trim());
+    // Clear errors when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
 
-  // 1. Required fields check
-  if (!trimmedQuestion) {
-    toasterError("Question is required ❌");
-    return;
-  }
+    if (name === "options" && typeof index === "number") {
+      const updatedOptions = [...formData.options];
+      updatedOptions[index] = value;
 
-  if (trimmedOptions.some(opt => !opt)) {
-    toasterError("All 4 options must be filled ❌");
-    return;
-  }
+      // Clear option error when user types
+      const updatedOptionErrors = [...errors.options];
+      if (updatedOptionErrors[index]) {
+        updatedOptionErrors[index] = "";
+        setErrors((prev) => ({ ...prev, options: updatedOptionErrors }));
+      }
 
-  if (!trimmedAnswer) {
-    toasterError("Correct answer is required ❌");
-    return;
-  }
+      setFormData((prev) => ({ ...prev, options: updatedOptions }));
+    } else if (name === "course_id") {
+      // When course changes, fetch chapters and reset chapter_id
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        chapter_id: "", // Reset chapter when course changes
+      }));
+      fetchChapters(value);
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
-  if (!formData.course_id) {
-    toasterError("Please select a course ❌");
-    return;
-  }
-
-  if (!formData.chapter_id) {
-    toasterError("Please select a chapter ❌");
-    return;
-  }
-
-  // 2. Check for unique options
-  const uniqueOptions = new Set(trimmedOptions);
-  if (uniqueOptions.size !== trimmedOptions.length) {
-    toasterError("Options must be unique ❌");
-    return;
-  }
-
-  // 3. Answer must match one of the options
-  if (!trimmedOptions.includes(trimmedAnswer)) {
-    toasterError("Answer must match one of the options ❌");
-    return;
-  }
-
-  // ✅ All validations passed
-  try {
-    const payload = {
-      question: trimmedQuestion,
-      options: trimmedOptions,
-      answer: trimmedAnswer,
-      course_id: parseInt(formData.course_id),
-      chapter_id: parseInt(formData.chapter_id),
+  const validateForm = () => {
+    const newErrors = {
+      question: "",
+      options: ["", "", "", ""],
+      answer: "",
+      course_id: "",
+      chapter_id: "",
     };
 
-    const res = await api.put(`mcq/${mcqId}`, payload);
+    let isValid = true;
 
-    if (res?.success) {
-      toasterSuccess("MCQ updated successfully!", 2000, "id");
-      router.push("/mcq");
-    } else {
-      toasterError(res?.error?.code || "Update failed", 2000, "id");
+    // Validate question
+    if (!formData.question.trim()) {
+      newErrors.question = "Question is required";
+      isValid = false;
     }
-  } catch (err) {
-    console.error("Update failed:", err);
-    toasterError("Failed to update MCQ ❌");
-  }
-};
 
+    // Validate options
+    formData.options.forEach((option, index) => {
+      if (!option.trim()) {
+        newErrors.options[index] = `Option ${index + 1} is required`;
+        isValid = false;
+      }
+    });
+
+    // Validate answer
+    if (!formData.answer.trim()) {
+      newErrors.answer = "Correct answer is required";
+      isValid = false;
+    }
+
+    // Validate course
+    if (!formData.course_id) {
+      newErrors.course_id = "Please select a course";
+      isValid = false;
+    }
+
+    // Validate chapter
+    if (!formData.chapter_id) {
+      newErrors.chapter_id = "Please select a chapter";
+      isValid = false;
+    }
+
+    // Check for unique options
+    const trimmedOptions = formData.options.map((opt) => opt.trim());
+    const uniqueOptions = new Set(trimmedOptions);
+    if (uniqueOptions.size !== trimmedOptions.length) {
+      toasterError("Options must be unique ❌");
+      isValid = false;
+    }
+
+    // Check if answer matches one of the options
+    if (!trimmedOptions.includes(formData.answer.trim())) {
+      toasterError("Answer must match one of the options ❌");
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const payload = {
+        question: formData.question.trim(),
+        options: formData.options.map((opt) => opt.trim()),
+        answer: formData.answer.trim(),
+        course_id: parseInt(formData.course_id),
+        chapter_id: parseInt(formData.chapter_id),
+      };
+
+      const res = await api.put(`mcq/${mcqId}`, payload);
+
+      if (res?.success) {
+        toasterSuccess("MCQ updated successfully! 🎉");
+        router.push(
+          `/admin/mcq?course_id=${formData.course_id}&chapter_id=${formData.chapter_id}&name=${courseName}`,
+        );
+      } else {
+        toasterError(res?.error?.code || "Update failed");
+      }
+    } catch (err: any) {
+      console.error("Update failed:", err);
+      toasterError(err?.response?.data?.error?.code || "Failed to update MCQ");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (fetching) {
+    return (
+      <>
+        <Breadcrumb pageName="Edit MCQ" />
+        <ShowcaseSection title="Edit MCQ">
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">
+                Loading MCQ data...
+              </p>
+            </div>
+          </div>
+        </ShowcaseSection>
+      </>
+    );
+  }
 
   return (
     <>
-      <Breadcrumb pageName="Edit MCQ" />
+      <Breadcrumb
+        pageName="Edit MCQ"
+        links={[
+          {
+            label: "MCQs",
+            href: `/admin/mcq?course_id=${courseId}&name=${courseName}`,
+          },
+          { label: "Edit MCQ" },
+        ]}
+      />
+
       <ShowcaseSection title="Edit MCQ">
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <TextAreaGroup
-            label="Question"
+            label="Question *"
             name="question"
             placeholder="Enter the MCQ question"
             value={formData.question}
             onChange={handleChange}
+            rows={3}
           />
 
-          {formData.options.map((option, idx) => (
-            <InputGroup
-              key={idx}
-              label={`Option ${idx + 1}`}
-              name="options"
-              value={option}
-              placeholder={`Option ${idx + 1}`}
-              onChange={(e) => handleChange(e, idx)}
-              type="text"
-            />
-          ))}
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white">
+              Options *
+            </label>
+            {formData.options.map((option, idx) => (
+              <InputGroup
+                key={idx}
+                label={`Option ${idx + 1}`}
+                name="options"
+                value={option}
+                placeholder={`Enter option ${idx + 1}`}
+                onChange={(e) => handleChange(e, idx)}
+                type="text"
+              />
+            ))}
+          </div>
 
           <InputGroup
-            label="Correct Answer"
+            label="Correct Answer *"
             name="answer"
             value={formData.answer}
-            placeholder="Paste the correct option"
+            placeholder="Enter the correct answer (must match one of the options exactly)"
             onChange={handleChange}
             type="text"
           />
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-              Select Course
-            </label>
-            <select
-              name="course_id"
-              value={formData.course_id}
-              disabled
-              onChange={handleChange}
-              className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2 text-sm outline-none dark:border-dark-3 dark:bg-boxdark"
-            >
-              <option value="">-- Select Course --</option>
-              {courses.map((course: any) => (
-                <option key={course.id} value={course.id}>
-                  {course.title}
-                </option>
-              ))}
-            </select>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                Select Course *
+              </label>
+              <select
+                name="course_id"
+                value={formData.course_id}
+                disabled
+                onChange={handleChange}
+                className={`dark:bg-boxdark w-full rounded-lg border px-4 py-2 text-sm outline-none focus:border-primary disabled:cursor-not-allowed dark:border-dark-3 ${
+                  errors.course_id ? "border-red-500" : "border-stroke"
+                }`}
+                required
+              >
+                <option value="">-- Select Course --</option>
+                {courses.map((course: any) => (
+                  <option key={course.id} value={course.id}>
+                    {course.title} {!course.is_active && "(Inactive)"}
+                  </option>
+                ))}
+              </select>
+              {errors.course_id && (
+                <p className="mt-1 text-sm text-red-500">{errors.course_id}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                Select Chapter *
+              </label>
+              <select
+                name="chapter_id"
+                value={formData.chapter_id}
+                onChange={handleChange}
+                disabled
+                className="dark:bg-boxdark ${ w-full rounded-lg border border-stroke px-4 py-2 text-sm opacity-50 outline-none focus:border-primary disabled:cursor-not-allowed dark:border-dark-3"
+                required
+              >
+                <option value="">-- Select Chapter --</option>
+                {chapters.map((chapter: any) => (
+                  <option key={chapter.id} value={chapter.id}>
+                    {chapter.title} (Order: {chapter.order})
+                  </option>
+                ))}
+              </select>
+              {errors.chapter_id && (
+                <p className="mt-1 text-sm text-red-500">{errors.chapter_id}</p>
+              )}
+              {formData.course_id && chapters.length === 0 && (
+                <p className="mt-1 text-sm text-yellow-600">
+                  No chapters available for this course
+                </p>
+              )}
+            </div>
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-              Select Chapter
-            </label>
-            <select
-              name="chapter_id"
-              value={formData.chapter_id}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-stroke bg-transparent px-4 py-2 text-sm outline-none dark:border-dark-3 dark:bg-boxdark"
-            >
-              <option value="">-- Select Chapter --</option>
-              {chapters.map((chapter: any) => (
-                <option key={chapter.id} value={chapter.id}>
-                  {chapter.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex justify-end gap-4">
-           <button
-              className="rounded-lg border border-stroke px-6 py-[7px] font-medium text-dark hover:shadow-1 dark:border-dark-3 dark:text-white"
+          <div className="flex flex-col gap-4 pt-4 sm:flex-row sm:justify-end">
+            <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() =>
+                router.push(
+                  `/admin/mcq?course_id=${courseId}&name=${courseName}`,
+                )
+              }
+              className="rounded-lg border border-stroke px-6 py-3 font-medium text-dark hover:shadow-1 dark:border-dark-3 dark:text-white sm:px-8"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-primary px-6 py-2 font-medium text-white"
+              disabled={loading}
+              className="hover:bg-primary-dark flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-medium text-white disabled:opacity-50 sm:px-8"
             >
-              Edit MCQ
+              {loading ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  Updating...
+                </>
+              ) : (
+                "Update MCQ"
+              )}
             </button>
           </div>
         </form>
