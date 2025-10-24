@@ -40,10 +40,14 @@ export default function UserCoursesPage() {
   const userId = searchParams.get("id"); 
   console.log("userID",userId)
   
-  useEffect(() => {
-    // dispatch(fetchUserCourses({ userId, page: 1, filters }));
-    dispatch(fetchUserCourseStats(userId));
-  }, [dispatch, userId]);
+useEffect(() => {
+  if (userId) {
+    const numericUserId = parseInt(userId);
+    if (!isNaN(numericUserId)) {
+      dispatch(fetchUserCourseStats(numericUserId));
+    }
+  }
+}, [dispatch, userId]);
 
 
 
@@ -57,10 +61,15 @@ export default function UserCoursesPage() {
   };
 
   // Handle refresh
-  const handleRefresh = () => {
-    dispatch(fetchUserCourses({ userId, page: currentPage, filters }));
-    dispatch(fetchUserCourseStats(userId));
-  };
+ const handleRefresh = () => {
+  if (userId) {
+    const numericUserId = parseInt(userId);
+    if (!isNaN(numericUserId)) {
+      dispatch(fetchUserCourses({ userId: numericUserId, page: currentPage, filters }));
+      dispatch(fetchUserCourseStats(numericUserId));
+    }
+  }
+};
 
   // Format date helper function
   const formatDate = (dateString: string) => {
@@ -136,7 +145,7 @@ export default function UserCoursesPage() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Courses</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-                  {stats?.data?.courses.length || 0}
+                  {(stats as any)?.data?.courses?.length || 0}
                 </p>
               </div>
               <div className="h-12 w-12 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
@@ -150,7 +159,7 @@ export default function UserCoursesPage() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Active Courses</p>
                 <p className="text-3xl font-bold text-green-600 dark:text-green-500 mt-1">
-                  {stats?.data?.filters?.totalActive || 0}
+                  {(stats as any)?.data?.filters?.totalActive || 0}
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center">
@@ -164,7 +173,7 @@ export default function UserCoursesPage() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Inactive Courses</p>
                 <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-500 mt-1">
-                  {stats?.data?.filters?.totalInactive|| 0}
+                  {(stats as any)?.data?.filters?.totalInactive|| 0}
                 </p>
               </div>
               <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-500/20 rounded-full flex items-center justify-center">
@@ -178,7 +187,7 @@ export default function UserCoursesPage() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Average Rating</p>
                 <p className="text-3xl font-bold text-purple-600 dark:text-purple-500 mt-1">
-                  {stats?.averageRating || '0.0'}
+                  {(stats as any)?.averageRating || '0.0'}
                 </p>
               </div>
               <div className="h-12 w-12 bg-purple-100 dark:bg-purple-500/20 rounded-full flex items-center justify-center">
@@ -201,7 +210,7 @@ export default function UserCoursesPage() {
   {/* Table Header */}
   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-      Courses ({stats?.data?.courses?.length || 0})
+      Courses ({(stats as any)?.data?.courses?.length || 0})
     </h2>
   </div>
 
@@ -231,7 +240,7 @@ export default function UserCoursesPage() {
         </tr>
       </thead>
       <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-        {!stats?.data?.courses || stats.data.courses.length === 0 ? (
+        {!(stats as any)?.data?.courses || (stats as any).data.courses.length === 0 ? (
           <tr>
             <td colSpan={6} className="px-6 py-8 text-center">
               <Book className="h-12 w-12 text-gray-400 mx-auto mb-3" />
@@ -244,7 +253,7 @@ export default function UserCoursesPage() {
             </td>
           </tr>
         ) : (
-          stats.data.courses.map((course, index) => (
+          (stats as any).data.courses.map((course : any, index : number) => (
             <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
               {/* Course Details */}
               <td className="px-6 py-4">
@@ -332,7 +341,7 @@ export default function UserCoursesPage() {
   </div>
 
   {/* Loading State for Table */}
-  {loading && stats?.data?.courses && stats.data.courses.length > 0 && (
+  {loading && (stats as any)?.data?.courses && (stats as any).data.courses.length > 0 && (
     <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-50 dark:bg-opacity-50 flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -344,10 +353,10 @@ export default function UserCoursesPage() {
 
 {/* Note: Since all courses are in stats.data.courses, pagination might not be needed */}
 {/* But if you want to implement client-side pagination, you can add it here */}
-{stats?.data?.courses && stats.data.courses.length > 10 && (
+{(stats as any)?.data?.courses && (stats as any).data.courses.length > 10 && (
   <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4">
     <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-      Showing all {stats.data.courses.length} courses
+      Showing all {(stats as any).data.courses.length} courses
       {/* You can implement client-side pagination here if needed */}
     </div>
   </div>

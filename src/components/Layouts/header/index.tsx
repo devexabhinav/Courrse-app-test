@@ -20,7 +20,7 @@ export function Header() {
     : "User";
 
   useEffect(() => {
-    setRole(getDecryptedItem("role"));
+    setRole(getDecryptedItem("role") || "");
   }, []);
 
   const isUser = role === "user";

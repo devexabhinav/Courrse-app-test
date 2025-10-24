@@ -228,8 +228,8 @@ export default function AdminUsersPage() {
                     </td>
                   </tr>
                 ) : (
-                  admins.map((admin) => (
-                    <tr key={admin.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                  admins.map((admin:any , index: number) => (
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-12 w-12">

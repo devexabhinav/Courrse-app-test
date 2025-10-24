@@ -3,7 +3,7 @@
 import { ArrowLeft, Calendar, Trophy, Target, TrendingUp, BookOpen, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import api from "@/lib/api";
+import { reduxApiClient } from '@/lib/redux-api';
 import { cn } from "@/lib/utils";
 
 interface UserData {
@@ -97,7 +97,7 @@ export default function UserCompleteDetailsPage({ className }: any) {
     
     async function fetchDetails() {
       try {
-        const res = await api.get(`mcq/complete-details/${userId}`);
+        const res = await reduxApiClient.get(`mcq/complete-details/${userId}`);
         setData(res.data.data);
       } catch (err) {
         console.error("Error fetching user details", err);
