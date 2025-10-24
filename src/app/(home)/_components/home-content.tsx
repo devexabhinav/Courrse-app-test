@@ -6,9 +6,9 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
 import { useApiClient } from "@/lib/api";
 import { useEffect, useState } from "react";
-import { OverviewCardsSkeleton } from "./overview-cards/skeleton";
 import { OverviewCardsGroup } from "./overview-cards";
 import ChartPageClient from "@/app/users/ChartPageClient";
+import { OverviewCardsSkeleton } from "./overview-cards/skeleton";
 
 interface HomeContentProps {
   initialTimeFrame?: string;
