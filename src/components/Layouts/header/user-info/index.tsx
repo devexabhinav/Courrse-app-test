@@ -11,40 +11,36 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
-import Cookies from 'js-cookie';
 import { toasterSuccess } from "@/components/core/Toaster";
-import api from "@/lib/api";
-import { trackLogoutActivity } from '../../../../store/slices/adminslice/adminlogout';
-import { RootState, AppDispatch } from '../../../../store';
-import { useDispatch, useSelector } from 'react-redux';
+import { trackLogoutActivity } from "../../../../store/slices/adminslice/adminlogout";
+import { RootState, AppDispatch } from "../../../../store";
+import { useDispatch, useSelector } from "react-redux";
+import { getDecryptedItem, removeEncryptedItem } from "@/utils/storageHelper";
+import { useApiClient } from "@/lib/api";
+
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
-  const name = Cookies.get('name')
-  const email = Cookies.get('email')
+  const name = getDecryptedItem("name");
+  const email = getDecryptedItem("email");
   const [userImage, setUserImage] = useState("/images/user2.png");
+  const api = useApiClient();
 
-
-
-    const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
   const { loading, success, error } = useSelector(
-    (state: RootState) => state.adminActivity
+    (state: RootState) => state.adminActivity,
   );
-
-
-
 
   const USER = {
     name: name,
     email: email,
     img: "/images/user2.png",
   };
-  const userNames = Cookies.get('name');
-  const userName = userNames 
+  const userNames: any = getDecryptedItem("name");
+  const userName: any = userNames
     ? userNames.charAt(0).toUpperCase() + userNames.slice(1)
-    : 'User';
-  ; // Get user name from cookies
+    : "User"; // Get user name from cookies
   useEffect(() => {
-    const userId = Cookies.get("userId");
+    const userId = getDecryptedItem("userId");
 
     const fetchProfileImage = async () => {
       try {
@@ -70,10 +66,16 @@ export function UserInfo() {
       }
     };
 
-    window.addEventListener("profile-image-updated", handleImageUpdate as EventListener);
+    window.addEventListener(
+      "profile-image-updated",
+      handleImageUpdate as EventListener,
+    );
 
     return () => {
-      window.removeEventListener("profile-image-updated", handleImageUpdate as EventListener);
+      window.removeEventListener(
+        "profile-image-updated",
+        handleImageUpdate as EventListener,
+      );
     };
   }, []);
 
@@ -82,7 +84,7 @@ export function UserInfo() {
       <DropdownTrigger className="rounded align-middle outline-none ring-primary ring-offset-2 focus-visible:ring-1 dark:ring-offset-gray-dark">
         <span className="sr-only">My Account</span>
 
-        <figure className="flex items-center gap-3 size-12 rounded-full overflow-hidden">
+        <figure className="flex size-12 items-center gap-3 overflow-hidden rounded-full">
           <Image
             src={userImage}
             className="size-12"
@@ -115,7 +117,7 @@ export function UserInfo() {
         <figure className="flex items-center gap-2.5 px-5 py-3.5">
           <Image
             src={userImage}
-            className="size-12   rounded-full overflow-hidden"
+            className="size-12 overflow-hidden rounded-full"
             alt={`Avatar for ${USER.name}`}
             role="presentation"
             width={200}
@@ -178,54 +180,48 @@ export function UserInfo() {
             <span className="text-base font-medium">Log out</span>
           </button> */}
 
-
-
           <button
-  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
-  onClick={async () => {
-    try {
-      // Get admin ID from cookies or your state
-      const adminId = parseInt(Cookies.get('userId') || '0');
-      
-      // Dispatch logout activity tracking
-      if (adminId) {
-        await dispatch(trackLogoutActivity(adminId)).unwrap();
-      }
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
+            onClick={async () => {
+              try {
+                // Get admin ID from cookies or your state
+                const adminId = parseInt(getDecryptedItem("userId") || "0");
 
-      // Clear cookies
-      Cookies.remove('token');
-      Cookies.remove("refreshToken");
-      Cookies.remove('userId');
-      Cookies.remove('name');
-      Cookies.remove('email');
-      Cookies.remove('role');
-      
-      setIsOpen(false);
-      toasterSuccess("Logout Successfully", 2000, "id");
-      window.location.href = '/auth/login';
-      
-    } catch (error) {
-      // Even if tracking fails, proceed with logout
-      console.error('Failed to track logout activity:', error);
-      
-      Cookies.remove('token');
-      Cookies.remove("refreshToken");
-      Cookies.remove('userId');
-      Cookies.remove('name');
-      Cookies.remove('email');
-      Cookies.remove('role');
-      setIsOpen(false);
-      toasterSuccess("Logout Successfully", 2000, "id");
-      window.location.href = '/auth/login';
-    }
-  }}
->
-  <LogOutIcon />
-  <span className="text-base font-medium">Log out</span>
-</button>
+                // Dispatch logout activity tracking
+                if (adminId) {
+                  await dispatch(trackLogoutActivity(adminId)).unwrap();
+                }
 
+                // Clear cookies
+                removeEncryptedItem("token");
+                removeEncryptedItem("refreshToken");
+                removeEncryptedItem("userId");
+                removeEncryptedItem("name");
+                removeEncryptedItem("email");
+                removeEncryptedItem("role");
 
+                setIsOpen(false);
+                toasterSuccess("Logout Successfully", 2000, "id");
+                window.location.href = "/auth/login";
+              } catch (error) {
+                // Even if tracking fails, proceed with logout
+                console.error("Failed to track logout activity:", error);
 
+                removeEncryptedItem("token");
+                removeEncryptedItem("refreshToken");
+                removeEncryptedItem("userId");
+                removeEncryptedItem("name");
+                removeEncryptedItem("email");
+                removeEncryptedItem("role");
+                setIsOpen(false);
+                toasterSuccess("Logout Successfully", 2000, "id");
+                window.location.href = "/auth/login";
+              }
+            }}
+          >
+            <LogOutIcon />
+            <span className="text-base font-medium">Log out</span>
+          </button>
         </div>
       </DropdownContent>
     </Dropdown>

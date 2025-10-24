@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import api from "@/lib/api";
 import { UsedDevices } from "@/components/Charts/used-devices/page";
+import { useApiClient } from "@/lib/api";
 
 interface Props {
   timeFrameKey: string;
@@ -10,6 +10,7 @@ interface Props {
 
 export default function ChartPageClient({ timeFrameKey }: Props) {
   const [chartData, setChartData] = useState<any[]>([]);
+  const api = useApiClient();
 
   const timeFrame = timeFrameKey?.split(":")[1] || "monthly";
 

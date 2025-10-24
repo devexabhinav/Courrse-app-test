@@ -1,42 +1,43 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import NextTopLoader from 'nextjs-toploader';
-import Cookies from 'js-cookie';
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import NextTopLoader from "nextjs-toploader";
 
-import { Sidebar } from '@/components/Layouts/sidebar';
-import { Header } from '@/components/Layouts/header';
-import ToastProvider from '@/components/core/ToasterProvider';
-import UserCoursesDashboard from '@/components/UserCoursesDashboard';
+import { Sidebar } from "@/components/Layouts/sidebar";
+import { Header } from "@/components/Layouts/header";
+import ToastProvider from "@/components/core/ToasterProvider";
+import UserCoursesDashboard from "@/components/UserCoursesDashboard";
 
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from "react";
+import { getDecryptedItem } from "@/utils/storageHelper";
 
 export default function ClientLayoutShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
-  const [token, setToken] = useState<string | undefined>();
-  const [role, setRole] = useState<string | undefined>();
-  const isAuthPage = pathname.startsWith('/auth');
+  const [token, setToken] = useState<any>();
+  const [role, setRole] = useState<any>();
+  const isAuthPage = pathname.startsWith("/auth");
 
   useEffect(() => {
-    const t = Cookies.get('token');
-    const r = Cookies.get('role');
+    const t = getDecryptedItem("token");
+    const r = getDecryptedItem("role");
     setToken(t);
     setRole(r);
   }, []);
 
   if (!token && !isAuthPage) return null;
 
-  const isAdmin = role === 'admin';
-  const isUser = role === 'user';
-  const isSuperAdmin = role === 'Super-Admin' || role === 'Super-Admin';
+  const isAdmin = role === "admin";
+  const isUser = role === "user";
+  const isSuperAdmin = role === "Super-Admin" || role === "Super-Admin";
   const isAuthenticated = !isAuthPage && (isAdmin || isUser || isSuperAdmin);
 
   // Role-based dashboard logic:
   // - Super Admin: always show actual content (no special dashboard override)
   // - Admin: always show actual content
   // - User: show courses dashboard only on '/' or '/user-dashboard', show actual content for other pages
-  const showUserDashboard = isUser && (pathname === '/' || pathname === '/user-dashboard');
+  const showUserDashboard =
+    isUser && (pathname === "/" || pathname === "/user-dashboard");
 
   return (
     <>

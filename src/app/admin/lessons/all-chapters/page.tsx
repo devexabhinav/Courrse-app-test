@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
 import { SearchIcon, ImageIcon, VideoIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useApiClient } from "@/lib/api";
 
 export default function Chapters({ className }: any) {
+  const api = useApiClient();
+
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [chapters, setChapters] = useState<any[]>([]);

@@ -9,13 +9,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Pencil, SearchIcon, Trash2 } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
 import { ToggleRight } from "lucide-react";
 import { ToggleLeft } from "lucide-react";
+import { useApiClient } from "@/lib/api";
 
 export default function Courses({ className }: any) {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function Courses({ className }: any) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(5);
-
+  const api = useApiClient();
   useEffect(() => {
     setPage(1);
   }, [search, statusFilter]);

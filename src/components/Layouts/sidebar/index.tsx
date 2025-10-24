@@ -9,7 +9,7 @@ import { NAV_DATA } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
-import Cookies from "js-cookie";
+import { getDecryptedItem } from "@/utils/storageHelper";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -22,7 +22,7 @@ export function Sidebar() {
   };
 
   useEffect(() => {
-    const r = Cookies.get('role');
+    const r = getDecryptedItem("role");
     setRole(r);
   }, []);
 
@@ -42,9 +42,9 @@ export function Sidebar() {
     });
   }, [pathname]);
 
-  const isUser = role === 'user';
-  const isAdmin = role === 'admin';
-  const isSuperAdmin = role === 'Super-Admin';
+  const isUser = role === "user";
+  const isAdmin = role === "admin";
+  const isSuperAdmin = role === "Super-Admin";
 
   // Filter navigation items based on user role and item type
   const getFilteredNavData = () => {
@@ -52,28 +52,28 @@ export function Sidebar() {
       ...section,
       items: section.items.filter((item) => {
         // Items marked as 'both' are visible to all roles
-        if (item.type === 'both') {
+        if (item.type === "both") {
           return true;
         }
 
         // Super Admin can see everything (admin, user, Super-Admin, and both items)
         if (isSuperAdmin) {
-          return item.type === 'Super-Admin';
+          return item.type === "Super-Admin";
         }
 
         // Admin can see admin and both items
         if (isAdmin) {
-          return item.type === 'admin';
+          return item.type === "admin";
         }
 
         // User can see user and both items
         if (isUser) {
-          return item.type === 'user';
+          return item.type === "user";
         }
 
         // If no role, show nothing
         return false;
-      })
+      }),
     })).filter((section) => section.items.length > 0); // Remove empty sections
   };
 
@@ -187,7 +187,10 @@ export function Sidebar() {
                           </div>
                         ) : (
                           (() => {
-                            const href = item.url || "/" + item.title.toLowerCase().split(" ").join("-");
+                            const href =
+                              item.url ||
+                              "/" +
+                                item.title.toLowerCase().split(" ").join("-");
 
                             return (
                               <MenuItem

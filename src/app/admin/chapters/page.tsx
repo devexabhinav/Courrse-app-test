@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
 import { useEffect, useState, useRef } from "react";
 import {
   Pencil,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useApiClient } from "@/lib/api";
 
 export default function Chapters({ className }: any) {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function Chapters({ className }: any) {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("course_id");
   const courseName = searchParams.get("course");
-
+  const api = useApiClient();
   useEffect(() => {
     if (courseId) {
       fetchChapters(courseId);

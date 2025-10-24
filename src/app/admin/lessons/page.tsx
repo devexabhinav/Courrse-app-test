@@ -1,13 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useApiClient } from "@/lib/api";
 
 export default function AddChapter() {
   const router = useRouter();
+  const api = useApiClient();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [courses, setCourses] = useState([]);

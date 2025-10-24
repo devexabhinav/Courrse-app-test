@@ -1,6 +1,5 @@
 "use client";
 
-import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -10,9 +9,12 @@ import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { PencilSquareIcon } from "@/assets/icons";
 import { BookOpen, ListOrdered, Image, Video, FileText } from "lucide-react";
+import { useApiClient } from "@/lib/api";
 
 const EditLesson = () => {
   const router = useRouter();
+  const api = useApiClient();
+
   const searchParams = useSearchParams();
   const lessonId = searchParams.get("lesson_id");
   const chapterId = searchParams.get("chapter_id");
@@ -320,9 +322,9 @@ const EditLesson = () => {
 
       if (res.success) {
         toasterSuccess("Lesson updated successfully", 2000);
-       router.push(
-         `/admin/lessons/list?chapter_id=${chapter_id}&course_id=${formData.course_id}`,
-       );
+        router.push(
+          `/admin/lessons/list?chapter_id=${chapter_id}&course_id=${formData.course_id}`,
+        );
       } else {
         toasterError(res.error?.code || "Something went wrong ❌");
       }

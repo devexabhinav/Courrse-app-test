@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import {
   Pencil,

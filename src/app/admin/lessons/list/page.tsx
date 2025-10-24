@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
 import { PlusCircleIcon, SearchIcon, ImageIcon, VideoIcon } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
+import { useApiClient } from "@/lib/api";
 
 export default function Lessons({ className }: any) {
+  const api = useApiClient();
+
   const [search, setSearch] = useState("");
   const [lessons, setLessons] = useState<any[]>([]);
   const [courseName, setCourseName] = useState("");

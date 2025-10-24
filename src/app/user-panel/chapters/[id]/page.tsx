@@ -16,15 +16,16 @@ import {
   Divide,
   Heading1,
 } from "lucide-react";
-import api from "@/lib/api";
 
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
-import Cookies from "js-cookie";
+import { getDecryptedItem } from "@/utils/storageHelper";
+import { useApiClient } from "@/lib/api";
 
 export default function ChapterDetail() {
   const params = useParams();
   const router = useRouter();
   const chapterId = params.id;
+  const api = useApiClient();
 
   const [chapter, setChapter] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -83,7 +84,7 @@ export default function ChapterDetail() {
 
       if (res.success) {
         console.log("----------------------------", res.data?.data?.data);
-        const userId = Cookies.get("userId");
+        const userId = getDecryptedItem("userId");
         const courseId = chapter?.course_id;
         if (click == "next") {
           if (!res.data?.data?.data.has_next) {
@@ -153,7 +154,7 @@ export default function ChapterDetail() {
   console.log(";;;;;;;;;;;;;;;;", totalnomarks);
   const fetchChapterMcqsWithPrevious = async (chapterId: string) => {
     try {
-      const userId = Cookies.get("userId");
+      const userId = getDecryptedItem("userId");
       if (!userId) {
         console.error("User not authenticated");
         return;
@@ -1174,7 +1175,7 @@ export default function ChapterDetail() {
   const submitAllMcqAnswers = async () => {
     try {
       // Get user ID from cookies
-      const userId = Cookies.get("userId");
+      const userId: any = getDecryptedItem("userId");
 
       if (!userId) {
         toasterError("User not authenticated. Please login again.", 3000);
@@ -1191,7 +1192,7 @@ export default function ChapterDetail() {
       // console.log("Submitting answers:", answers);
 
       // Call your backend API to submit all answers
-      const res = await api.post("mcq/submit-all", {
+      const res: any = await api.post("mcq/submit-all", {
         user_id: parseInt(userId),
         chapter_id: parseInt(chapterId as string),
         answers,

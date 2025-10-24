@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Toaster } from "react-hot-toast";
+import { getDecryptedItem, setEncryptedItem } from "@/utils/storageHelper";
 
 export default function EditProfile() {
   const router = useRouter();
@@ -15,12 +15,11 @@ export default function EditProfile() {
   const [role, setRole] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Load data from cookies when component mounts
   useEffect(() => {
-    const savedName = Cookies.get("name");
-    const savedPosition = Cookies.get("position");
-    const savedAbout = Cookies.get("about");
-    const userRole = Cookies.get("role");
+    const savedName: any = getDecryptedItem("name");
+    const savedPosition: any = getDecryptedItem("position");
+    const savedAbout: any = getDecryptedItem("about");
+    const userRole: any = getDecryptedItem("role");
 
     if (savedName) setName(savedName);
     if (savedPosition) setPosition(savedPosition);
@@ -49,10 +48,10 @@ export default function EditProfile() {
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    Cookies.set("name", name);
-    Cookies.set("position", position);
-    Cookies.set("about", about);
-    Cookies.set("links", JSON.stringify(links));
+    setEncryptedItem("name", name);
+    setEncryptedItem("position", position);
+    setEncryptedItem("about", about);
+    setEncryptedItem("links", JSON.stringify(links));
 
     setIsLoading(false);
     toast.success("Profile updated successfully! ✅", {
