@@ -120,18 +120,21 @@ export default function Courses({ className }: any) {
       )}
     >
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        {/* Heading */}
+        <h2 className="list text-center text-xl font-bold text-gray-900 dark:text-white sm:text-left">
           All Courses List
         </h2>
 
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+        {/* Controls Section */}
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-nowrap sm:items-center">
+          {/* Filter Dropdown */}
           <div className="relative w-full sm:w-48">
             <select
               value={statusFilter}
               onChange={(e) =>
                 setStatusFilter(e.target.value as "all" | "active" | "inactive")
               }
-              className="w-full appearance-none rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-700 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="w-full appearance-none rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-700 shadow-sm outline-none focus:border-[#02517b] focus:ring-1 focus:ring-[#02517b] dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             >
               <option value="all">All Courses</option>
               <option value="active">Active</option>
@@ -142,20 +145,22 @@ export default function Courses({ className }: any) {
             </div>
           </div>
 
-          <div className="relative w-full sm:w-[300px]">
+          {/* Search Input */}
+          <div className="relative">
             <input
               type="search"
               placeholder="Search courses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+              className="rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-[#02517b] focus:ring-1 focus:ring-[#02517b] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
             />
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
 
+          {/* Add Course Button */}
           <button
             onClick={() => router.push("/admin/courses/add-courses")}
-            className="w-full rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700 sm:w-auto"
+            className="w-full rounded-full bg-[#02517b] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#013d5b] sm:w-auto"
           >
             + Add Course
           </button>
@@ -189,34 +194,32 @@ export default function Courses({ className }: any) {
                 key={course.id}
               >
                 {/* Title */}
-                <TableCell className="py-6 !text-left align-top">
-                  <span className="font-semibold">{course.title}</span>
+                <TableCell className="py-6 !text-left">
+                  <span className="font-medium">{course.title}</span>
                 </TableCell>
 
-                <TableCell className="whitespace-pre-line py-6 text-left align-top">
-                  <div className="text-sm leading-6 text-gray-700 dark:text-gray-300">
+                <TableCell className="whitespace-pre-line py-2 text-left">
+                  <div className="text-center text-sm leading-6 text-gray-700 dark:text-gray-300">
                     {course.description.length > 50
                       ? course.description.slice(0, 100) + "..."
                       : course.description}
                   </div>
                 </TableCell>
 
-                <TableCell className="py-6 align-top">
-                  {course.category}
-                </TableCell>
+                <TableCell className="py-2">{course.category}</TableCell>
 
-                <TableCell className="py-6 align-top">
+                <TableCell className="py-2">
                   <div className="flex items-center justify-center">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleToggleStatus(course.id, !course.is_active);
                       }}
-                      className="rounded-full p-1 transition hover:bg-gray-200 dark:hover:bg-gray-700"
+                      className="rounded-full p-1 transition dark:hover:bg-gray-700"
                       title="Change Status"
                     >
                       {course.is_active ? (
-                        <ToggleRight className="h-8 w-10 text-green-600" />
+                        <ToggleRight className="h-8 w-10 text-[#02517b]" />
                       ) : (
                         <ToggleLeft className="h-8 w-10 text-red-600" />
                       )}
@@ -225,22 +228,20 @@ export default function Courses({ className }: any) {
                 </TableCell>
 
                 {/* Creator */}
-                <TableCell className="py-6 align-top">
-                  {course.creator}
-                </TableCell>
-                <TableCell className="py-6 align-top">
+                <TableCell className="py-2">{course.creator}</TableCell>
+                <TableCell className="py-2">
                   {course.image ? (
                     <img
                       src={course.image}
                       alt={course.title}
-                      className="h-16 w-24 rounded-md border object-cover"
+                      className="h-16 w-24 rounded-md border object-contain"
                     />
                   ) : (
                     <span className="text-gray-500">---</span>
                   )}
                 </TableCell>
 
-                <TableCell className="py-6 align-top">
+                <TableCell className="py-2">
                   {new Intl.DateTimeFormat("en-GB", {
                     day: "2-digit",
                     month: "2-digit",
@@ -252,7 +253,7 @@ export default function Courses({ className }: any) {
                   }).format(new Date(course.createdAt))}
                 </TableCell>
 
-                <TableCell className="py-6 align-top">
+                <TableCell className="py-2">
                   <div className="flex items-center justify-center gap-3">
                     <button
                       className="text-blue-600 hover:text-blue-800"
