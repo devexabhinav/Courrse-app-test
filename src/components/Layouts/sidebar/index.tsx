@@ -22,7 +22,7 @@ export function Sidebar() {
   };
 
   useEffect(() => {
-    const r = getDecryptedItem("role");
+    const r: any = getDecryptedItem("role");
     setRole(r);
   }, []);
 

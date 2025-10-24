@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import api from '@/lib/api';
-
+import { useApiClient } from "@/lib/api";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { reduxApiClient } from "@/lib/redux-api";
 // Types
 interface Admin {
   id: string;
@@ -8,7 +8,7 @@ interface Admin {
   email: string;
   role: string;
   verified: boolean;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   profileImage?: string;
   createdAt: string;
 }
@@ -39,11 +39,11 @@ const initialState: AdminState = {
 
 // Fetch all admins with pagination
 export const fetchAdmins = createAsyncThunk(
-  'admin/fetchAdmins',
+  "admin/fetchAdmins",
   async (page: number = 1, { rejectWithValue }) => {
     try {
-      const response = await api.get(`user/admins?page=${page}`);
-      
+      const response = await reduxApiClient.get(`user/admins?page=${page}`);
+
       if (response.data.success && response.data.data) {
         return {
           admins: response.data.data.admins || [],
@@ -53,92 +53,120 @@ export const fetchAdmins = createAsyncThunk(
           itemsPerPage: response.data.data.pagination?.itemsPerPage || 10,
         };
       } else {
-        return rejectWithValue(response.data.message || 'Failed to fetch admins');
+        return rejectWithValue(
+          response.data.message || "Failed to fetch admins",
+        );
       }
     } catch (err: any) {
       if (err.response?.status === 401) {
-        return rejectWithValue('Session expired. Please login again.');
+        return rejectWithValue("Session expired. Please login again.");
       } else if (err.response?.status === 403) {
-        return rejectWithValue('Access denied. Super Admin privileges required.');
+        return rejectWithValue(
+          "Access denied. Super Admin privileges required.",
+        );
       } else {
-        return rejectWithValue('An error occurred while fetching admins');
+        return rejectWithValue("An error occurred while fetching admins");
       }
     }
-  }
+  },
 );
 
 // Approve admin
 export const approveAdmin = createAsyncThunk(
-  'admin/approveAdmin',
+  "admin/approveAdmin",
   async (adminId: string, { rejectWithValue }) => {
     try {
-      const response = await api.put(`user/admins/${adminId}/approve`);
-      
+      const response = await reduxApiClient.put(
+        `user/admins/${adminId}/approve`,
+        {},
+      );
+
       if (response.success) {
-        return { adminId, message: 'Admin approved successfully! An approval email has been sent.' };
+        return {
+          adminId,
+          message:
+            "Admin approved successfully! An approval email has been sent.",
+        };
       } else {
-        return rejectWithValue(response.error?.message || 'Failed to approve admin');
+        return rejectWithValue(
+          response.error?.message || "Failed to approve admin",
+        );
       }
     } catch (err: any) {
-      console.error('Approve error:', err);
-      return rejectWithValue('An error occurred while approving admin');
+      console.error("Approve error:", err);
+      return rejectWithValue("An error occurred while approving admin");
     }
-  }
+  },
 );
 
 // Reject admin
 export const rejectAdmin = createAsyncThunk(
-  'admin/rejectAdmin',
+  "admin/rejectAdmin",
   async (adminId: string, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      
-      const response = await api.patch(`user/admins/${adminId}/reject`, {}, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+
+      const response: any = await reduxApiClient.patch(
+        `user/admins/${adminId}/reject`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
 
       if (response.success) {
-        return { 
-          adminId, 
-          message: response.message || 'Admin rejected successfully!' 
+        return {
+          adminId,
+          message: response.message || "Admin rejected successfully!",
         };
       } else {
-        return rejectWithValue(response.message || 'Failed to reject admin');
+        return rejectWithValue(response.message || "Failed to reject admin");
       }
     } catch (err: any) {
       const status = err.response?.status;
       const errorMessage = err.response?.data?.message;
-      
+
       switch (status) {
         case 400:
-          return rejectWithValue(errorMessage || 'Invalid request. Admin ID is required.');
+          return rejectWithValue(
+            errorMessage || "Invalid request. Admin ID is required.",
+          );
         case 401:
-          return rejectWithValue('Session expired. Please login again.');
+          return rejectWithValue("Session expired. Please login again.");
         case 403:
-          return rejectWithValue('Access denied. Super Admin privileges required.');
+          return rejectWithValue(
+            "Access denied. Super Admin privileges required.",
+          );
         case 404:
-          return rejectWithValue('Admin user not found.');
+          return rejectWithValue("Admin user not found.");
         case 500:
-          return rejectWithValue(`Server error: ${errorMessage || 'Internal server error'}`);
+          return rejectWithValue(
+            `Server error: ${errorMessage || "Internal server error"}`,
+          );
         default:
-          return rejectWithValue(errorMessage || 'An error occurred while rejecting admin');
+          return rejectWithValue(
+            errorMessage || "An error occurred while rejecting admin",
+          );
       }
     }
-  }
+  },
 );
 
 // Slice
 const adminSlice = createSlice({
-  name: 'admin',
+  name: "admin",
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
     },
-    setActionLoading: (state, action: PayloadAction<{ adminId: string; loading: boolean }>) => {
+    setActionLoading: (
+      state,
+      action: PayloadAction<{ adminId: string; loading: boolean }>,
+    ) => {
       state.actionLoading[action.payload.adminId] = action.payload.loading;
     },
   },
@@ -171,9 +199,9 @@ const adminSlice = createSlice({
       .addCase(approveAdmin.fulfilled, (state, action) => {
         state.actionLoading[action.payload.adminId] = false;
         // Update admin status in the list
-        const admin = state.admins.find(a => a.id === action.payload.adminId);
+        const admin = state.admins.find((a) => a.id === action.payload.adminId);
         if (admin) {
-          admin.status = 'approved';
+          admin.status = "approved";
         }
       })
       .addCase(approveAdmin.rejected, (state, action) => {
@@ -189,9 +217,9 @@ const adminSlice = createSlice({
       .addCase(rejectAdmin.fulfilled, (state, action) => {
         state.actionLoading[action.payload.adminId] = false;
         // Update admin status in the list
-        const admin = state.admins.find(a => a.id === action.payload.adminId);
+        const admin = state.admins.find((a) => a.id === action.payload.adminId);
         if (admin) {
-          admin.status = 'rejected';
+          admin.status = "rejected";
         }
       })
       .addCase(rejectAdmin.rejected, (state, action) => {
@@ -213,7 +241,7 @@ export const selectItemsPerPage = (state: any) => state.admin.itemsPerPage;
 export const selectLoading = (state: any) => state.admin.loading;
 export const selectError = (state: any) => state.admin.error;
 export const selectActionLoading = (state: any) => state.admin.actionLoading;
-export const selectVerifiedCount = (state: any) => 
+export const selectVerifiedCount = (state: any) =>
   state.admin.admins.filter((a: Admin) => a.verified).length;
-export const selectRejectedCount = (state: any) => 
-  state.admin.admins.filter((a: Admin) => a.status === 'rejected').length;
+export const selectRejectedCount = (state: any) =>
+  state.admin.admins.filter((a: Admin) => a.status === "rejected").length;

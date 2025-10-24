@@ -215,8 +215,8 @@ useEffect(() => {
                     </td>
                   </tr>
                 ) : (
-                  activities.map((activity) => (
-                    <tr key={activity.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                  activities.map((activity:any , index:number) => (
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">

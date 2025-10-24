@@ -1,4 +1,3 @@
-// components/AuthChecker.tsx
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
@@ -7,11 +6,7 @@ import Loader from "./Loader";
 import { getDecryptedItem } from "@/utils/storageHelper";
 import { useApiClient } from "@/lib/api";
 
-export default function AuthChecker({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthChecker({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
@@ -87,4 +82,4 @@ export default function AuthChecker({
   }
 
   return <>{children}</>;
-}
+};
