@@ -6,10 +6,10 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import adminReducer from './slices/adminslice/adminSlice';
 import adminActivityReducer from './slices/adminslice/adminActivitySlice';
 import usersReducer from './slices/adminslice/all-user-details';
+import userCourseSlice from './slices/adminslice/userCourseSlice';
+import courseDetailReducer from './slices/adminslice/getinfoaboutcourse';
 
 
-
-// Temporary placeholder slice until you add your own slices
 const placeholderSlice = createSlice({
   name: 'placeholder',
   initialState: {},
@@ -23,7 +23,9 @@ export const makeStore = () => {
       admin: adminReducer,  
       placeholder: placeholderSlice.reducer,
       adminActivity: adminActivityReducer,
-       users: usersReducer, 
+      users: usersReducer, 
+      userCourses: userCourseSlice,
+      courseDetail: courseDetailReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({

@@ -99,7 +99,7 @@ export const fetchUserCourseStats = createAsyncThunk(
   async (userId: number, { rejectWithValue }) => {
     try {
       const response = await api.get(`user/${userId}/courses`);
-      console.log("object",response?.data?.data)
+     
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch course stats');
       }
