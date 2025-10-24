@@ -24,7 +24,7 @@ export const NAV_DATA = [
       {
         title: "Dashboard",
         icon: Icons.HomeIcon,
-        url: "/",
+        url: "/admin/dashboard",
         items: [],
         type: "admin",
       },
@@ -110,16 +110,16 @@ export const NAV_DATA = [
         items: [],
         type: "both",
       },
-     
+
       {
         title: "User",
-        url:"/super-admin/all-user",
+        url: "/super-admin/all-user",
         icon: Icons.User,
         items: [],
         type: "Super-Admin",
       }
 
-      
+
     ],
   },
 ];

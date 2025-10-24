@@ -1,6 +1,4 @@
 import "../css/style.css";
-
-// import "flatpickr/dist/themes/material_blue.css";
 import type { Metadata } from "next";
 import type { PropsWithChildren } from "react";
 import ClientRoot from "./client-root";
@@ -17,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
         <ClientRoot>{children}</ClientRoot>
       </body>
     </html>

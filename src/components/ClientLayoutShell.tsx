@@ -17,25 +17,24 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
   const [token, setToken] = useState<any>();
   const [role, setRole] = useState<any>();
   const isAuthPage = pathname.startsWith("/auth");
+  const isHomePage = pathname === "/" || pathname === "/home";
+  const isPublicPage = isHomePage;
 
   useEffect(() => {
     const t = getDecryptedItem("token");
     const r = getDecryptedItem("role");
     setToken(t);
     setRole(r);
-  }, []);
+  }, [pathname]); // Add pathname to dependency to update on route change
 
-  if (!token && !isAuthPage) return null;
+  // 🚨 FIX: Allow public pages (home) even without token
+  if (!token && !isAuthPage && !isPublicPage) return null;
 
   const isAdmin = role === "admin";
   const isUser = role === "user";
-  const isSuperAdmin = role === "Super-Admin" || role === "Super-Admin";
+  const isSuperAdmin = role === "Super-Admin" || role === "super-admin"; // Fixed typo
   const isAuthenticated = !isAuthPage && (isAdmin || isUser || isSuperAdmin);
 
-  // Role-based dashboard logic:
-  // - Super Admin: always show actual content (no special dashboard override)
-  // - Admin: always show actual content
-  // - User: show courses dashboard only on '/' or '/user-dashboard', show actual content for other pages
   const showUserDashboard =
     isUser && (pathname === "/" || pathname === "/user-dashboard");
 
@@ -44,21 +43,15 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
       {!isAuthPage && <NextTopLoader color="#5750F1" showSpinner={false} />}
 
       <div className="flex min-h-screen">
-        {isAuthenticated && <Sidebar />}
+        {/* Only show sidebar for authenticated users on protected pages */}
+        {isAuthenticated && !isPublicPage && <Sidebar />}
 
         <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
-          {isAuthenticated && <Header />}
+          {/* Only show header for authenticated users on protected pages */}
+          {isAuthenticated && !isPublicPage && <Header />}
 
           <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
-            {showUserDashboard ? (
-              <UserCoursesDashboard />
-            ) : (
-              // Show actual page content for:
-              // - Super Admin on all pages
-              // - Admin on all pages
-              // - User on non-dashboard pages (like Profile, Courses, etc.)
-              children
-            )}
+            {showUserDashboard ? <UserCoursesDashboard /> : children}
           </main>
         </div>
       </div>

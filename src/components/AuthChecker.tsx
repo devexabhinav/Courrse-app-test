@@ -1,9 +1,10 @@
+// components/AuthChecker.tsx
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loader from "./Loader";
-import { getDecryptedItem, removeEncryptedItem } from "@/utils/storageHelper";
+import { getDecryptedItem } from "@/utils/storageHelper";
 import { useApiClient } from "@/lib/api";
 
 export default function AuthChecker({
@@ -13,66 +14,75 @@ export default function AuthChecker({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [hydrated, setHydrated] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(true);
   const api = useApiClient();
 
   useEffect(() => {
-    setHydrated(true);
+    setIsClient(true);
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!isClient) return;
 
     const checkAuth = async () => {
       const token = getDecryptedItem("token");
-      const isAuthPage = pathname.startsWith("/auth");
 
-      if (!token && !isAuthPage) {
-        router.replace("/auth/login");
-        return;
-      }
+      const isAuthPage = pathname?.startsWith("/auth") || false;
+      const isHomePage = pathname === "/" || pathname === "/home";
+      const isPublicPage = isHomePage;
+      const isAccessDeniedPage = pathname === "/access-denied";
 
-      if (!token && isAuthPage) {
+      console.log("Auth Check - Path:", pathname, "Token:", !!token);
+
+      // 🎯 PUBLIC PAGES: ALWAYS allow access (no token required)
+      if (isPublicPage || isAccessDeniedPage) {
+        console.log("✅ Allowing public page access");
         setLoading(false);
         return;
       }
 
-      try {
-        const response = await api.get("user/me");
-
-        if (response.success) {
-          // User is authenticated and authorized
-          if (isAuthPage) {
-            // Redirect from auth pages to appropriate dashboard
+      // 🎯 AUTH PAGES: If user is already logged in, redirect to appropriate dashboard
+      if (token && isAuthPage) {
+        try {
+          const response = await api.get("user/me");
+          if (response.success) {
             const userRole = response.data.user.role;
-            if (userRole === "super-admin" || userRole === "admin") {
+            console.log("User already logged in, redirecting to dashboard");
+
+            if (userRole === "super-admin") {
+              router.replace("/super-admin/dashboard");
+            } else if (userRole === "admin") {
               router.replace("/admin/dashboard");
             } else {
               router.replace("/dashboard");
             }
-          } else {
-            setLoading(false);
+            return;
           }
-        } else {
-          throw new Error("Authentication failed");
-        }
-      } catch (error) {
-        removeEncryptedItem("token");
-        removeEncryptedItem("refreshToken");
-
-        if (!isAuthPage) {
-          router.replace("/auth/login");
-        } else {
+        } catch (error) {
+          // Token is invalid, allow access to auth page
+          console.log("Invalid token, allowing auth page access");
           setLoading(false);
         }
+        return;
       }
+
+      // 🎯 PROTECTED PAGES: If no token, redirect to login
+      if (!token && !isPublicPage && !isAuthPage) {
+        console.log("❌ No token, redirecting to login");
+        router.replace("/auth/login");
+        return;
+      }
+
+      // 🎯 ALL OTHER CASES: Allow access
+      console.log("✅ Allowing access");
+      setLoading(false);
     };
 
     checkAuth();
-  }, [hydrated, pathname, router]);
+  }, [isClient, pathname, router, api]);
 
-  if (!hydrated || loading) {
+  if (!isClient || loading) {
     return <Loader />;
   }
 
