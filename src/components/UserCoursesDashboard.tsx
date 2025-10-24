@@ -237,7 +237,7 @@ export default function Courses({ className }: any) {
                   </h3>
 
                   {/* Description */}
-                  <p className="mb-4 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
+                  <p className="ddd mb-4 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
                     {truncateText(course.description.replace(/✅/g, ""), 100)}
                   </p>
 

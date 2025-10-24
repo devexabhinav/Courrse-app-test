@@ -1,7 +1,7 @@
 // hooks/useUsers.ts
 'use client';
 
-import useApiClient from '@/lib/api';
+import { useApiClient } from '@/lib/api';
 import { useState, useEffect, useCallback } from 'react';
 
 export function useUsers() {
