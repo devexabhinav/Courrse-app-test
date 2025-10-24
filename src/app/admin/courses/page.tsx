@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { ToggleRight } from "lucide-react";
 import { ToggleLeft } from "lucide-react";
 import { useApiClient } from "@/lib/api";
+import SafeHtmlRenderer from "@/components/SafeHtmlRenderer";
 
 export default function Courses({ className }: any) {
   const router = useRouter();
@@ -198,11 +199,14 @@ export default function Courses({ className }: any) {
                   <span className="font-medium">{course.title}</span>
                 </TableCell>
 
-                <TableCell className="whitespace-pre-line py-2 text-left">
-                  <div className="text-center text-sm leading-6 text-gray-700 dark:text-gray-300">
-                    {course.description.length > 50
-                      ? course.description.slice(0, 100) + "..."
-                      : course.description}
+                <TableCell className="py-2 text-left">
+                  <div className="text-center text-sm text-gray-700 dark:text-gray-300">
+                    <SafeHtmlRenderer
+                      html={course.description}
+                      maxLength={100}
+                      className="text-sm leading-6"
+                      showMoreButton={false}
+                    />
                   </div>
                 </TableCell>
 

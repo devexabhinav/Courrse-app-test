@@ -9,6 +9,7 @@ import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { PencilSquareIcon, UserIcon } from "@/assets/icons";
+import RichTextEditor from "@/components/RichTextEditor"; // Import the RichTextEditor
 
 import {
   DollarSign,
@@ -213,6 +214,17 @@ const AddCourse = () => {
     }
   };
 
+  // Rich Text Editor Handlers
+  const handleDescriptionChange = (htmlContent: string) => {
+    setFormData((prev: any) => ({ ...prev, description: htmlContent }));
+  };
+
+  const handleFeatureChange = (htmlContent: string, index: number) => {
+    const updatedFeatures = [...courseFeatures];
+    updatedFeatures[index] = htmlContent;
+    setCourseFeatures(updatedFeatures);
+  };
+
   const addFeature = () => {
     if (
       currentFeature.trim() &&
@@ -221,6 +233,11 @@ const AddCourse = () => {
       setCourseFeatures([...courseFeatures, currentFeature.trim()]);
       setCurrentFeature("");
     }
+  };
+
+  // Add rich text feature
+  const addRichTextFeature = () => {
+    setCourseFeatures([...courseFeatures, ""]);
   };
 
   const removeFeature = (index: number) => {
@@ -299,13 +316,12 @@ const AddCourse = () => {
     }
   };
 
-  // Filter categories based on search input
   // Filter categories based on search input - show all when no search term
   const filteredCategories = formData.category.trim()
     ? categories.filter((category) =>
         category.name.toLowerCase().includes(formData.category.toLowerCase()),
       )
-    : categories; // Show all categories when search is empty
+    : categories;
 
   return (
     <>
@@ -359,7 +375,6 @@ const AddCourse = () => {
               height="sm"
             />
 
-            {/* Creatable Category Select */}
             {/* Creatable Category Select */}
             <div className="w-full sm:w-1/2">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
@@ -526,53 +541,59 @@ const AddCourse = () => {
             </select>
           </div>
 
-          {/* Course Features */}
+          {/* Course Features with Rich Text Editor */}
           <div className="mb-5.5">
-            <div className="mb-3 flex gap-2">
-              <InputGroup
-                label="Course Features/Highlights "
-                type="text"
-                placeholder="Add a feature (e.g., 'Certificate included', 'Lifetime access')"
-                value={currentFeature}
-                onChange={(e) => setCurrentFeature(e.target.value)}
-                icon={<ListIcon />}
-                iconPosition="left"
-                height="sm"
-              />
-              <button
-                type="button"
-                onClick={addFeature}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" />
-                Add
-              </button>
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                Course Features/Highlights *
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={addRichTextFeature}
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Feature
+                </button>
+              </div>
             </div>
 
-            {courseFeatures.length > 0 && (
-              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Added Features:
-                </h4>
-                <div className="space-y-2">
-                  {courseFeatures.map((feature, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between rounded-lg bg-white p-3 dark:bg-gray-700"
-                    >
-                      <span className="text-gray-700 dark:text-gray-300">
-                        • {feature}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeFeature(index)}
-                        className="p-1 text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
+            {/* Simple Feature Input */}
+
+            {/* Rich Text Features */}
+            {courseFeatures.map((feature, index) => (
+              <div
+                key={index}
+                className="mb-4 rounded-lg border border-gray-200 p-4"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">
+                    Feature {index + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeFeature(index)}
+                    className="rounded p-1 text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
+                <RichTextEditor
+                  value={feature}
+                  onChange={(htmlContent) =>
+                    handleFeatureChange(htmlContent, index)
+                  }
+                  placeholder="Describe this course feature in detail..."
+                  minHeight="150px"
+                />
+              </div>
+            ))}
+
+            {courseFeatures.length === 0 && (
+              <div className="rounded-lg bg-gray-50 p-4 text-center text-gray-500">
+                No features added yet. Click "Add Feature" to create detailed
+                features with formatting.
               </div>
             )}
           </div>
@@ -649,18 +670,19 @@ const AddCourse = () => {
             )}
           </div>
 
-          {/* Description */}
-          <TextAreaGroup
-            className="mb-5.5"
-            label="Description *"
-            name="description"
-            placeholder="Write detailed description about the course..."
-            icon={<PencilSquareIcon />}
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-            required
-          />
+          {/* Description with Rich Text Editor */}
+          <div className="mb-5.5">
+            <RichTextEditor
+              label="Course Description *"
+              value={formData.description}
+              onChange={handleDescriptionChange}
+              placeholder="Write detailed description about the course..."
+              minHeight="300px"
+              error={
+                !formData.description ? "Description is required" : undefined
+              }
+            />
+          </div>
 
           <div className="flex justify-end gap-3">
             <button
