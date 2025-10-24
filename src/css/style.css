@@ -724,3 +724,19 @@ span.swiper-pagination-bullet.swiper-pagination-bullet-active {
     display: none;
   }
 }
+table.courses-list th:nth-child(5) {
+  min-width: 156px;
+}
+table.courses-list th,
+td {
+  border: 1px solid #60565614;
+  text-align: center;
+}
+@media screen and (max-width: 1200px) {
+  .list {
+    font-size: 20px;
+  }
+  .courses-list th:nth-child(2) {
+    min-width: 300px;
+  }
+}

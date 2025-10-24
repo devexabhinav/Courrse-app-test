@@ -7,9 +7,12 @@ export function Table({
   ...props
 }: React.HTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="relative w-full overflow-auto">
+    <div className="w-full min-w-[600px] overflow-x-auto">
       <table
-        className={cn("w-full caption-bottom text-sm", className)}
+        className={cn(
+          "courses-list w-full min-w-[600px] caption-bottom text-sm sm:min-w-0",
+          className,
+        )}
         {...props}
         onClick={onClick}
       />
@@ -77,7 +80,7 @@ export function TableHead({
   return (
     <th
       className={cn(
-        "h-12 px-4 text-left align-middle font-medium text-neutral-500 dark:text-neutral-400 [&:has([role=checkbox])]:pr-0",
+        "h-12 px-4 text-left align-middle text-sm font-bold text-neutral-500 dark:text-neutral-400 [&:has([role=checkbox])]:pr-0",
         className,
       )}
       {...props}
@@ -92,7 +95,7 @@ export function TableCell({
   return (
     <td
       className={cn(
-        "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+        "p-3 align-middle text-sm [&:has([role=checkbox])]:pr-0",
         className,
       )}
       {...props}

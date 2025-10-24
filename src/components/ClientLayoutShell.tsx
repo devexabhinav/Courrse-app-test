@@ -46,7 +46,7 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
         {/* Only show sidebar for authenticated users on protected pages */}
         {isAuthenticated && !isPublicPage && <Sidebar />}
 
-        <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
+        <div className="w-[calc(100%-290px)] bg-gray-2 dark:bg-[#020d1a]">
           {/* Only show header for authenticated users on protected pages */}
           {isAuthenticated && !isPublicPage && <Header />}
 

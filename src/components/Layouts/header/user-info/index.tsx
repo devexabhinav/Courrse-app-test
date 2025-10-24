@@ -26,11 +26,11 @@ export function UserInfo() {
   const api = useApiClient();
 
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, success, error } = useSelector(
+  const { loading, error } = useSelector(
     (state: RootState) => state.adminActivity,
   );
 
-  const USER = {
+  const USER: any = {
     name: name,
     email: email,
     img: "/images/user2.png",

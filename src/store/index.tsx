@@ -1,5 +1,5 @@
-import { configureStore, createSlice } from '@reduxjs/toolkit';
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { configureStore, createSlice } from "@reduxjs/toolkit";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
 // Import your reducers
 
@@ -11,7 +11,7 @@ import courseDetailReducer from './slices/adminslice/getinfoaboutcourse';
 import chaptersReducer from './slices/adminslice/chaptersSlice'
 
 const placeholderSlice = createSlice({
-  name: 'placeholder',
+  name: "placeholder",
   initialState: {},
   reducers: {},
 });
@@ -19,11 +19,10 @@ const placeholderSlice = createSlice({
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      // Add your reducers here
-      admin: adminReducer,  
+      admin: adminReducer,
       placeholder: placeholderSlice.reducer,
       adminActivity: adminActivityReducer,
-      users: usersReducer, 
+      users: usersReducer,
       userCourses: userCourseSlice,
       courseDetail: courseDetailReducer,
       chapters: chaptersReducer,
@@ -35,12 +34,9 @@ export const makeStore = () => {
   });
 };
 
-// Infer the type of makeStore
 export type AppStore = ReturnType<typeof makeStore>;
-// Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<AppStore['getState']>;
-export type AppDispatch = AppStore['dispatch'];
+export type RootState = ReturnType<AppStore["getState"]>;
+export type AppDispatch = AppStore["dispatch"];
 
-// Export pre-typed hooks
 export const useAppDispatch: () => AppDispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

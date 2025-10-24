@@ -9,6 +9,7 @@ import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { PencilSquareIcon, UserIcon } from "@/assets/icons";
+import RichTextEditor from "@/components/RichTextEditor"; // Import the RichTextEditor
 
 import {
   DollarSign,
@@ -67,8 +68,19 @@ const AddCourse = () => {
     try {
       setIsLoadingCategories(true);
       const response = await api.get("categories");
-      if (response.data?.categories) {
+
+      // Fix: Check the correct response structure
+      if (response.data?.data?.categories) {
+        setCategories(response.data.data.categories);
+      } else if (response.data?.categories) {
+        // Fallback in case the structure is different
         setCategories(response.data.categories);
+      } else {
+        console.warn(
+          "Unexpected categories response structure:",
+          response.data,
+        );
+        toasterError("Unexpected categories format");
       }
     } catch (error) {
       console.error("Failed to fetch categories:", error);
@@ -79,7 +91,6 @@ const AddCourse = () => {
   };
 
   const handleCreateCategory = async () => {
-    // Use formData.category instead of newCategory
     if (!formData.category.trim()) {
       toasterError("Please enter a category name");
       return;
@@ -103,12 +114,20 @@ const AddCourse = () => {
         description: `Category for ${formData.category.trim()} courses`,
       });
 
-      if (response.data?.category) {
-        const createdCategory = response.data.category;
+      // Fix: Check the correct response structure
+      const createdCategory =
+        response.data?.data?.category || response.data?.category;
+
+      if (createdCategory) {
         setCategories((prev) => [...prev, createdCategory]);
-        // Keep the category name in formData (no need to set it again)
-        setShowCategoryDropdown(false);
+        // Clear the search input to show all categories
+        setFormData((prev: any) => ({ ...prev, category: "" }));
+        setShowCategoryDropdown(true); // Keep dropdown open
         toasterSuccess("Category created successfully");
+        // Optionally refetch categories to ensure we have the latest data
+        await fetchCategories();
+      } else {
+        toasterError("Failed to create category - invalid response");
       }
     } catch (error: any) {
       console.error("Failed to create category:", error);
@@ -195,6 +214,17 @@ const AddCourse = () => {
     }
   };
 
+  // Rich Text Editor Handlers
+  const handleDescriptionChange = (htmlContent: string) => {
+    setFormData((prev: any) => ({ ...prev, description: htmlContent }));
+  };
+
+  const handleFeatureChange = (htmlContent: string, index: number) => {
+    const updatedFeatures = [...courseFeatures];
+    updatedFeatures[index] = htmlContent;
+    setCourseFeatures(updatedFeatures);
+  };
+
   const addFeature = () => {
     if (
       currentFeature.trim() &&
@@ -203,6 +233,11 @@ const AddCourse = () => {
       setCourseFeatures([...courseFeatures, currentFeature.trim()]);
       setCurrentFeature("");
     }
+  };
+
+  // Add rich text feature
+  const addRichTextFeature = () => {
+    setCourseFeatures([...courseFeatures, ""]);
   };
 
   const removeFeature = (index: number) => {
@@ -281,10 +316,12 @@ const AddCourse = () => {
     }
   };
 
-  // Filter categories based on search input
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(formData.category.toLowerCase()),
-  );
+  // Filter categories based on search input - show all when no search term
+  const filteredCategories = formData.category.trim()
+    ? categories.filter((category) =>
+        category.name.toLowerCase().includes(formData.category.toLowerCase()),
+      )
+    : categories;
 
   return (
     <>
@@ -358,6 +395,22 @@ const AddCourse = () => {
                       className="w-full rounded-lg border border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                       required
                     />
+                    {formData.category && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev: any) => ({
+                            ...prev,
+                            category: "",
+                          }));
+                          setShowCategoryDropdown(true);
+                        }}
+                        className="absolute right-8 top-1/2 -translate-y-1/2 transform text-gray-500 hover:text-gray-700"
+                        title="Clear search"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() =>
@@ -386,22 +439,29 @@ const AddCourse = () => {
                         Loading categories...
                       </div>
                     ) : filteredCategories.length > 0 ? (
-                      filteredCategories.map((category) => (
-                        <div
-                          key={category.id}
-                          onClick={() => handleCategorySelect(category.name)}
-                          className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-dark-3"
-                        >
-                          <div className="font-medium text-dark dark:text-white">
-                            {category.name}
-                          </div>
-                          {category.description && (
-                            <div className="text-sm text-gray-500">
-                              {category.description}
-                            </div>
-                          )}
+                      <>
+                        <div className="border-b border-stroke px-4 py-2 text-xs font-medium text-gray-500 dark:border-dark-3">
+                          {formData.category.trim()
+                            ? "Filtered categories"
+                            : "All categories"}
                         </div>
-                      ))
+                        {filteredCategories.map((category) => (
+                          <div
+                            key={category.id}
+                            onClick={() => handleCategorySelect(category.name)}
+                            className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-dark-3"
+                          >
+                            <div className="font-medium text-dark dark:text-white">
+                              {category.name}
+                            </div>
+                            {category.description && (
+                              <div className="text-sm text-gray-500">
+                                {category.description}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </>
                     ) : (
                       <div className="px-4 py-2 text-sm text-gray-500">
                         No categories found. Type to create a new one.
@@ -413,8 +473,6 @@ const AddCourse = () => {
             </div>
           </div>
 
-          {/* Rest of the form remains the same */}
-          {/* Price Type, Amount and Duration Row */}
           <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
             <div className="w-full sm:w-1/3">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
@@ -483,53 +541,59 @@ const AddCourse = () => {
             </select>
           </div>
 
-          {/* Course Features */}
+          {/* Course Features with Rich Text Editor */}
           <div className="mb-5.5">
-            <div className="mb-3 flex gap-2">
-              <InputGroup
-                label="Course Features/Highlights "
-                type="text"
-                placeholder="Add a feature (e.g., 'Certificate included', 'Lifetime access')"
-                value={currentFeature}
-                onChange={(e) => setCurrentFeature(e.target.value)}
-                icon={<ListIcon />}
-                iconPosition="left"
-                height="sm"
-              />
-              <button
-                type="button"
-                onClick={addFeature}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" />
-                Add
-              </button>
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                Course Features/Highlights *
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={addRichTextFeature}
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Feature
+                </button>
+              </div>
             </div>
 
-            {courseFeatures.length > 0 && (
-              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Added Features:
-                </h4>
-                <div className="space-y-2">
-                  {courseFeatures.map((feature, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between rounded-lg bg-white p-3 dark:bg-gray-700"
-                    >
-                      <span className="text-gray-700 dark:text-gray-300">
-                        • {feature}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeFeature(index)}
-                        className="p-1 text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
+            {/* Simple Feature Input */}
+
+            {/* Rich Text Features */}
+            {courseFeatures.map((feature, index) => (
+              <div
+                key={index}
+                className="mb-4 rounded-lg border border-gray-200 p-4"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">
+                    Feature {index + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeFeature(index)}
+                    className="rounded p-1 text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
+                <RichTextEditor
+                  value={feature}
+                  onChange={(htmlContent) =>
+                    handleFeatureChange(htmlContent, index)
+                  }
+                  placeholder="Describe this course feature in detail..."
+                  minHeight="150px"
+                />
+              </div>
+            ))}
+
+            {courseFeatures.length === 0 && (
+              <div className="rounded-lg bg-gray-50 p-4 text-center text-gray-500">
+                No features added yet. Click "Add Feature" to create detailed
+                features with formatting.
               </div>
             )}
           </div>
@@ -606,18 +670,19 @@ const AddCourse = () => {
             )}
           </div>
 
-          {/* Description */}
-          <TextAreaGroup
-            className="mb-5.5"
-            label="Description *"
-            name="description"
-            placeholder="Write detailed description about the course..."
-            icon={<PencilSquareIcon />}
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-            required
-          />
+          {/* Description with Rich Text Editor */}
+          <div className="mb-5.5">
+            <RichTextEditor
+              label="Course Description *"
+              value={formData.description}
+              onChange={handleDescriptionChange}
+              placeholder="Write detailed description about the course..."
+              minHeight="300px"
+              error={
+                !formData.description ? "Description is required" : undefined
+              }
+            />
+          </div>
 
           <div className="flex justify-end gap-3">
             <button
