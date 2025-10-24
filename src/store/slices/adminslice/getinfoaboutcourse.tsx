@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { useApiClient } from '@/lib/api';
+import { reduxApiClient } from '@/lib/redux-api';
 
 // Initial State
 const initialState = {
@@ -8,7 +8,7 @@ const initialState = {
   error: null,
   lastFetched: null,
 };
-  const api = useApiClient();
+
 
 // Async Thunks
 
@@ -17,7 +17,7 @@ export const fetchCourseById = createAsyncThunk(
   'courseDetail/fetchCourseById',
   async (courseId: string | number, { rejectWithValue }) => {
     try {
-      const result = await api.get(`user/courses/${courseId}`);
+      const result = await reduxApiClient.get(`user/courses/${courseId}`);
       
       if (result.success && result.data) {
         return result.data;
@@ -35,7 +35,7 @@ export const updateCourse = createAsyncThunk(
   'courseDetail/updateCourse',
   async ({ courseId, data }: { courseId: string | number; data: any }, { rejectWithValue }) => {
     try {
-      const result = await api.put(`user/courses/${courseId}`, data);
+      const result = await reduxApiClient.put(`user/courses/${courseId}`, data);
       
       if (result.success && result.data) {
         return result.data;
@@ -53,7 +53,7 @@ export const deleteCourse = createAsyncThunk(
   'courseDetail/deleteCourse',
   async (courseId: string | number, { rejectWithValue }) => {
     try {
-      const result = await api.delete(`user/courses/${courseId}`);
+      const result = await reduxApiClient.delete(`user/courses/${courseId}`);
       
       if (result.success) {
         return courseId;

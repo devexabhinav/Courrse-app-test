@@ -9,7 +9,6 @@ import {
 } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
-import page from "./user-access/page";
 
 const testimonials = [
   {

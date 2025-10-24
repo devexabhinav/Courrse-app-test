@@ -1,5 +1,6 @@
+import { useApiClient } from '@/lib/api';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import api from '@/lib/api'; 
+import { reduxApiClient } from '@/lib/redux-api';
 
 
 // Define interfaces
@@ -70,6 +71,8 @@ interface RootState {
 export const fetchUserCourses = createAsyncThunk(
   'userCourses/fetchUserCourses',
   async ({ userId, page = 1, filters }: { userId: number; page?: number; filters?: any }, { rejectWithValue }) => {
+      
+    
     try {
       // Build query parameters
       const queryParams = new URLSearchParams({
@@ -79,7 +82,7 @@ export const fetchUserCourses = createAsyncThunk(
       }).toString();
 
       // Use your api utility instead of fetch
-      const response = await api.get(`user/${userId}/courses`);
+      const response = await reduxApiClient.get(`user/${userId}/courses`);
       
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch courses');
@@ -98,7 +101,7 @@ export const fetchUserCourseStats = createAsyncThunk(
   'userCourses/fetchUserCourseStats',
   async (userId: number, { rejectWithValue }) => {
     try {
-      const response = await api.get(`user/${userId}/courses`);
+      const response = await reduxApiClient.get(`user/${userId}/courses`);
      
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch course stats');

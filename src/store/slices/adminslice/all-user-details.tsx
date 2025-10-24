@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import api from '@/lib/api';
+import { reduxApiClient } from '@/lib/redux-api';
 
 interface User {
   id: string;
@@ -29,8 +29,10 @@ const initialState: UsersState = {
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async ({ page, limit }: { page: number; limit: number }, { rejectWithValue }) => {
+     
+    
     try {
-      const res = await api.get(`user/get-all-details-admin?page=${page}&limit=${limit}`);
+      const res = await reduxApiClient.get(`user/get-all-details-admin?page=${page}&limit=${limit}`);
       return {
         users: res.data.data.users || [],
         totalPages: res.data?.data?.totalPages || 0,

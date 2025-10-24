@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import api from '@/lib/api';
 import {
   AdminActivityState,
   initialAdminActivityState,
   AdminActivitiesResponse,
   TrackLogoutResponse
 } from '@/types/adminType/admintype';
+import { reduxApiClient } from '@/lib/redux-api';
 
+ 
 // Use shared initial state
 const initialState: AdminActivityState = initialAdminActivityState;
 // Async thunk for getting all admin activities
@@ -21,10 +22,13 @@ export const getAllAdminActivities = createAsyncThunk(
     } = {},
     { rejectWithValue }
   ) => {
+   
+    
     try {
+
       const { page = 1, limit = 50, activity_type, admin_id } = params;
 
-      const response = await api.get<AdminActivitiesResponse>('user/getlogs', {
+      const response = await reduxApiClient.get<AdminActivitiesResponse>('user/getlogs', {
         params: {
           page,
           limit,
@@ -57,7 +61,8 @@ export const trackLogoutActivity = createAsyncThunk(
   'adminActivity/trackLogout',
   async (admin_id: number, { rejectWithValue }) => {
     try {
-      const response = await api.post<TrackLogoutResponse>('user/logout', {
+ 
+      const response = await reduxApiClient.post<TrackLogoutResponse>('user/logout', {
         admin_id,
       });
       return response.data;

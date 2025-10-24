@@ -36,10 +36,10 @@ export default function UserCoursesPage() {
     status: 'active'
   });
   const searchParams = useSearchParams();
-  // Get userId from URL params or context (you might need to adjust this)
-  const userId = searchParams.get("id"); // Replace with actual user ID from your context/params
+  
+  const userId = searchParams.get("id"); 
   console.log("userID",userId)
-  // Fetch courses on component mount and when filters change
+  
   useEffect(() => {
     // dispatch(fetchUserCourses({ userId, page: 1, filters }));
     dispatch(fetchUserCourseStats(userId));
@@ -50,10 +50,6 @@ export default function UserCoursesPage() {
   // Handle filter changes
 
 
-  // Handle apply filters
-  const handleApplyFilters = () => {
-    dispatch(fetchUserCourses({ userId, page: 1, filters }));
-  };
 
   // Handle view course details
   const handleViewCourse = (courseId: any) => {

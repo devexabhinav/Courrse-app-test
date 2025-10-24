@@ -1,6 +1,6 @@
+import { useApiClient } from '@/lib/api';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import api from '@/lib/api';
-
+import { reduxApiClient } from '@/lib/redux-api';
 // Types
 interface Admin {
   id: string;
@@ -41,8 +41,10 @@ const initialState: AdminState = {
 export const fetchAdmins = createAsyncThunk(
   'admin/fetchAdmins',
   async (page: number = 1, { rejectWithValue }) => {
+        
+    
     try {
-      const response = await api.get(`user/admins?page=${page}`);
+      const response = await reduxApiClient.get(`user/admins?page=${page}`);
       
       if (response.data.success && response.data.data) {
         return {
@@ -72,7 +74,7 @@ export const approveAdmin = createAsyncThunk(
   'admin/approveAdmin',
   async (adminId: string, { rejectWithValue }) => {
     try {
-      const response = await api.put(`user/admins/${adminId}/approve`);
+      const response = await reduxApiClient.put(`user/admins/${adminId}/approve`);
       
       if (response.success) {
         return { adminId, message: 'Admin approved successfully! An approval email has been sent.' };
@@ -93,7 +95,7 @@ export const rejectAdmin = createAsyncThunk(
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       
-      const response = await api.patch(`user/admins/${adminId}/reject`, {}, {
+      const response = await reduxApiClient.patch(`user/admins/${adminId}/reject`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

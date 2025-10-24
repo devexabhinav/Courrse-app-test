@@ -1,20 +1,17 @@
 
-
-
-
-// slices/adminActivitySlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import api from '@/lib/api';
 
 import {
   AdminActivityState,
   initialAdminActivityState,
   AdminActivitiesResponse
 } from '@/types/adminType/admintype';
+import { reduxApiClient } from '@/lib/redux-api';
 
-
+ 
 const initialState: AdminActivityState = initialAdminActivityState;
-// Updated async thunk - handles the API response structure
+
+
 export const getAllAdminActivities = createAsyncThunk(
   'adminActivity/getAllAdminActivities',
   async (
@@ -27,26 +24,24 @@ export const getAllAdminActivities = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+    
       const { page = 1, limit = 50, activity_type, admin_id } = params;
       
-      const response = await api.get<ApiResponse>('user/getlogs', {
-        params: {
-          page,
-          limit,
-          activity_type,
-          admin_id
-        }
+      // Use the reduxApiClient instead of useApiClient hook
+      const response = await reduxApiClient.get('user/getlogs', {
+        page,
+        limit,
+        activity_type,
+        admin_id
       });
 
-      // Check if response has success: true and data property
-      if (response.data.success && response.data.data) {
-        return response.data.data; // Return the data object directly
+      if (response.success && response.data) {
+        return response.data; // Return the data object directly
       } else {
         return rejectWithValue('Invalid response format from server');
       }
       
     } catch (error: any) {
-      // Handle different error formats
       const errorMessage = error.response?.data?.message 
         || error.response?.data?.error 
         || error.message 
