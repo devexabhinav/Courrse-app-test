@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-'use client';
-=======
-// components/AuthChecker.tsx
 "use client";
->>>>>>> 409682f0a0795b92fd0d7f995d7927fe285ddcc2
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
