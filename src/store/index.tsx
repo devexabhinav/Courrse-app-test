@@ -8,7 +8,7 @@ import adminActivityReducer from './slices/adminslice/adminActivitySlice';
 import usersReducer from './slices/adminslice/all-user-details';
 import userCourseSlice from './slices/adminslice/userCourseSlice';
 import courseDetailReducer from './slices/adminslice/getinfoaboutcourse';
-
+import chaptersReducer from './slices/adminslice/chaptersSlice'
 
 const placeholderSlice = createSlice({
   name: 'placeholder',
@@ -26,6 +26,7 @@ export const makeStore = () => {
       users: usersReducer, 
       userCourses: userCourseSlice,
       courseDetail: courseDetailReducer,
+      chapters: chaptersReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
