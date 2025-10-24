@@ -1,6 +1,5 @@
 "use client";
 
-import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -9,12 +8,13 @@ import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { PencilSquareIcon, CallIcon, EmailIcon } from "@/assets/icons";
+import { useApiClient } from "@/lib/api";
 
 const EditChapter = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const chapterId = searchParams.get("id");
-
+  const api = useApiClient();
   const [courses, setCourses] = useState<any>([]);
   const [formData, setFormData] = useState({
     title: "",

@@ -1,24 +1,34 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import api from "@/lib/api";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useApiClient } from "@/lib/api";
 
 export default function UsersWithProgressPage({ className }: any) {
-  const router = useRouter()
+  const router = useRouter();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit] = useState(5); 
+  const [limit] = useState(5);
   const [loading, setLoading] = useState(true);
+  const api = useApiClient();
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await api.get(`user/get-all-details?page=${page}&limit=${limit}`);
-        setUsers(res.data.data.users|| []);
+        const res = await api.get(
+          `user/get-all-details?page=${page}&limit=${limit}`,
+        );
+        setUsers(res.data.data.users || []);
         const total = res.data?.data?.totalPages || 0;
         setTotal(total);
       } catch (error) {
@@ -31,8 +41,8 @@ export default function UsersWithProgressPage({ className }: any) {
   }, [page]);
 
   const handleMore = (id: any) => {
-    router.push(`/users/user-details/view-details?id=${id}`)
-  }
+    router.push(`/users/user-details/view-details?id=${id}`);
+  };
   // const totalPages = Math.ceil(total / limit);
 
   return (
@@ -46,7 +56,6 @@ export default function UsersWithProgressPage({ className }: any) {
         All Users List
       </h2>
 
-     
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
@@ -66,22 +75,29 @@ export default function UsersWithProgressPage({ className }: any) {
               <TableRow
                 className="text-center text-base font-medium text-dark dark:text-white"
                 key={user.id}
-                onClick = {() => handleMore(user.id)}
+                onClick={() => handleMore(user.id)}
               >
                 <TableCell className="!text-left">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role || "User"}</TableCell>
                 <TableCell>
-                  <span className={user.verifyUser ? "text-green-600" : "text-red-500"}>
-                    {user.verifyUser ? "Verified" : "Unverified"}
+                  <span
+                    className={
+                      user.verified ? "text-green-600" : "text-red-500"
+                    }
+                  >
+                    {user.verified ? "Verified" : "Unverified"}
                   </span>
                 </TableCell>
 
                 <TableCell>
                   {user.enrolledCourses?.length > 0 ? (
-                    <ul className="text-left space-y-1">
+                    <ul className="space-y-1 text-left">
                       {user.enrolledCourses.map((course: any) => (
-                        <li key={course.course_id} className="flex items-center gap-1">
+                        <li
+                          key={course.course_id}
+                          className="flex items-center gap-1"
+                        >
                           <img
                             src={course.image}
                             alt={course.title}
@@ -99,7 +115,7 @@ export default function UsersWithProgressPage({ className }: any) {
                 </TableCell>
                 <TableCell>
                   {user.enrolledCourses?.length > 0 ? (
-                    <ul className="text-left space-y-1">
+                    <ul className="space-y-1 text-left">
                       {user.enrolledCourses.map((course: any) => (
                         <li key={course.course_id}>
                           {course.completion_percentage}% complete
@@ -123,11 +139,11 @@ export default function UsersWithProgressPage({ className }: any) {
           )}
         </TableBody>
       </Table>
-      <div className="mt-4 flex justify-end items-center gap-3">
+      <div className="mt-4 flex items-center justify-end gap-3">
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           disabled={page === 1}
-          className="cursor-pointer px-3 disabled:cursor-not-allowed py-1 border rounded-xl disabled:opacity-50"
+          className="cursor-pointer rounded-xl border px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Previous
         </button>
@@ -137,7 +153,7 @@ export default function UsersWithProgressPage({ className }: any) {
         <button
           onClick={() => setPage((prev) => (page < total ? prev + 1 : prev))}
           disabled={page >= total}
-          className="cursor-pointer px-3 py-1 disabled:cursor-not-allowed border rounded-xl disabled:opacity-50"
+          className="cursor-pointer rounded-xl border px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
         </button>

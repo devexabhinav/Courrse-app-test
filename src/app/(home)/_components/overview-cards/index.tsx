@@ -1,21 +1,33 @@
+// app/_components/overview-cards/index.tsx
 import { compactFormat } from "@/lib/format-number";
-import { getOverviewData } from "../../fetch";
 import { OverviewCard } from "./card";
 import * as icons from "./icons";
 
-export async function OverviewCardsGroup({users}: any) {
-  const data = await getOverviewData();
-  
-  // Provide default values if data is undefined
+interface OverviewCardsGroupProps {
+  users: any[];
+  overviewData?: {
+    totalUsers?: number;
+    verifiedUsers?: number;
+    adminUsers?: number;
+    activeCourses?: number;
+    inactiveCourses?: number;
+    enrolledCourses?: number;
+  };
+}
+
+export function OverviewCardsGroup({
+  users,
+  overviewData,
+}: OverviewCardsGroupProps) {
+  // Provide default values if overviewData is undefined
   const {
     totalUsers = 0,
     verifiedUsers = 0,
     adminUsers = 0,
     activeCourses = 0,
     inactiveCourses = 0,
-    enrolledCourses = 0
-  } = data || {};
-
+    enrolledCourses = 0,
+  } = overviewData || {};
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 2xl:gap-7.5">
@@ -47,7 +59,7 @@ export async function OverviewCardsGroup({users}: any) {
       <OverviewCard
         label="Enrolled Courses"
         data={{ value: compactFormat(enrolledCourses), growthRate: 0 }}
-        Icon={icons.Product} 
+        Icon={icons.Product}
       />
     </div>
   );

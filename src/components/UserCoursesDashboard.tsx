@@ -1,13 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import { Pencil, SearchIcon, Trash2, Calendar, User, Tag } from "lucide-react";
 import { toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 import Image from "next/image";
+import { getDecryptedItem } from "@/utils/storageHelper";
+import { useApiClient } from "@/lib/api";
 
 export default function Courses({ className }: any) {
   const router = useRouter();
@@ -16,11 +17,12 @@ export default function Courses({ className }: any) {
     "all" | "active" | "inactive"
   >("all");
   const [courses, setCourses] = useState([]);
-  const [role, setRole] = useState<string | undefined>();
+  const [role, setRole] = useState<any>();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCourses, setTotalCourses] = useState(0);
   const [limit] = useState(3); // Changed from 8 to 3 courses per page
+  const api = useApiClient();
 
   const fetchCourses = async () => {
     try {
@@ -30,7 +32,7 @@ export default function Courses({ className }: any) {
       if (search) query.append("search", search);
 
       // Check user role and call appropriate API
-      const userRole = Cookies.get("role");
+      const userRole = getDecryptedItem("role");
       let apiEndpoint = "";
 
       if (userRole === "user") {
@@ -56,7 +58,7 @@ export default function Courses({ className }: any) {
 
   useEffect(() => {
     fetchCourses();
-    setRole(Cookies.get("role"));
+    setRole(getDecryptedItem("role"));
   }, [search, statusFilter, page]);
 
   const handleEdit = async (e: React.MouseEvent, id: number) => {
@@ -235,7 +237,7 @@ export default function Courses({ className }: any) {
                   </h3>
 
                   {/* Description */}
-                  <p className="mb-4 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
+                  <p className="ddd mb-4 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
                     {truncateText(course.description.replace(/✅/g, ""), 100)}
                   </p>
 

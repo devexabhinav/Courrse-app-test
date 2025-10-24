@@ -2,16 +2,16 @@
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Image from "next/image";
-import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { CameraIcon } from "./_components/icons";
-import { SocialAccounts } from "./_components/social-accounts";
-import api from "@/lib/api";
 import { toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
+import { getDecryptedItem } from "@/utils/storageHelper";
+import { useApiClient } from "@/lib/api";
 
 export default function Page() {
   const router = useRouter();
+  const api = useApiClient();
 
   const [name, setName] = useState("");
   const [position, setPosition] = useState("");
@@ -29,12 +29,12 @@ export default function Page() {
 
   useEffect(() => {
     // Load data from cookies
-    setName(Cookies.get("name") || "");
-    setPosition(Cookies.get("position") || "");
-    setAbout(Cookies.get("about") || "");
-    const storedLinks = Cookies.get("links");
+    setName(getDecryptedItem("name") || "");
+    setPosition(getDecryptedItem("position") || "");
+    setAbout(getDecryptedItem("about") || "");
+    const storedLinks: any = getDecryptedItem("links");
     setLinks(storedLinks ? JSON.parse(storedLinks) : []);
-    setRole(Cookies.get("role"));
+    setRole(getDecryptedItem("role") || "");
     fetchUserProfileImage();
   }, []);
 
@@ -45,7 +45,7 @@ export default function Page() {
 
     const formData = new FormData();
     formData.append("file", file);
-    const userId = Cookies.get("userId");
+    const userId: any = getDecryptedItem("userId");
     formData.append("userId", userId || "");
 
     setLoading(true);
@@ -74,7 +74,7 @@ export default function Page() {
   };
 
   const fetchUserProfileImage = async () => {
-    const userId = Cookies.get("userId");
+    const userId = getDecryptedItem("userId");
     if (!userId) return;
 
     try {

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '@/lib/api';
+import { useApiClient } from '@/lib/api';
 
 // Initial State
 const initialState = {
@@ -8,6 +8,7 @@ const initialState = {
   error: null,
   lastFetched: null,
 };
+  const api = useApiClient();
 
 // Async Thunks
 

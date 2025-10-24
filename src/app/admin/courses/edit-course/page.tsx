@@ -1,6 +1,5 @@
 "use client";
 
-import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -14,8 +13,11 @@ import {
   PencilSquareIcon,
   UserIcon,
 } from "@/assets/icons";
+import { useApiClient } from "@/lib/api";
 
 const EditCourse = () => {
+  const api = useApiClient();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("id");

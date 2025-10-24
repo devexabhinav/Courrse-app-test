@@ -1,6 +1,5 @@
 "use client";
 
-import api from "@/lib/api";
 import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -23,8 +22,8 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-
-import Cookies from "js-cookie";
+import { getDecryptedItem } from "@/utils/storageHelper";
+import { useApiClient } from "@/lib/api";
 
 interface Category {
   id: number;
@@ -33,8 +32,10 @@ interface Category {
 }
 
 const AddCourse = () => {
+  const api = useApiClient();
+
   const router = useRouter();
-  const name = Cookies.get("name");
+  const name = getDecryptedItem("name");
   const [formData, setFormData] = useState<any>({
     title: "",
     description: "",

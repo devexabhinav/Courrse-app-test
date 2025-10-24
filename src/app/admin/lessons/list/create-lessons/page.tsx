@@ -1,6 +1,5 @@
 "use client";
 
-import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -10,8 +9,11 @@ import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { PencilSquareIcon } from "@/assets/icons";
 import { BookOpen, ListOrdered, Image, Video, FileText } from "lucide-react";
+import { useApiClient } from "@/lib/api";
 
 const CreateLessons = () => {
+  const api = useApiClient();
+
   const router = useRouter();
   const [courses, setCourses] = useState<any[]>([]);
   const [chapter, setChapter] = useState<any>(null);

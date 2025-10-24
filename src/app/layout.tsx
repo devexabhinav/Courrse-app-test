@@ -1,7 +1,6 @@
-import "@/css/satoshi.css";
-import "@/css/style.css";
-import "flatpickr/dist/themes/material_blue.css";
-import "jsvectormap/dist/jsvectormap.css";
+import "../css/style.css";
+
+// import "flatpickr/dist/themes/material_blue.css";
 import type { Metadata } from "next";
 import type { PropsWithChildren } from "react";
 import ClientRoot from "./client-root";

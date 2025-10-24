@@ -7,9 +7,11 @@ import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { toasterSuccess, toasterError } from "@/components/core/Toaster";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
-import api from "@/lib/api";
+import { useApiClient } from "@/lib/api";
 
 const EditMcq = () => {
+  const api = useApiClient();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const mcqId = searchParams.get("id");
