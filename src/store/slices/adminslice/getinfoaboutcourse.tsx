@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { reduxApiClient } from '@/lib/redux-api';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { reduxApiClient } from "@/lib/redux-api";
 
 // Initial State
 const initialState = {
@@ -9,66 +9,80 @@ const initialState = {
   lastFetched: null,
 };
 
-
 // Async Thunks
 
 // Fetch course by ID
 export const fetchCourseById = createAsyncThunk(
-  'courseDetail/fetchCourseById',
+  "courseDetail/fetchCourseById",
   async (courseId: string | number, { rejectWithValue }) => {
     try {
       const result = await reduxApiClient.get(`user/courses/${courseId}`);
-      
+
       if (result.success && result.data) {
         return result.data;
       } else {
-        return rejectWithValue(result.error?.message || 'Failed to fetch course');
+        return rejectWithValue(
+          result.error?.message || "Failed to fetch course",
+        );
       }
     } catch (error: any) {
-      return rejectWithValue(error.message || 'An error occurred while fetching the course');
+      return rejectWithValue(
+        error.message || "An error occurred while fetching the course",
+      );
     }
-  }
+  },
 );
 
 // Update course
 export const updateCourse = createAsyncThunk(
-  'courseDetail/updateCourse',
-  async ({ courseId, data }: { courseId: string | number; data: any }, { rejectWithValue }) => {
+  "courseDetail/updateCourse",
+  async (
+    { courseId, data }: { courseId: string | number; data: any },
+    { rejectWithValue },
+  ) => {
     try {
       const result = await reduxApiClient.put(`user/courses/${courseId}`, data);
-      
+
       if (result.success && result.data) {
         return result.data;
       } else {
-        return rejectWithValue(result.error?.message || 'Failed to update course');
+        return rejectWithValue(
+          result.error?.message || "Failed to update course",
+        );
       }
     } catch (error: any) {
-      return rejectWithValue(error.message || 'An error occurred while updating the course');
+      return rejectWithValue(
+        error.message || "An error occurred while updating the course",
+      );
     }
-  }
+  },
 );
 
 // Delete course
 export const deleteCourse = createAsyncThunk(
-  'courseDetail/deleteCourse',
+  "courseDetail/deleteCourse",
   async (courseId: string | number, { rejectWithValue }) => {
     try {
       const result = await reduxApiClient.delete(`user/courses/${courseId}`);
-      
+
       if (result.success) {
         return courseId;
       } else {
-        return rejectWithValue(result.error?.message || 'Failed to delete course');
+        return rejectWithValue(
+          result.error?.message || "Failed to delete course",
+        );
       }
     } catch (error: any) {
-      return rejectWithValue(error.message || 'An error occurred while deleting the course');
+      return rejectWithValue(
+        error.message || "An error occurred while deleting the course",
+      );
     }
-  }
+  },
 );
 
 // Slice
 const courseDetailSlice = createSlice({
-  name: 'courseDetail',
+  name: "courseDetail",
   initialState,
   reducers: {
     // Clear course data
@@ -77,14 +91,14 @@ const courseDetailSlice = createSlice({
       state.error = null;
       state.lastFetched = null;
     },
-    
+
     // Clear error
     clearError: (state) => {
       state.error = null;
     },
 
     // Update local course data (for optimistic updates)
-    updateLocalCourse: (state, action) => {
+    updateLocalCourse: (state: any, action) => {
       if (state.course) {
         state.course = {
           ...state.course,
@@ -100,13 +114,13 @@ const courseDetailSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCourseById.fulfilled, (state, action) => {
+      .addCase(fetchCourseById.fulfilled, (state: any, action) => {
         state.loading = false;
         state.course = action.payload;
         state.error = null;
         state.lastFetched = new Date().toISOString();
       })
-      .addCase(fetchCourseById.rejected, (state, action) => {
+      .addCase(fetchCourseById.rejected, (state: any, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -122,7 +136,7 @@ const courseDetailSlice = createSlice({
         state.course = action.payload;
         state.error = null;
       })
-      .addCase(updateCourse.rejected, (state, action) => {
+      .addCase(updateCourse.rejected, (state: any, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -138,7 +152,7 @@ const courseDetailSlice = createSlice({
         state.course = null;
         state.error = null;
       })
-      .addCase(deleteCourse.rejected, (state, action) => {
+      .addCase(deleteCourse.rejected, (state: any, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -146,7 +160,8 @@ const courseDetailSlice = createSlice({
 });
 
 // Actions
-export const { clearCourse, clearError, updateLocalCourse } = courseDetailSlice.actions;
+export const { clearCourse, clearError, updateLocalCourse } =
+  courseDetailSlice.actions;
 
 // Selectors
 export const selectCourse = (state: any) => state.courseDetail.course;

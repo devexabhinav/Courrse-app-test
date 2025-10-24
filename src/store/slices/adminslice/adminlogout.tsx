@@ -1,82 +1,66 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
   AdminActivityState,
   initialAdminActivityState,
   AdminActivitiesResponse,
-  TrackLogoutResponse
-} from '@/types/adminType/admintype';
-import { reduxApiClient } from '@/lib/redux-api';
+  TrackLogoutResponse,
+} from "@/types/adminType/admintype";
+import { reduxApiClient } from "@/lib/redux-api";
 
- 
 // Use shared initial state
 const initialState: AdminActivityState = initialAdminActivityState;
 // Async thunk for getting all admin activities
 export const getAllAdminActivities = createAsyncThunk(
-  'adminActivity/getAllAdminActivities',
+  "adminActivity/getAllAdminActivities",
   async (
     params: {
       page?: number;
       limit?: number;
       activity_type?: string;
-      admin_id?: number
+      admin_id?: number;
     } = {},
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
-   
-    
     try {
-
       const { page = 1, limit = 50, activity_type, admin_id } = params;
 
-      const response = await reduxApiClient.get<AdminActivitiesResponse>('user/getlogs', {
+      const response = await reduxApiClient.get("user/getlogs", {
         params: {
           page,
           limit,
           activity_type,
-          admin_id
-        }
+          admin_id,
+        },
       });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 'Failed to fetch admin activities'
+        error.response?.data?.message || "Failed to fetch admin activities",
       );
     }
-  }
+  },
 );
-
-
-
-
-
-
-
-
-
-
-
 
 // Async thunk for tracking logout activity
 export const trackLogoutActivity = createAsyncThunk(
-  'adminActivity/trackLogout',
+  "adminActivity/trackLogout",
   async (admin_id: number, { rejectWithValue }) => {
     try {
- 
-      const response = await reduxApiClient.post<TrackLogoutResponse>('user/logout', {
+      const response = await reduxApiClient.post("user/logout", {
         admin_id,
       });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 'Failed to track logout activity'
+        error.response?.data?.message || "Failed to track logout activity",
       );
     }
-  }
+  },
 );
 
 // Slice
 const adminActivitySlice = createSlice({
-  name: 'adminActivity',
+  name: "adminActivity",
   initialState,
   reducers: {
     clearActivities: (state) => {
@@ -94,7 +78,7 @@ const adminActivitySlice = createSlice({
     clearLogoutState: (state) => {
       state.logoutLoading = false;
       state.logoutError = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -112,7 +96,7 @@ const adminActivitySlice = createSlice({
           state.currentPage = action.payload.currentPage;
           state.totalPages = action.payload.totalPages;
           state.hasMore = action.payload.hasMore;
-        }
+        },
       )
       .addCase(getAllAdminActivities.rejected, (state, action) => {
         state.loading = false;
@@ -139,5 +123,6 @@ const adminActivitySlice = createSlice({
   },
 });
 
-export const { clearActivities, clearError, clearLogoutState } = adminActivitySlice.actions;
+export const { clearActivities, clearError, clearLogoutState } =
+  adminActivitySlice.actions;
 export default adminActivitySlice.reducer;
