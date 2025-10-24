@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toasterSuccess } from "@/components/core/Toaster";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useApiClient } from "@/lib/api";
 
 export default function Mcq({ className }: any) {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function Mcq({ className }: any) {
   const courseId = searchParams.get("course_id");
   const chapterId = searchParams.get("chapter_id");
   const courseName = searchParams.get("name");
+  const api = useApiClient();
 
   useEffect(() => {
     fetchMcq();
