@@ -21,8 +21,8 @@ export default function AuthChecker({
     const isAuthPage = pathname.startsWith("/auth");
     const isNoAccessPage = pathname.startsWith("/user-access");
 
-    if (isAuthPage || isNoAccessPage) {
-      setLoading(false);
+    if (!token && !isAuthPage) {
+      router.replace("/auth/login");
       return;
     }
 

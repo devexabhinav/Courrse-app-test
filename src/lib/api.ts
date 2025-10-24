@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie';
 
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 
 const handleResponse = async (response: Response) => {
@@ -9,7 +10,7 @@ const handleResponse = async (response: Response) => {
   try {
     data = JSON.parse(rawText);
   } catch (err) {
-    console.error("❌ Failed to parse JSON. Raw response:", rawText);
+    console.log("❌ Failed to parse JSON. Raw response:", rawText);
     throw new Error("Failed to parse JSON response.");
   }
 

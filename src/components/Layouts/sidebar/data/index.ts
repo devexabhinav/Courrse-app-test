@@ -81,8 +81,8 @@ export const NAV_DATA = [
         type: "Super-Admin",
       },
       {
-        title: "Manage Admins",
-        url: "/super-admin/request-admins",
+        title: "Admins",
+        url: "/super-admin/admins-requests",
         icon: Icons.User,
         items: [],
         type: "Super-Admin",
@@ -95,8 +95,8 @@ export const NAV_DATA = [
         type: "Super-Admin",
       },
       {
-        title: "All Users",
-        url: "/super-admin/all-users",
+        title: "Admin Log details",
+        url: "/super-admin/log-details",
         icon: Icons.Alphabet,
         items: [],
         type: "Super-Admin",
@@ -110,6 +110,16 @@ export const NAV_DATA = [
         items: [],
         type: "both",
       },
+     
+      {
+        title: "User",
+        url:"/super-admin/all-user",
+        icon: Icons.User,
+        items: [],
+        type: "Super-Admin",
+      }
+
+      
     ],
   },
 ];
