@@ -162,37 +162,14 @@ export function UserInfo() {
         <hr className="border-[#E8E8E8] dark:border-dark-3" />
 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6">
-          {/* <button
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
-            onClick={() => {
-              Cookies.remove('token');
-              Cookies.remove("refreshToken");
-              Cookies.remove('userId');
-              Cookies.remove('name');
-              Cookies.remove('email');
-              Cookies.remove('role');
-              setIsOpen(false);
-              window.location.href = '/auth/login';
-              toasterSuccess("Logout SucessFully", 2000, "id")
-            }}
-          >
-            <LogOutIcon />
-            <span className="text-base font-medium">Log out</span>
-          </button> */}
-
           <button
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
             onClick={async () => {
               try {
-                // Get admin ID from cookies or your state
                 const adminId = parseInt(getDecryptedItem("userId") || "0");
-
-                // Dispatch logout activity tracking
                 if (adminId) {
                   await dispatch(trackLogoutActivity(adminId)).unwrap();
                 }
-
-                // Clear cookies
                 removeEncryptedItem("token");
                 removeEncryptedItem("refreshToken");
                 removeEncryptedItem("userId");
@@ -202,9 +179,8 @@ export function UserInfo() {
 
                 setIsOpen(false);
                 toasterSuccess("Logout Successfully", 2000, "id");
-                window.location.href = "/auth/login";
+                window.location.href = "/home";
               } catch (error) {
-                // Even if tracking fails, proceed with logout
                 console.error("Failed to track logout activity:", error);
 
                 removeEncryptedItem("token");
@@ -215,7 +191,7 @@ export function UserInfo() {
                 removeEncryptedItem("role");
                 setIsOpen(false);
                 toasterSuccess("Logout Successfully", 2000, "id");
-                window.location.href = "/auth/login";
+                window.location.href = "/home";
               }
             }}
           >
