@@ -153,7 +153,7 @@ export default function Chapters({ className }: any) {
         className,
       )}
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="chapters mb-4 flex items-center justify-between">
         <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
           All Chapters list from {courseName}
         </h2>
@@ -165,7 +165,7 @@ export default function Chapters({ className }: any) {
               placeholder="Search Chapters ..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-[#02537a] focus:ring-1 focus:ring-[#02537a] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
             />
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
@@ -183,7 +183,7 @@ export default function Chapters({ className }: any) {
                 `/admin/chapters/add-chapters?course_id=${courseId}&course=${courseName}`,
               )
             }
-            className="w-full rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700 sm:w-auto"
+            className="w-full rounded-full bg-[#02537a] px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700 sm:w-auto"
           >
             + Add Chapter
           </button>

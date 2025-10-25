@@ -191,13 +191,13 @@ export default function Courses({ className }: any) {
   return (
     <div
       className={cn(
-        "grid rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
+        "grid overflow-auto rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
         className,
       )}
     >
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mobile-buttons mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Heading */}
-        <h2 className="list text-center text-xl font-bold text-gray-900 dark:text-white sm:text-left">
+        <h2 className="list text-center text-xl font-bold text-gray-900 dark:text-white">
           All Courses List
         </h2>
 
@@ -212,7 +212,7 @@ export default function Courses({ className }: any) {
                   e.target.value as "all" | "active" | "inactive" | "draft",
                 )
               }
-              className="w-full appearance-none rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-700 shadow-sm outline-none focus:border-[#02517b] focus:ring-1 focus:ring-[#02517b] dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="active-btn w-full appearance-none rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-700 shadow-sm outline-none focus:border-[#02517b] focus:ring-1 focus:ring-[#02517b] dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             >
               <option value="all">All Courses</option>
               <option value="active">Active</option>
@@ -231,7 +231,7 @@ export default function Courses({ className }: any) {
               placeholder="Search courses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-[#02517b] focus:ring-1 focus:ring-[#02517b] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-[#02517b] focus:ring-1 focus:ring-[#02517b] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
             />
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>

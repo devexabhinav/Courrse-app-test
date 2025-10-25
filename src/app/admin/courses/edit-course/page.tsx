@@ -395,7 +395,7 @@ const EditCourse = () => {
             />
 
             {/* Creatable Category Select */}
-            <div className="w-full sm:w-1/2">
+            <div className="Category-input w-full sm:w-1/2">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Category Type *
               </label>
@@ -444,7 +444,7 @@ const EditCourse = () => {
                     type="button"
                     onClick={handleCreateCategory}
                     disabled={isCreatingCategory || !formData.category.trim()}
-                    className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-lg bg-[#015379] px-4 py-2 text-white hover:bg-[#01537969] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isCreatingCategory ? "Creating..." : "Create New"}
                   </button>
@@ -494,7 +494,7 @@ const EditCourse = () => {
 
           {/* Price Type, Amount and Duration Row */}
           <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
-            <div className="w-full sm:w-1/3">
+            <div className="w-full sm:w-1/2">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Price Type *
               </label>
@@ -512,7 +512,7 @@ const EditCourse = () => {
 
             {formData.priceType === "paid" && (
               <InputGroup
-                className="w-full sm:w-1/3"
+                className="w-full sm:w-1/2"
                 type="number"
                 name="price"
                 label="Price ($)"
@@ -529,7 +529,7 @@ const EditCourse = () => {
             )}
 
             <InputGroup
-              className="w-full sm:w-1/3"
+              className="w-full sm:w-1/2"
               type="text"
               name="duration"
               label="Duration"
@@ -563,20 +563,25 @@ const EditCourse = () => {
 
           {/* Course Features with Rich Text Editor */}
           <div className="mb-5.5">
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-                Course Features/Highlights *
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={addRichTextFeature}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Feature
-                </button>
-              </div>
+            <div className="features mb-3 flex items-center gap-2">
+              <InputGroup
+                label="Course Features/Highlights "
+                type="text"
+                placeholder="Add a feature (e.g., 'Certificate included', 'Lifetime access')"
+                value={currentFeature}
+                onChange={(e) => setCurrentFeature(e.target.value)}
+                icon={<ListIcon />}
+                iconPosition="left"
+                height="sm"
+              />
+              <button
+                type="button"
+                onClick={addFeature}
+                className="mt-[25px] flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4" />
+                Add
+              </button>
             </div>
 
             {/* Rich Text Features */}
@@ -638,7 +643,7 @@ const EditCourse = () => {
                   onClick={() =>
                     setFormData((prev: any) => ({ ...prev, image: null }))
                   }
-                  className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
+                  className="absolute right-[-8px] top-[12px] z-10 w-[34px] rounded-full border bg-[#015379] p-1 font-bold text-black text-white transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
                   title="Remove image"
                 >
                   ×
@@ -646,7 +651,7 @@ const EditCourse = () => {
                 <img
                   src={formData.image}
                   alt="Course"
-                  className="h-32 w-48 rounded border object-cover"
+                  className="w-64 rounded border object-cover"
                 />
               </div>
             )}

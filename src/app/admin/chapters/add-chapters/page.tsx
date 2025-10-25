@@ -265,7 +265,7 @@ const AddChapter = () => {
                 }
                 setImageFiles([...imageFiles, null]);
               }}
-              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-700"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#015379] px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-[#01537969]"
             >
               ➕ Add Image
             </button>
