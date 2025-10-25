@@ -63,13 +63,13 @@ export const NAV_DATA = [
         items: [],
         type: "Super-Admin",
       },
-      {
-        title: "System Settings",
-        url: "/super-admin/settings",
-        icon: Icons.Calendar,
-        items: [],
-        type: "Super-Admin",
-      },
+      // {
+      //   title: "System Settings",
+      //   url: "/super-admin/settings",
+      //   icon: Icons.Calendar,
+      //   items: [],
+      //   type: "Super-Admin",
+      // },
       {
         title: "Admin Log details",
         url: "/super-admin/log-details",

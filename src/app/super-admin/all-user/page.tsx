@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchUsers, setPage } from "../../../store/slices/adminslice/all-user-details";
 import {  activateUser , deactivateUser} from "../../../store/slices/adminslice/userManagement";
-import { UserX } from "lucide-react";
+import { UserX, UserCheck } from "lucide-react";
 
 export default function UsersWithProgressPage({ className }: any) {
   const router = useRouter();
@@ -21,9 +21,6 @@ export default function UsersWithProgressPage({ className }: any) {
   const limit = 5;
   const [deactivatingUserId, setDeactivatingUserId] = useState<string | null>(null);
 const [processingUserId, setProcessingUserId] = useState<string | null>(null);
-
-
-
   useEffect(() => {
     dispatch(fetchUsers({ page: currentPage, limit }));
   }, [dispatch, currentPage, limit]);
@@ -44,19 +41,34 @@ const handleDeactivateUser = async (e: React.MouseEvent, userId: string) => {
   e.stopPropagation();
   
   if (window.confirm("Are you sure you want to deactivate this user?")) {
-    setDeactivatingUserId(userId);
+    setProcessingUserId(userId);
     try {
-      // Use the correct endpoint - change from 'user/deactivate' to 'users/deactivate'
       const result = await dispatch(deactivateUser({ userId }));
-      
       if (deactivateUser.fulfilled.match(result)) {
         dispatch(fetchUsers({ page: currentPage, limit }));
-        console.log("User deactivated successfully:", userId);
       }
     } catch (error) {
       console.error("Failed to deactivate user:", error);
     } finally {
-      setDeactivatingUserId(null);
+      setProcessingUserId(null);
+    }
+  }
+};
+
+const handleActivateUser = async (e: React.MouseEvent, userId: string) => {
+  e.stopPropagation();
+  
+  if (window.confirm("Are you sure you want to activate this user?")) {
+    setProcessingUserId(userId);
+    try {
+      const result = await dispatch(activateUser({ userId }));
+      if (activateUser.fulfilled.match(result)) {
+        dispatch(fetchUsers({ page: currentPage, limit }));
+      }
+    } catch (error) {
+      console.error("Failed to activate user:", error);
+    } finally {
+      setProcessingUserId(null);
     }
   }
 };
@@ -113,17 +125,29 @@ const handleDeactivateUser = async (e: React.MouseEvent, userId: string) => {
                     {user.verifyUser ? "Verified" : "Unverified"}
                   </span>
                 </TableCell>
-                <TableCell>
-                  <button
-  onClick={(e) => handleDeactivateUser(e, user.id)}
-  disabled={deactivatingUserId === user.id}
-  className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-  title="Deactivate User"
->
-  <UserX className="w-4 h-4" />
-  {deactivatingUserId === user.id ? "Deactivating..." : "Deactivate"}
-</button>
-                </TableCell>
+              <TableCell>
+  {user.status === 'active' ? (
+    <button
+      onClick={(e) => handleDeactivateUser(e, user.id)}
+      disabled={processingUserId === user.id}
+      className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      title="Deactivate User"
+    >
+      <UserX className="w-4 h-4" />
+      {processingUserId === user.id ? "Deactivating..." : "Deactivate"}
+    </button>
+  ) : (
+    <button
+      onClick={(e) => handleActivateUser(e, user.id)}
+      disabled={processingUserId === user.id}
+      className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      title="Activate User"
+    >
+      <UserCheck className="w-4 h-4" />
+      {processingUserId === user.id ? "Activating..." : "Activate"}
+    </button>
+  )}
+</TableCell>
               </TableRow>
             ))
           ) : (

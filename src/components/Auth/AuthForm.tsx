@@ -228,7 +228,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
       const apiErrorCode = response?.error?.code || "";
       const errorMessage =
-        messageMap[apiErrorCode] || "Something went wrong. Please try again.";
+        messageMap[apiErrorCode] || "Your account is suspended. Please contact your teacher.";
 
       toasterError(errorMessage, 5000, "id");
     }

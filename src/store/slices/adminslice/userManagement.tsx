@@ -37,7 +37,7 @@ export const activateUser = createAsyncThunk(
   'userStatus/activateUser',
   async (payload: UserStatusPayload, { rejectWithValue }) => {
     try {
-      const response = await reduxApiClient.post('user/activate', payload);
+      const response = await reduxApiClient.post('user/activateUser', payload);
       
       if (!response.success) {
         return rejectWithValue(response.error?.message || 'Failed to activate user');
