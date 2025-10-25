@@ -44,3 +44,12 @@ export const removeEncryptedItem = (key: string): void => {
     if (typeof window === "undefined") return;
     localStorage.removeItem(key);
 };
+
+
+export const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
+    // Remove HTML tags for clean text display
+    const cleanText = text.replace(/<[^>]*>/g, "");
+    if (cleanText.length <= maxLength) return cleanText;
+    return cleanText.substring(0, maxLength) + "...";
+};

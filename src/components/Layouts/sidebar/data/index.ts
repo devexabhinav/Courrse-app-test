@@ -54,6 +54,7 @@ export const NAV_DATA = [
         items: [],
         type: "admin",
       },
+
       {
         title: "USER DETAILS",
         icon: Icons.Alphabet,
@@ -111,6 +112,24 @@ export const NAV_DATA = [
         items: [],
         type: "both",
       },
+
+      {
+        title: "User",
+        url: "/super-admin/all-user",
+        icon: Icons.User,
+        items: [],
+        type: "Super-Admin",
+      }
+      ,
+
+      {
+        title: "COURSES",
+        url: "/super-admin/courses",
+        icon: Icons.Calendar,
+        items: [],
+        type: "Super-Admin",
+      },
+
     ],
   },
 ];

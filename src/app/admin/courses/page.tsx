@@ -10,11 +10,17 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Pencil, SearchIcon, Trash2 } from "lucide-react";
+import {
+  Pencil,
+  SearchIcon,
+  Trash2,
+  FileText,
+  Eye,
+  EyeOff,
+  CheckCircle,
+} from "lucide-react";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import { useRouter } from "next/navigation";
-import { ToggleRight } from "lucide-react";
-import { ToggleLeft } from "lucide-react";
 import { useApiClient } from "@/lib/api";
 import SafeHtmlRenderer from "@/components/SafeHtmlRenderer";
 
@@ -23,13 +29,14 @@ export default function Courses({ className }: any) {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
+    "all" | "active" | "inactive" | "draft"
   >("all");
   const [courses, setCourses] = useState<any>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(5);
   const api = useApiClient();
+
   useEffect(() => {
     setPage(1);
   }, [search, statusFilter]);
@@ -43,8 +50,10 @@ export default function Courses({ className }: any) {
       const query = new URLSearchParams();
 
       if (search) query.append("search", search);
-      if (statusFilter === "active") query.append("active", "true");
-      if (statusFilter === "inactive") query.append("active", "false");
+      // Update filters to use status instead of is_active
+      if (statusFilter === "active") query.append("status", "active");
+      if (statusFilter === "inactive") query.append("status", "inactive");
+      if (statusFilter === "draft") query.append("status", "draft");
       query.append("page", page.toString());
       query.append("limit", limit.toString());
       const url = `course/list?${query.toString()}`;
@@ -91,18 +100,17 @@ export default function Courses({ className }: any) {
     }
   };
 
-  const handleToggleStatus = async (id: number, newStatus: boolean) => {
+  // Use the new status toggle endpoint
+  const handleToggleStatus = async (id: number) => {
     try {
-      const res = await api.put(`course/${id}/status`, {
-        is_active: newStatus,
-      });
+      const res = await api.put(`course/${id}/status`, {});
 
       if (res.success) {
         toasterSuccess("Status updated successfully", 2000, "id");
         fetchCourses();
       } else {
         toasterError(
-          "Add chapter then you can active this course",
+          res.error?.message || "Add chapter then you can activate this course",
           3000,
           "status",
         );
@@ -110,6 +118,73 @@ export default function Courses({ className }: any) {
     } catch (err) {
       console.log("🚨 Failed to update status", err);
       toasterError("Failed to update status");
+    }
+  };
+
+  // Get status badge based only on status field (no more is_active logic)
+  const getStatusBadge = (course: any) => {
+    const status = course.status;
+
+    switch (status) {
+      case "active":
+        return {
+          label: "Active",
+          color:
+            "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+          icon: <CheckCircle className="h-3 w-3" />,
+        };
+      case "inactive":
+        return {
+          label: "Inactive",
+          color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+          icon: <EyeOff className="h-3 w-3" />,
+        };
+      case "draft":
+        return {
+          label: "Draft",
+          color:
+            "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+          icon: <FileText className="h-3 w-3" />,
+        };
+      default:
+        return {
+          label: "Unknown",
+          color:
+            "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+          icon: <FileText className="h-3 w-3" />,
+        };
+    }
+  };
+
+  // Get toggle button display based on current status
+  const getToggleButton = (course: any) => {
+    const status = course.status;
+
+    switch (status) {
+      case "active":
+        return {
+          icon: <Eye className="h-5 w-5 text-green-600" />,
+          title: "Deactivate Course",
+          color: "text-green-600 hover:text-green-800",
+        };
+      case "inactive":
+        return {
+          icon: <EyeOff className="h-5 w-5 text-red-600" />,
+          title: "Activate Course",
+          color: "text-red-600 hover:text-red-800",
+        };
+      case "draft":
+        return {
+          icon: <FileText className="h-5 w-5 text-yellow-600" />,
+          title: "Activate Course",
+          color: "text-yellow-600 hover:text-yellow-800",
+        };
+      default:
+        return {
+          icon: <FileText className="h-5 w-5 text-gray-600" />,
+          title: "Toggle Status",
+          color: "text-gray-600 hover:text-gray-800",
+        };
     }
   };
 
@@ -133,13 +208,16 @@ export default function Courses({ className }: any) {
             <select
               value={statusFilter}
               onChange={(e) =>
-                setStatusFilter(e.target.value as "all" | "active" | "inactive")
+                setStatusFilter(
+                  e.target.value as "all" | "active" | "inactive" | "draft",
+                )
               }
               className="w-full appearance-none rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-700 shadow-sm outline-none focus:border-[#02517b] focus:ring-1 focus:ring-[#02517b] dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             >
               <option value="all">All Courses</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
+              <option value="draft">Draft</option>
             </select>
             <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
               ▼
@@ -184,108 +262,115 @@ export default function Courses({ className }: any) {
 
         <TableBody>
           {courses.length > 0 ? (
-            courses.map((course: any) => (
-              <TableRow
-                onClick={() =>
-                  router.push(
-                    `/admin/chapters?course=${course.title}&course_id=${course.id}`,
-                  )
-                }
-                className="cursor-pointer text-center text-base font-medium text-dark dark:text-white"
-                key={course.id}
-              >
-                {/* Title */}
-                <TableCell className="py-6 !text-left">
-                  <span className="font-medium">{course.title}</span>
-                </TableCell>
+            courses.map((course: any) => {
+              const statusBadge = getStatusBadge(course);
+              const toggleButton = getToggleButton(course);
 
-                <TableCell className="py-2 text-left">
-                  <div className="text-center text-sm text-gray-700 dark:text-gray-300">
-                    <SafeHtmlRenderer
-                      html={course.description}
-                      maxLength={100}
-                      className="text-sm leading-6"
-                      showMoreButton={false}
-                    />
-                  </div>
-                </TableCell>
+              return (
+                <TableRow
+                  onClick={() =>
+                    router.push(
+                      `/admin/chapters?course=${course.title}&course_id=${course.id}`,
+                    )
+                  }
+                  className="cursor-pointer text-center text-base font-medium text-dark dark:text-white"
+                  key={course.id}
+                >
+                  {/* Title */}
+                  <TableCell className="py-6 !text-left">
+                    <span className="font-medium">{course.title}</span>
+                    {course.subtitle && (
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        {course.subtitle}
+                      </p>
+                    )}
+                  </TableCell>
 
-                <TableCell className="py-2">{course.category}</TableCell>
+                  <TableCell className="py-2 text-left">
+                    <div className="text-center text-sm text-gray-700 dark:text-gray-300">
+                      <SafeHtmlRenderer
+                        html={course.description}
+                        maxLength={100}
+                        className="text-sm leading-6"
+                        showMoreButton={false}
+                      />
+                    </div>
+                  </TableCell>
 
-                <TableCell className="py-2">
-                  <div className="flex items-center justify-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleStatus(course.id, !course.is_active);
-                      }}
-                      className="rounded-full p-1 transition dark:hover:bg-gray-700"
-                      title="Change Status"
-                    >
-                      {course.is_active ? (
-                        <ToggleRight className="h-8 w-10 text-[#02517b]" />
-                      ) : (
-                        <ToggleLeft className="h-8 w-10 text-red-600" />
-                      )}
-                    </button>
-                  </div>
-                </TableCell>
+                  <TableCell className="py-2">
+                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      {course.category}
+                    </span>
+                  </TableCell>
 
-                {/* Creator */}
-                <TableCell className="py-2">{course.creator}</TableCell>
-                <TableCell className="py-2">
-                  {course.image ? (
-                    <img
-                      src={course.image}
-                      alt={course.title}
-                      className="h-16 w-24 rounded-md border object-contain"
-                    />
-                  ) : (
-                    <span className="text-gray-500">---</span>
-                  )}
-                </TableCell>
+                  {/* Status Badge */}
+                  <TableCell className="py-2">
+                    <div className="flex items-center justify-center">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadge.color}`}
+                      >
+                        {statusBadge.icon}
+                        {statusBadge.label}
+                      </span>
+                    </div>
+                  </TableCell>
 
-                <TableCell className="py-2">
-                  {new Intl.DateTimeFormat("en-GB", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                    hour12: true,
-                  }).format(new Date(course.createdAt))}
-                </TableCell>
+                  {/* Creator */}
+                  <TableCell className="py-2">{course.creator}</TableCell>
 
-                <TableCell className="py-2">
-                  <div className="flex items-center justify-center gap-3">
-                    <button
-                      className="text-blue-600 hover:text-blue-800"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(course.id);
-                      }}
-                      title="Edit"
-                    >
-                      <Pencil size={18} />
-                    </button>
-                    <button
-                      className="text-red-600 hover:text-red-800"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(course.id);
-                      }}
-                      title="Delete"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+                  <TableCell className="py-2">
+                    {course.image ? (
+                      <img
+                        src={course.image}
+                        alt={course.title}
+                        className="h-16 w-24 rounded-md border object-contain"
+                      />
+                    ) : (
+                      <span className="text-gray-500">---</span>
+                    )}
+                  </TableCell>
+
+                  <TableCell className="py-2">
+                    {new Intl.DateTimeFormat("en-GB", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    }).format(new Date(course.createdAt))}
+                  </TableCell>
+
+                  <TableCell className="py-2">
+                    <div className="flex items-center justify-center gap-3">
+                      {/* Edit Button */}
+                      <button
+                        className="text-blue-600 hover:text-blue-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(course.id);
+                        }}
+                        title="Edit Course"
+                      >
+                        <Pencil size={18} />
+                      </button>
+
+                      {/* Delete Button */}
+                      <button
+                        className="text-red-600 hover:text-red-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(course.id);
+                        }}
+                        title="Delete Course"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
-              <TableCell colSpan={8} className="py-8 text-center">
+              <TableCell colSpan={9} className="py-8 text-center">
                 No courses found.
               </TableCell>
             </TableRow>
