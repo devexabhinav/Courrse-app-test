@@ -92,20 +92,23 @@ export default function Lessons({ className }: any) {
         className,
       )}
     >
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <h2 className="text-xl font-bold text-dark dark:text-white">
+      <div className="tab-buttons mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <h2 className="w-96 text-base font-bold leading-snug text-dark dark:text-white sm:text-lg md:text-xl lg:text-2xl">
           Lesson List for course: {courseName}
-          <br /> chapter: {chapterorder} {chapterName}
+          <br className="block sm:hidden" /> {/* Break only on mobile */}
+          <span className="block sm:inline">
+            chapter: {chapterorder} {chapterName}
+          </span>
         </h2>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:flex-nowrap">
           <div className="relative w-full sm:w-[300px]">
             <input
               type="search"
               placeholder="Search Lessons ..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="focus:[#005479] w-full rounded-full border border-gray-300 bg-gray-50 py-2.5 pl-12 pr-4 text-sm text-gray-900 shadow-sm outline-none focus:border-[#005479] focus:ring-1 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             />
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           </div>
@@ -126,7 +129,7 @@ export default function Lessons({ className }: any) {
                 `/admin/lessons/list/create-lessons?chapter_id=${chapterId}&course_id=${courseId}`,
               )
             }
-            className="flex items-center justify-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-green-700"
+            className="flex items-center justify-center gap-2 rounded-full bg-[#005479] px-5 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-[#01537969] dark:bg-[#1dbd96]"
           >
             <PlusCircleIcon size={18} />
             Add Lesson
@@ -183,7 +186,7 @@ export default function Lessons({ className }: any) {
       )}
 
       {lessons.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {lessons.map((lesson: any) => {
             const images =
               lesson.resources
@@ -194,26 +197,26 @@ export default function Lessons({ className }: any) {
             return (
               <div
                 key={lesson.id}
-                className="rounded-xl border border-gray-200 bg-gray-50 p-5 shadow-sm transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:p-5"
               >
-                <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
                   {lesson.title}
                 </h3>
                 <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
                   {lesson.content?.slice(0, 100)}...
                 </p>
 
-                <div className="flex flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="rounded-full bg-gray-200 px-3 py-1 dark:bg-gray-700">
+                <div className="flex flex-wrap justify-between gap-2 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
+                  <span className="rounded-full px-2 py-1 shadow-[rgba(100,100,111,0.2)_0px_7px_29px_0px] dark:bg-gray-700 sm:px-3">
                     Order: {lesson.order}
                   </span>
-                  <span className="rounded-full bg-blue-200 px-3 py-1 dark:bg-blue-700">
+                  <span className="rounded-full bg-[#005479] px-2 py-1 text-white dark:bg-[#1dbd96] sm:px-3">
                     Duration: {lesson.duration || "N/A"} mins
                   </span>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
-                  <div className="flex items-center gap-3">
+                <div className="mt-4 flex flex-col gap-2 border-t border-gray-200 pt-3 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     {images.length > 0 && (
                       <button
                         onClick={() => {
@@ -257,7 +260,7 @@ export default function Lessons({ className }: any) {
                     </button>
                   </div>
 
-                  <span className="text-xs text-gray-400">
+                  <span className="text-[10px] text-gray-400 sm:text-xs">
                     {new Intl.DateTimeFormat("en-GB", {
                       day: "2-digit",
                       month: "2-digit",

@@ -100,7 +100,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "mobile max-w-[290px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-linear dark:border-gray-800 dark:bg-gray-dark",
+          "max-w-[290px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-linear dark:border-gray-800 dark:bg-gray-dark",
           isMobile ? "fixed bottom-0 top-0 z-50" : "sticky top-0 h-screen",
           isOpen ? "w-full" : "w-0",
         )}
@@ -121,7 +121,7 @@ export function Sidebar() {
             {isMobile && (
               <button
                 onClick={toggleSidebar}
-                className="absolute left-3/4 right-4.5 top-1/2 -translate-y-1/2 text-right"
+                className="absolute left-3/4 right-4.5 top-1/2 flex h-[37px] w-[37px] -translate-y-1/2 items-center justify-center rounded-[25px] bg-[#02517b] text-right font-semibold text-white"
               >
                 <span className="sr-only">Close Menu</span>
                 <ArrowLeftIcon className="ml-auto size-7" />

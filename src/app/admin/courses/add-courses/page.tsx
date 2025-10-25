@@ -345,7 +345,7 @@ const AddCourse = () => {
           </div>
 
           {/* Subtitle and Category Row */}
-          <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
+          <div className="dff mb-5.5 flex flex-col gap-5.5 sm:flex-row">
             <InputGroup
               className="w-full sm:w-1/2"
               type="text"
@@ -370,6 +370,7 @@ const AddCourse = () => {
                   <div className="relative flex-1">
                     <input
                       type="text"
+                      className=""
                       value={formData.category}
                       onChange={handleCategoryInputChange}
                       onFocus={() => setShowCategoryDropdown(true)}
@@ -377,7 +378,7 @@ const AddCourse = () => {
                         setTimeout(() => setShowCategoryDropdown(false), 200)
                       }
                       placeholder="Select or create a category"
-                      className="w-full rounded-lg border border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+                      className="w-full rounded-lg border border-stroke bg-transparent px-5.5 py-3 text-base text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                       required
                     />
                     {formData.category && (
@@ -410,7 +411,7 @@ const AddCourse = () => {
                     type="button"
                     onClick={handleCreateCategory}
                     disabled={isCreatingCategory || !formData.category.trim()}
-                    className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-lg bg-[#02517b82] px-4 py-3 text-white hover:bg-[#02517bc9] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isCreatingCategory ? "Creating..." : "Create New"}
                   </button>
@@ -459,7 +460,7 @@ const AddCourse = () => {
           </div>
 
           <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
-            <div className="w-full sm:w-1/3">
+            <div className="w-full sm:w-1/2">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Price Type *
               </label>
@@ -494,7 +495,7 @@ const AddCourse = () => {
             )}
 
             <InputGroup
-              className="w-full sm:w-1/3"
+              className="w-full sm:w-1/2"
               type="text"
               name="duration"
               label="Duration"
@@ -528,7 +529,7 @@ const AddCourse = () => {
 
           {/* Course Features */}
           <div className="mb-5.5">
-            <div className="mb-3 flex gap-2">
+            <div className="features mb-3 flex items-center gap-2">
               <InputGroup
                 label="Course Features/Highlights "
                 type="text"
@@ -542,7 +543,7 @@ const AddCourse = () => {
               <button
                 type="button"
                 onClick={addFeature}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                className="mt-[25px] flex items-center gap-2 rounded-lg bg-[#02517b] px-4 py-2 text-white hover:bg-[#55afdf]"
               >
                 <Plus className="h-4 w-4" />
                 Add
