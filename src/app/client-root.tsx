@@ -2,7 +2,7 @@
 
 import { Providers } from "./providers";
 import ClientLayoutShell from "../components/ClientLayoutShell";
-// import AuthChecker from "../components/AuthChecker";
+import AuthChecker from "../components/AuthChecker";
 
 export default function ClientRoot({
   children,
@@ -11,9 +11,9 @@ export default function ClientRoot({
 }) {
   return (
     <Providers>
-      {/* <AuthChecker> */}
-      <ClientLayoutShell>{children}</ClientLayoutShell>
-      {/* </AuthChecker> */}
+      <AuthChecker>
+        <ClientLayoutShell>{children}</ClientLayoutShell>
+      </AuthChecker>
     </Providers>
   );
 }

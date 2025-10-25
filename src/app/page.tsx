@@ -14,32 +14,21 @@ export default function RootPage() {
       try {
         const token = getDecryptedItem("token");
         const userRole = getDecryptedItem("role");
-
-        console.log("🔍 Root page auth check:", {
-          hasToken: !!token,
-          userRole: userRole,
-        });
-
         if (!token) {
-          // No token - go to public home page
-          console.log("🚀 Redirecting to home page (no token)");
           router.replace("/home");
         } else {
-          // Has token - go to role-specific dashboard
-          let redirectPath = "/dashboard"; // default for regular users
-
+          let redirectPath = "/dashboard";
           if (userRole === "super-admin" || userRole === "Super-Admin") {
             redirectPath = "/super-admin/dashboard";
           } else if (userRole === "admin") {
             redirectPath = "/admin/dashboard";
+          } else if (userRole === "user") {
+            redirectPath = "/user/dashboard";
           }
 
-          console.log(`🚀 Redirecting to ${redirectPath} (role: ${userRole})`);
           router.replace(redirectPath);
         }
       } catch (error) {
-        console.error("Error during auth check:", error);
-        // Fallback: redirect to home page
         router.replace("/home");
       } finally {
         setIsChecking(false);

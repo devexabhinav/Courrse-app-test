@@ -2,36 +2,52 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { getDecryptedItem } from "@/utils/storageHelper";
 
 export default function AccessDenied() {
   const router = useRouter();
   const userRole: any = getDecryptedItem("role");
 
-  useEffect(() => {
-    console.log("Access denied page loaded for role:", userRole);
-  }, [userRole]);
-
   const getRoleMessage = () => {
-    switch (userRole) {
+    switch (userRole?.toLowerCase()) {
       case "admin":
         return "Admin access required";
       case "super-admin":
         return "Super Admin access required";
+      case "user":
+        return "User access required";
       default:
         return "You don't have permission to access this page";
     }
   };
 
   const getSuggestedAction = () => {
-    switch (userRole) {
+    switch (userRole?.toLowerCase()) {
       case "admin":
       case "super-admin":
         return "Please contact system administrator for elevated permissions";
+      case "user":
+        return "Please contact your administrator if you need access to this resource";
       default:
         return "Please contact your administrator if you believe this is a mistake";
     }
+  };
+
+  const getDashboardPath = () => {
+    switch (userRole?.toLowerCase()) {
+      case "admin":
+        return "/admin/dashboard";
+      case "super-admin":
+        return "/super-admin/dashboard";
+      case "user":
+        return "/user/dashboard";
+      default:
+        return "/home";
+    }
+  };
+
+  const handleDashboardRedirect = () => {
+    router.push(getDashboardPath());
   };
 
   return (
@@ -70,7 +86,9 @@ export default function AccessDenied() {
           <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
             <p className="text-sm text-yellow-800">
               Logged in as:{" "}
-              <span className="font-medium capitalize">{userRole}</span>
+              <span className="font-medium capitalize">
+                {userRole.replace("-", " ")}
+              </span>
             </p>
           </div>
         )}
@@ -91,14 +109,7 @@ export default function AccessDenied() {
           </button>
           {userRole && (
             <button
-              onClick={() => {
-                // Redirect to appropriate dashboard based on role
-                if (userRole === "admin" || userRole === "super-admin") {
-                  router.push("/admin/dashboard");
-                } else {
-                  router.push("/dashboard");
-                }
-              }}
+              onClick={handleDashboardRedirect}
               className="rounded-lg bg-green-600 px-6 py-3 font-medium text-white transition-colors hover:bg-green-700"
             >
               My Dashboard

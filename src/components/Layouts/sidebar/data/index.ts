@@ -4,23 +4,42 @@ export const NAV_DATA = [
   {
     label: "MAIN MENU",
     items: [
-      // User-specific items
       {
-        title: "Home",
-        url: "/",
-        icon: Icons.User,
+        title: "Dashboard",
+        url: "/user/dashboard",
+        icon: Icons.HomeIcon,
         items: [],
         type: "user",
       },
       {
-        title: "Course",
+        title: "My Courses",
         url: "/user-panel/courses",
-        icon: Icons.User,
+        icon: Icons.BookOpen,
+        items: [],
+        type: "user",
+      },
+      {
+        title: "Learning Path",
+        url: "/user-panel/learning-path",
+        icon: Icons.Target,
+        items: [],
+        type: "user",
+      },
+      {
+        title: "Wishlist",
+        url: "/user-panel/wishlist",
+        icon: Icons.Heart,
+        items: [],
+        type: "user",
+      },
+      {
+        title: "Certificates",
+        url: "/user-panel/certificates",
+        icon: Icons.Award,
         items: [],
         type: "user",
       },
 
-      // Admin-specific items
       {
         title: "Dashboard",
         icon: Icons.HomeIcon,
@@ -35,27 +54,6 @@ export const NAV_DATA = [
         items: [],
         type: "admin",
       },
-      // {
-      //   title: "CHAPTERS",
-      //   url: "/add-chapter",
-      //   icon: Icons.Calendar,
-      //   items: [],
-      //   type: "admin",
-      // },
-      // {
-      //   title: "LESSONS",
-      //   url: "/lessons",
-      //   icon: Icons.Calendar,
-      //   items: [],
-      //   type: "admin",
-      // },
-      // {
-      //   title: "MCQ",
-      //   url: "/add-mcq",
-      //   icon: Icons.Calendar,
-      //   items: [],
-      //   type: "admin",
-      // },
       {
         title: "USER DETAILS",
         icon: Icons.Alphabet,
@@ -64,15 +62,11 @@ export const NAV_DATA = [
             title: "User List",
             url: "/users",
           },
-          // {
-          //   title: "User Details",
-          //   url: "/users/user-details",
-          // },
         ],
         type: "admin",
       },
 
-      // Super Admin-specific items
+      // Super Admin items (keep existing)
       {
         title: "Super Admin Dashboard",
         url: "/super-admin/dashboard",
@@ -101,8 +95,15 @@ export const NAV_DATA = [
         items: [],
         type: "Super-Admin",
       },
+      {
+        title: "User",
+        url: "/super-admin/all-user",
+        icon: Icons.User,
+        items: [],
+        type: "Super-Admin",
+      },
 
-      // Common items for all roles
+      // Common items for all users
       {
         title: "Profile",
         url: "/profile",
@@ -110,16 +111,6 @@ export const NAV_DATA = [
         items: [],
         type: "both",
       },
-
-      {
-        title: "User",
-        url: "/super-admin/all-user",
-        icon: Icons.User,
-        items: [],
-        type: "Super-Admin",
-      }
-
-
     ],
   },
 ];

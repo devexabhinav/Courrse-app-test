@@ -27,7 +27,6 @@ export function Sidebar() {
   }, []);
 
   useEffect(() => {
-    // Keep collapsible open, when it's subpage is active
     NAV_DATA.some((section) => {
       return section.items.some((item) => {
         return item.items?.some((subItem) => {
@@ -46,40 +45,33 @@ export function Sidebar() {
   const isAdmin = role === "admin";
   const isSuperAdmin = role === "Super-Admin";
 
-  // Filter navigation items based on user role and item type
   const getFilteredNavData = () => {
     return NAV_DATA.map((section) => ({
       ...section,
       items: section.items.filter((item) => {
-        // Items marked as 'both' are visible to all roles
         if (item.type === "both") {
           return true;
         }
 
-        // Super Admin can see everything (admin, user, Super-Admin, and both items)
         if (isSuperAdmin) {
           return item.type === "Super-Admin";
         }
 
-        // Admin can see admin and both items
         if (isAdmin) {
           return item.type === "admin";
         }
 
-        // User can see user and both items
         if (isUser) {
           return item.type === "user";
         }
 
-        // If no role, show nothing
         return false;
       }),
-    })).filter((section) => section.items.length > 0); // Remove empty sections
+    })).filter((section) => section.items.length > 0);
   };
 
   const filteredNavData = getFilteredNavData();
 
-  // Determine home route based on role
   const getHomeRoute = () => {
     if (isSuperAdmin) return "/super-admin/dashboard";
     if (isAdmin) return "/";

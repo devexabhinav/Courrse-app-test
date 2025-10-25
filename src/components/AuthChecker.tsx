@@ -6,7 +6,11 @@ import Loader from "./Loader";
 import { getDecryptedItem } from "@/utils/storageHelper";
 import { useApiClient } from "@/lib/api";
 
-export default function AuthChecker({ children }: { children: React.ReactNode }) {
+export default function AuthChecker({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
@@ -27,10 +31,6 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
       const isHomePage = pathname === "/" || pathname === "/home";
       const isPublicPage = isHomePage;
       const isAccessDeniedPage = pathname === "/access-denied";
-
-      console.log("Auth Check - Path:", pathname, "Token:", !!token);
-
-      // 🎯 PUBLIC PAGES: ALWAYS allow access (no token required)
       if (isPublicPage || isAccessDeniedPage) {
         console.log("✅ Allowing public page access");
         setLoading(false);
@@ -49,8 +49,10 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
               router.replace("/super-admin/dashboard");
             } else if (userRole === "admin") {
               router.replace("/admin/dashboard");
+            } else if (userRole === "user") {
+              router.replace("/user/dashboard");
             } else {
-              router.replace("/dashboard");
+              router.replace("/home");
             }
             return;
           }
@@ -82,4 +84,4 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
   }
 
   return <>{children}</>;
-};
+}
