@@ -3,46 +3,38 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllAdminActivities } from '@/store/slices/adminslice/adminActivitySlice';
-import { RootState, AppDispatch } from '@/store';
-
-// Import icons
 import { 
   Calendar, 
-  Globe, 
-  Monitor, 
-  Smartphone, 
-  Tablet,
   RefreshCw,
-  Clock,
   ChevronLeft, 
   ChevronRight,
   Shield,
   User,
-  Search,
   LogIn,
-  LogOut
+  LogOut,
+  Filter,
+  X
 } from 'lucide-react';
 
 export default function AdminActivitiesPage() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { activities, loading, error, totalCount, currentPage, totalPages, hasMore } = useSelector(
-    (state: RootState) => state.adminActivity
+  const dispatch = useDispatch();
+  const { activities = [], loading, error, totalCount, currentPage, totalPages, hasMore } = useSelector(
+    (state) => state.adminActivity
   );
 
 
+  
   const [filters, setFilters] = useState({
     activity_type: '',
     admin_id: ''
   });
+  const [showFilters, setShowFilters] = useState(false);
 
+  useEffect(() => {
+    dispatch(getAllAdminActivities({ page: 1, limit: 20 }));
+  }, [dispatch]);
 
-// In your component, make sure you're using the correct API endpoint
-useEffect(() => {
-  dispatch(getAllAdminActivities({ page: 1, limit: 20 }));
-}, []);
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page) => {
     dispatch(getAllAdminActivities({ 
       page, 
       limit: 20,
@@ -51,9 +43,6 @@ useEffect(() => {
     }));
   };
 
-  // Handle filter changes
-
-  // Apply filters
   const applyFilters = () => {
     dispatch(getAllAdminActivities({ 
       page: 1, 
@@ -61,10 +50,16 @@ useEffect(() => {
       activity_type: filters.activity_type || undefined,
       admin_id: filters.admin_id ? parseInt(filters.admin_id) : undefined
     }));
+    setShowFilters(false);
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
+  const clearFilters = () => {
+    setFilters({ activity_type: '', admin_id: '' });
+    dispatch(getAllAdminActivities({ page: 1, limit: 20 }));
+    setShowFilters(false);
+  };
+
+  const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -75,18 +70,14 @@ useEffect(() => {
     });
   };
 
-  // Calculate stats based on your actual data
   const getStats = () => {
-    const totalLogins = activities.filter(a => a.activity_type === 'login').length;
-    const totalLogouts = activities.filter(a => a.activity_type === 'logout').length;
-    
-    // Since we don't have session duration in your model, we'll show basic stats
-    return { totalLogins, totalLogouts, totalActivities: totalCount };
+    const totalLogins = activities?.filter(a => a.activity_type === 'login').length || 0;
+    const totalLogouts = activities?.filter(a => a.activity_type === 'logout').length || 0;
+    return { totalLogins, totalLogouts, totalActivities: totalCount || 0 };
   };
 
   const stats = getStats();
 
-  // Loading state
   if (loading && activities.length === 0) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
@@ -98,7 +89,6 @@ useEffect(() => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
@@ -126,7 +116,7 @@ useEffect(() => {
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
               <Shield className="h-8 w-8 mr-3 text-blue-600 dark:text-blue-500" />
@@ -134,16 +124,85 @@ useEffect(() => {
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">Monitor all admin login and logout activities</p>
           </div>
-          <button
-            onClick={() => dispatch(getAllAdminActivities({ page: currentPage, limit: 20 }))}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shadow-sm border border-gray-300 dark:border-gray-600"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+            </button>
+            <button
+              onClick={() => dispatch(getAllAdminActivities({ page: currentPage, limit: 20 }))}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
 
-        {/* Stats Cards - Simplified for your data structure */}
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="mb-6 bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <Filter className="h-5 w-5 mr-2" />
+                Filter Activities
+              </h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Activity Type
+                </label>
+                <select
+                  value={filters.activity_type}
+                  onChange={(e) => setFilters({ ...filters, activity_type: e.target.value })}
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">All Activities</option>
+                  <option value="login">Login Only</option>
+                  <option value="logout">Logout Only</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Admin ID
+                </label>
+                <input
+                  type="number"
+                  value={filters.admin_id}
+                  onChange={(e) => setFilters({ ...filters, admin_id: e.target.value })}
+                  placeholder="Enter Admin ID"
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                onClick={applyFilters}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Apply Filters
+              </button>
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
@@ -182,10 +241,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Search and Filters */}
-      
-
-        {/* Activities Table - Simplified for your data structure */}
+        {/* Activities Table */}
         <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -193,6 +249,9 @@ useEffect(() => {
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Admin
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                    Role
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Activity Type
@@ -208,14 +267,14 @@ useEffect(() => {
               <tbody className="bg-white dark:bg-transparent divide-y divide-gray-200 dark:divide-gray-700">
                 {activities.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center">
+                    <td colSpan={5} className="px-6 py-12 text-center">
                       <Shield className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                       <p className="text-gray-500 dark:text-gray-400 font-medium">No activities found</p>
                       <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Admin activities will appear here once they login or logout</p>
                     </td>
                   </tr>
                 ) : (
-                  activities.map((activity:any , index:number) => (
+                  activities.map((activity, index) => (
                     <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -233,6 +292,17 @@ useEffect(() => {
                             </div>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          activity.role === 'Super-Admin'
+                            ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-500/30'
+                            : activity.role === 'admin'
+                            ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30'
+                            : 'bg-gray-100 dark:bg-gray-500/20 text-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-500/30'
+                        }`}>
+                          {activity.role}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
@@ -275,14 +345,13 @@ useEffect(() => {
         {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="mt-6 bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Page <span className="font-semibold text-gray-900 dark:text-white">{currentPage}</span> of <span className="font-semibold text-gray-900 dark:text-white">{totalPages}</span>
                 {' '}({totalCount} total activities)
               </div>
               
               <div className="flex items-center gap-2">
-                {/* Previous Button */}
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1 || loading}
@@ -292,8 +361,7 @@ useEffect(() => {
                   Previous
                 </button>
                 
-                {/* Page Numbers */}
-                <div className="flex items-center gap-1">
+                <div className="hidden sm:flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                     const showPage = 
                       page === 1 || 
@@ -331,7 +399,6 @@ useEffect(() => {
                   })}
                 </div>
 
-                {/* Next Button */}
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages || loading}
