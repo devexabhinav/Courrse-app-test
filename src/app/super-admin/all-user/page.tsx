@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchUsers, setPage } from "../../../store/slices/adminslice/all-user-details";
-import { Key } from "lucide-react";
+import {  activateUser , deactivateUser} from "../../../store/slices/adminslice/userManagement";
+import { UserX } from "lucide-react";
 
 export default function UsersWithProgressPage({ className }: any) {
   const router = useRouter();
@@ -18,6 +19,10 @@ export default function UsersWithProgressPage({ className }: any) {
   );
   
   const limit = 5;
+  const [deactivatingUserId, setDeactivatingUserId] = useState<string | null>(null);
+const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+
+
 
   useEffect(() => {
     dispatch(fetchUsers({ page: currentPage, limit }));
@@ -34,6 +39,27 @@ export default function UsersWithProgressPage({ className }: any) {
       dispatch(setPage(currentPage + 1));
     }
   };
+
+const handleDeactivateUser = async (e: React.MouseEvent, userId: string) => {
+  e.stopPropagation();
+  
+  if (window.confirm("Are you sure you want to deactivate this user?")) {
+    setDeactivatingUserId(userId);
+    try {
+      // Use the correct endpoint - change from 'user/deactivate' to 'users/deactivate'
+      const result = await dispatch(deactivateUser({ userId }));
+      
+      if (deactivateUser.fulfilled.match(result)) {
+        dispatch(fetchUsers({ page: currentPage, limit }));
+        console.log("User deactivated successfully:", userId);
+      }
+    } catch (error) {
+      console.error("Failed to deactivate user:", error);
+    } finally {
+      setDeactivatingUserId(null);
+    }
+  }
+};
 
   return (
     <div
@@ -55,40 +81,54 @@ export default function UsersWithProgressPage({ className }: any) {
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
+            <TableHead className="w-16">S.No</TableHead>
             <TableHead className="!text-left">Name</TableHead>
             <TableHead>Email</TableHead>
-            
             <TableHead>Verified</TableHead>
+            <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {loading ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-8">
+              <TableCell colSpan={5} className="text-center py-8">
                 Loading...
               </TableCell>
             </TableRow>
           ) : users && users.length > 0 ? (
-            users.map((user: any) => (
+            users.map((user: any, index: number) => (
               <TableRow
-                className="text-center text-base font-medium text-dark dark:text-white"
+                className="text-center text-base font-medium text-dark dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                 key={user.id}
-                onClick={()=>  router.push(`/super-admin/all-user/view-details?id=${user.id}`)}
+                onClick={() => router.push(`/super-admin/all-user/view-details?id=${user.id}`)}
               >
+                <TableCell className="text-center">
+                  {(currentPage - 1) * limit + index + 1}
+                </TableCell>
                 <TableCell className="!text-left">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
-             
                 <TableCell>
                   <span className={user.verifyUser ? "text-green-600" : "text-red-500"}>
                     {user.verifyUser ? "Verified" : "Unverified"}
                   </span>
                 </TableCell>
+                <TableCell>
+                  <button
+  onClick={(e) => handleDeactivateUser(e, user.id)}
+  disabled={deactivatingUserId === user.id}
+  className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+  title="Deactivate User"
+>
+  <UserX className="w-4 h-4" />
+  {deactivatingUserId === user.id ? "Deactivating..." : "Deactivate"}
+</button>
+                </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center">
+              <TableCell colSpan={5} className="text-center py-8">
                 No users found.
               </TableCell>
             </TableRow>
@@ -100,17 +140,17 @@ export default function UsersWithProgressPage({ className }: any) {
         <button
           onClick={handlePreviousPage}
           disabled={currentPage === 1 || loading}
-          className="cursor-pointer px-3 disabled:cursor-not-allowed py-1 border rounded-xl disabled:opacity-50"
+          className="cursor-pointer px-4 py-2 border rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           Previous
         </button>
-        <span className="text-sm">
+        <span className="text-sm font-medium">
           Page {currentPage} of {totalPages || 1}
         </span>
         <button
           onClick={handleNextPage}
           disabled={currentPage >= totalPages || loading}
-          className="cursor-pointer px-3 py-1 disabled:cursor-not-allowed border rounded-xl disabled:opacity-50"
+          className="cursor-pointer px-4 py-2 border rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           Next
         </button>
