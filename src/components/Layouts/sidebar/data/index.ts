@@ -71,7 +71,7 @@ export const NAV_DATA = [
       //   type: "Super-Admin",
       // },
       {
-        title: "Admin Log details",
+        title: "Log details",
         url: "/super-admin/log-details",
         icon: Icons.Alphabet,
         items: [],
