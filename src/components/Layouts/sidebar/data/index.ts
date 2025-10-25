@@ -29,12 +29,13 @@ export const NAV_DATA = [
         type: "admin",
       },
       {
-  title: "COURSES",
-  url: "/admin/courses",
-  icon: Icons.Calendar,
-  items: [],
-  type: "both", // Change from "admin" to "both"
-},
+        title: "COURSES",
+        url: "/admin/courses",
+        icon: Icons.Calendar,
+        items: [],
+        type: "admin",
+      },
+     
       {
         title: "USER DETAILS",
         icon: Icons.Alphabet,
@@ -93,7 +94,15 @@ export const NAV_DATA = [
         items: [],
         type: "Super-Admin",
       }
+,
 
+       {
+        title: "COURSES",
+        url: "/super-admin/courses",
+        icon: Icons.Calendar,
+        items: [],
+        type: "Super-Admin",
+      },
 
     ],
   },
