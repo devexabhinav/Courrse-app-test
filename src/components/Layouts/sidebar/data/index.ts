@@ -69,7 +69,7 @@ export const NAV_DATA = [
 
       // Super Admin items (keep existing)
       {
-        title: "Super Admin Dashboard",
+        title: "Dashboard",
         url: "/super-admin/dashboard",
         icon: Icons.HomeIcon,
         items: [],
@@ -123,8 +123,16 @@ export const NAV_DATA = [
       ,
 
       {
-        title: "COURSES",
+        title: "Courses",
         url: "/super-admin/courses",
+        icon: Icons.Calendar,
+        items: [],
+        type: "Super-Admin",
+      },
+
+      {
+        title: "Courses Log",
+        url: "/super-admin/courses-creation",
         icon: Icons.Calendar,
         items: [],
         type: "Super-Admin",

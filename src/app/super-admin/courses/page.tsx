@@ -75,7 +75,7 @@ export default function Courses({ className }: any) {
     if (!confirmDelete) return;
 
     try {
-      const response = await api.delete(`super-admin/course/${id}`);
+      const response = await api.delete(`admin/course/${id}`);
       if (response.success) {
         toasterSuccess("Course Deleted Successfully", 2000, "id");
 
