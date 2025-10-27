@@ -494,7 +494,7 @@ const EditCourse = () => {
 
           {/* Price Type, Amount and Duration Row */}
           <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
-            <div className="w-full sm:w-1/3">
+            <div className="w-full sm:w-1/2">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Price Type *
               </label>
@@ -512,7 +512,7 @@ const EditCourse = () => {
 
             {formData.priceType === "paid" && (
               <InputGroup
-                className="w-full sm:w-1/3"
+                className="w-full sm:w-1/2"
                 type="number"
                 name="price"
                 label="Price ($)"
@@ -529,7 +529,7 @@ const EditCourse = () => {
             )}
 
             <InputGroup
-              className="w-full sm:w-1/3"
+              className="w-full sm:w-1/2"
               type="text"
               name="duration"
               label="Duration"

@@ -493,7 +493,7 @@ const AddCourse = () => {
 
             {formData.priceType === "paid" && (
               <InputGroup
-                className="w-full sm:w-1/3"
+                className="w-full sm:w-1/2"
                 type="number"
                 name="price"
                 label="Price ($)"
@@ -654,7 +654,7 @@ const AddCourse = () => {
             {typeof formData.introVideo === "string" && (
               <div className="relative mb-5.5 mt-2 w-max">
                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-                  Video Preview:
+                  Video Preview: 
                 </label>
                 <button
                   type="button"

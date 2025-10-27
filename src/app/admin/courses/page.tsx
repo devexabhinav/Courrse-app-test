@@ -280,14 +280,14 @@ export default function Courses({ className }: any) {
                   <TableCell className="py-6 !text-left">
                     <span className="font-medium">{course.title}</span>
                     {course.subtitle && (
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="mt-1 text-sm text-gray-600 dark:text-white">
                         {course.subtitle}
                       </p>
                     )}
                   </TableCell>
 
                   <TableCell className="py-2 text-left">
-                    <div className="text-center text-sm text-gray-700 dark:text-gray-300">
+                    <div className="text-center text-sm text-gray-700 dark:text-white">
                       <SafeHtmlRenderer
                         html={course.description}
                         maxLength={100}

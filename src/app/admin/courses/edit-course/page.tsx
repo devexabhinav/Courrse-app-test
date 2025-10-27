@@ -577,7 +577,7 @@ const EditCourse = () => {
               <button
                 type="button"
                 onClick={addFeature}
-                className="mt-[25px] flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                className="mt-[25px] flex items-center gap-2 rounded-lg bg-[#02517b] px-4 py-2 text-white hover:bg-[#6fb0d3]"
               >
                 <Plus className="h-4 w-4" />
                 Add

@@ -753,7 +753,7 @@ console.log("object",chapters)
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="text-center p-4 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{count}</p>
+                    <p className="text-2xl font-bold text-[#02517b] dark:text-blue-400">{count}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Total Chapters</p>
                   </div>
                   <div className="text-center p-4 bg-green-50 dark:bg-green-500/10 rounded-lg">
