@@ -23,6 +23,7 @@ import {
   FileQuestion,
   FileText,
   Wrench,
+  Heart,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -30,6 +31,7 @@ import { getDecryptedItem, truncateText } from "@/utils/storageHelper";
 import { useApiClient } from "@/lib/api";
 import { useDebounce } from "@/utils/debounce";
 import { CourseMaintenanceMessage } from "./user/courses/CourseMaintenanceMessage";
+import { useWishlist } from "@/hooks/useWishlist"; // Import the wishlist hook
 
 export default function UserCourseDashboard({ className }: any) {
   const router = useRouter();
@@ -56,6 +58,15 @@ export default function UserCourseDashboard({ className }: any) {
   const api = useApiClient();
   const loggedInuserId: any = getDecryptedItem("userId");
 
+  // Use the wishlist hook
+  const {
+    wishlist,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    loading: wishlistLoading,
+  } = useWishlist();
+
   const debouncedSearch = useDebounce((searchTerm: string) => {
     setSearch(searchTerm);
     setPage(1);
@@ -71,6 +82,28 @@ export default function UserCourseDashboard({ className }: any) {
     setSearchInput("");
     setSearch("");
     setPage(1);
+  };
+
+  // Handle wishlist toggle
+  const handleWishlistToggle = async (course: any, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering course click
+
+    if (!loggedInuserId) {
+      alert("Please login to add courses to wishlist");
+      return;
+    }
+
+    const isCurrentlyInWishlist = isInWishlist(course.id);
+
+    try {
+      if (isCurrentlyInWishlist) {
+        await removeFromWishlist(course.id);
+      } else {
+        await addToWishlist(course);
+      }
+    } catch (error) {
+      console.error("Failed to update wishlist:", error);
+    }
   };
 
   const fetchCourses = async () => {
@@ -450,6 +483,11 @@ export default function UserCourseDashboard({ className }: any) {
                   isEnrolled={isEnrolled(course)}
                   progress={getCourseProgress(course.id)}
                   onClick={() => handleCourseClick(course)}
+                  onWishlistToggle={(e: React.MouseEvent) =>
+                    handleWishlistToggle(course, e)
+                  }
+                  isInWishlist={isInWishlist(course.id)}
+                  wishlistLoading={wishlistLoading}
                   formatDate={formatDate}
                   truncateText={truncateText}
                 />
@@ -464,6 +502,11 @@ export default function UserCourseDashboard({ className }: any) {
                   isEnrolled={isEnrolled(course)}
                   progress={getCourseProgress(course.id)}
                   onClick={() => handleCourseClick(course)}
+                  onWishlistToggle={(e: React.MouseEvent) =>
+                    handleWishlistToggle(course, e)
+                  }
+                  isInWishlist={isInWishlist(course.id)}
+                  wishlistLoading={wishlistLoading}
                   formatDate={formatDate}
                   truncateText={truncateText}
                 />
@@ -493,6 +536,11 @@ export default function UserCourseDashboard({ className }: any) {
                   isEnrolled={isEnrolled(course)}
                   progress={getCourseProgress(course.id)}
                   onClick={() => handleCourseClick(course)}
+                  onWishlistToggle={(e: React.MouseEvent) =>
+                    handleWishlistToggle(course, e)
+                  }
+                  isInWishlist={isInWishlist(course.id)}
+                  wishlistLoading={wishlistLoading}
                   formatDate={formatDate}
                   truncateText={truncateText}
                 />
@@ -507,6 +555,11 @@ export default function UserCourseDashboard({ className }: any) {
                   isEnrolled={isEnrolled(course)}
                   progress={getCourseProgress(course.id)}
                   onClick={() => handleCourseClick(course)}
+                  onWishlistToggle={(e: React.MouseEvent) =>
+                    handleWishlistToggle(course, e)
+                  }
+                  isInWishlist={isInWishlist(course.id)}
+                  wishlistLoading={wishlistLoading}
                   formatDate={formatDate}
                   truncateText={truncateText}
                 />
@@ -559,6 +612,9 @@ const CourseCard = ({
   isEnrolled,
   progress,
   onClick,
+  onWishlistToggle,
+  isInWishlist,
+  wishlistLoading,
   formatDate,
   truncateText,
 }: any) => {
@@ -666,6 +722,26 @@ const CourseCard = ({
           )}
         </div>
 
+        {/* Wishlist Button */}
+        <button
+          onClick={onWishlistToggle}
+          disabled={wishlistLoading}
+          className={`absolute right-3 top-3 rounded-full p-2 shadow-md transition-all duration-200 ${
+            isInWishlist
+              ? "bg-red-500 text-white hover:bg-red-600"
+              : "bg-white/90 text-gray-600 hover:bg-white hover:text-red-500"
+          } ${wishlistLoading ? "cursor-not-allowed opacity-50" : ""}`}
+          title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          {wishlistLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Heart
+              className={`h-4 w-4 ${isInWishlist ? "fill-current" : ""}`}
+            />
+          )}
+        </button>
+
         {/* Overlay for inactive courses */}
         {isInactive && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
@@ -677,7 +753,7 @@ const CourseCard = ({
         )}
 
         {/* Price Badge */}
-        <div className="absolute right-3 top-3">
+        <div className="absolute right-3 top-12">
           <span
             className={`rounded-full px-2 py-1 text-xs font-medium ${
               course.price_type === "free"
@@ -835,6 +911,9 @@ const CourseListItem = ({
   isEnrolled,
   progress,
   onClick,
+  onWishlistToggle,
+  isInWishlist,
+  wishlistLoading,
   formatDate,
   truncateText,
 }: any) => {
@@ -865,6 +944,26 @@ const CourseListItem = ({
             <BookOpen className="h-8 w-8 text-gray-400" />
           </div>
         )}
+
+        {/* Wishlist Button */}
+        <button
+          onClick={onWishlistToggle}
+          disabled={wishlistLoading}
+          className={`absolute right-2 top-2 rounded-full p-1.5 shadow-md transition-all duration-200 ${
+            isInWishlist
+              ? "bg-red-500 text-white hover:bg-red-600"
+              : "bg-white/90 text-gray-600 hover:bg-white hover:text-red-500"
+          } ${wishlistLoading ? "cursor-not-allowed opacity-50" : ""}`}
+          title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          {wishlistLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Heart
+              className={`h-3 w-3 ${isInWishlist ? "fill-current" : ""}`}
+            />
+          )}
+        </button>
 
         {/* Overlay for inactive courses */}
         {isInactive && (

@@ -1,6 +1,8 @@
 // components/courses/CourseCard.tsx
 import Link from "next/link";
-import { Star, Users, Clock, CheckCircle, Award } from "lucide-react";
+import { Star, Users, Clock, CheckCircle, Award, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface Course {
   id: number;
@@ -16,13 +18,39 @@ interface Course {
   level: string;
   status: "in-progress" | "completed" | "not-started";
   badge?: string;
+  description?: string;
+  price_type?: "free" | "paid";
 }
 
 interface CourseCardProps {
   course: Course;
+  showWishlistButton?: boolean;
 }
 
-export function CourseCard({ course }: any) {
+export function CourseCard({
+  course,
+  showWishlistButton = true,
+}: CourseCardProps) {
+  const { wishlist, addToWishlist, removeFromWishlist, isInWishlist } =
+    useWishlist();
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Check if course is in wishlist
+  useEffect(() => {
+    setIsWishlisted(isInWishlist(course.id));
+  }, [wishlist, course.id, isInWishlist]);
+
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation when clicking the heart
+    e.stopPropagation();
+
+    if (isWishlisted) {
+      await removeFromWishlist(course.id);
+    } else {
+      await addToWishlist(course);
+    }
+  };
+
   const getStatusBadge = () => {
     switch (course.status) {
       case "in-progress":
@@ -62,7 +90,7 @@ export function CourseCard({ course }: any) {
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+    <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
       {/* Course Image */}
       <div className="relative">
         <img
@@ -82,6 +110,24 @@ export function CourseCard({ course }: any) {
           {getStatusBadge()}
           {getBadge()}
         </div>
+
+        {/* Wishlist Button */}
+        {showWishlistButton && (
+          <button
+            onClick={handleWishlistToggle}
+            className={`absolute left-3 top-3 rounded-full p-2 shadow-md transition-all duration-200 ${
+              isWishlisted
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-white/90 text-gray-600 hover:bg-white hover:text-red-500"
+            }`}
+            title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Heart
+              className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`}
+              size={16}
+            />
+          </button>
+        )}
       </div>
 
       {/* Course Content */}
@@ -112,7 +158,7 @@ export function CourseCard({ course }: any) {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-gray-900 dark:text-white">
-              ${course.price}
+              {course.price_type === "free" ? "Free" : `$${course.price}`}
             </span>
             <div className="mt-1 flex items-center gap-2">
               <span className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
