@@ -96,8 +96,8 @@ export default function AdminUsersPage() {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      // hour: '2-digit',
+      // minute: '2-digit'
     });
   };
 
@@ -251,9 +251,7 @@ export default function AdminUsersPage() {
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-1 gap-2">
                               <span className="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">ID: {admin.id}</span>
-                              <span className="bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded font-medium border border-blue-200 dark:border-blue-500/30">
-                                {admin.role}
-                              </span>
+                              
                             </div>
                           </div>
                         </div>
