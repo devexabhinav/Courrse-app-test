@@ -474,7 +474,7 @@ const AddCourse = () => {
           </div>
 
           <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
-            <div className="w-full sm:w-1/3">
+            <div className="w-full sm:w-1/2">
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                 Price Type *
               </label>
@@ -492,7 +492,7 @@ const AddCourse = () => {
 
             {formData.priceType === "paid" && (
               <InputGroup
-                className="w-full sm:w-1/3"
+                className="w-full sm:w-1/2"
                 type="number"
                 name="price"
                 label="Price ($)"
@@ -509,7 +509,7 @@ const AddCourse = () => {
             )}
 
             <InputGroup
-              className="w-full sm:w-1/3"
+              className="w-full sm:w-1/2"
               type="text"
               name="duration"
               label="Duration"
@@ -551,7 +551,7 @@ const AddCourse = () => {
                 <button
                   type="button"
                   onClick={addRichTextFeature}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                  className="flex items-center gap-2 rounded-lg bg-[#02517b] px-4 py-2 text-white hover:bg-[#6a97af]"
                 >
                   <Plus className="h-4 w-4" />
                   Add Feature

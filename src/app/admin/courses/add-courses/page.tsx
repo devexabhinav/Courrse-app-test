@@ -479,7 +479,7 @@ const AddCourse = () => {
 
             {formData.priceType === "paid" && (
               <InputGroup
-                className="w-full sm:w-1/3"
+                className="w-full sm:w-1/2"
                 type="number"
                 name="price"
                 label="Price ($)"
@@ -647,64 +647,38 @@ const AddCourse = () => {
 
           {/* Intro Video */}
           <div className="mb-5.5">
-            <div className="mb-3">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-                Intro Video (Optional)
-              </label>
-              <input
-                type="file"
-                name="introVideo"
-                accept="video/*"
-                onChange={handleChange}
-                className="w-full rounded-lg border border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
-                disabled={isVideoUploading}
-              />
-            </div>
-
-            {/* Video Upload Loader */}
-            {isVideoUploading && (
-              <div className="mb-4 flex items-center gap-3 rounded-lg border border-stroke bg-gray-50 p-4 dark:border-dark-3 dark:bg-dark-2">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <div>
-                  <p className="font-medium text-dark dark:text-white">
-                    Uploading video...
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    This may take a few moments depending on file size
-                  </p>
+            <InputGroup
+              type="file"
+              name="introVideo"
+              fileStyleVariant="style1"
+              label="Intro Video (Optional)"
+              placeholder="Upload Video"
+              accept="video/*"
+              onChange={handleChange}
+            />
+            {typeof formData.introVideo === "string" && (
+              <div className="relative mb-5.5 mt-2 w-max">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
+                  Video Preview:
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev: any) => ({ ...prev, introVideo: null }))
+                  }
+                  className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
+                  title="Remove video"
+                >
+                  ×
+                </button>
+                <div className="flex items-center gap-3 rounded border bg-gray-100 p-3 dark:bg-gray-800">
+                  <PlayCircle className="h-8 w-8 text-blue-600" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    Intro video uploaded
+                  </span>
                 </div>
               </div>
             )}
-
-            {/* Video Preview */}
-            {typeof formData.introVideo === "string" &&
-              formData.introVideo &&
-              !isVideoUploading && (
-                <div className="relative mb-5.5 mt-2 w-max">
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-                    Video Preview:
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        introVideo: null,
-                      }))
-                    }
-                    className="absolute right-2 top-2 z-10 rounded-full border bg-white p-1 text-black transition hover:bg-red-500 hover:text-white dark:bg-dark-3 dark:text-white"
-                    title="Remove video"
-                  >
-                    ×
-                  </button>
-                  <div className="flex items-center gap-3 rounded border bg-gray-100 p-3 dark:bg-gray-800">
-                    <PlayCircle className="h-8 w-8 text-blue-600" />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      Intro video uploaded
-                    </span>
-                  </div>
-                </div>
-              )}
           </div>
 
           {/* Description with Rich Text Editor */}

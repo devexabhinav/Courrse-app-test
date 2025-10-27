@@ -130,7 +130,7 @@ export function Sidebar() {
                 </h2>
 
                 <nav role="navigation" aria-label={section.label}>
-                  <ul className="space-y-2">
+                  <ul className="fvdg space-y-2">
                     {section.items.map((item) => (
                       <li key={item.title}>
                         {item.items && item.items.length > 0 ? (
