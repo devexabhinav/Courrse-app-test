@@ -26,7 +26,6 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-
 } from 'lucide-react';
 
 export default function CourseAuditLogsPage() {
@@ -39,18 +38,14 @@ export default function CourseAuditLogsPage() {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-
   // Local filter state
   const [localFilters, setLocalFilters] = useState({
     search: '',
-    action: '',
-    course_id: '',
-    user_id: '',
-    from_date: '',
-    to_date: '',
+    course_name: '',
     is_active_status: '',
-    sort: '-action_timestamp',
   });
+  
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCourseAuditLogs(filters));
@@ -63,15 +58,10 @@ export default function CourseAuditLogsPage() {
     const filtersToApply: AuditLogFilters = {
       page: 1,
       limit: 20,
-      sort: localFilters.sort,
+      sort: '-action_timestamp',
     };
 
     if (localFilters.search) filtersToApply.search = localFilters.search;
-    if (localFilters.action) filtersToApply.action = localFilters.action;
-    if (localFilters.course_id) filtersToApply.course_id = parseInt(localFilters.course_id);
-    if (localFilters.user_id) filtersToApply.user_id = parseInt(localFilters.user_id);
-    if (localFilters.from_date) filtersToApply.from_date = localFilters.from_date;
-    if (localFilters.to_date) filtersToApply.to_date = localFilters.to_date;
     if (localFilters.is_active_status)
       filtersToApply.is_active_status = localFilters.is_active_status === 'true';
 
@@ -80,7 +70,22 @@ export default function CourseAuditLogsPage() {
     setShowFilters(false);
   };
 
+  // Filter audit logs by course name (client-side filtering)
+  const filteredAuditLogs = localFilters.course_name
+    ? auditLogs.filter((log) =>
+        log.course_title.toLowerCase().includes(localFilters.course_name.toLowerCase())
+      )
+    : auditLogs;
 
+  const handleClearFilters = () => {
+    setLocalFilters({
+      search: '',
+      course_name: '',
+      is_active_status: '',
+    });
+    dispatch(clearFilters());
+    dispatch(fetchCourseAuditLogs({ page: 1, limit: 20, sort: '-action_timestamp' }));
+  };
 
   const handlePageChange = (newPage: number) => {
     dispatch(setPage(newPage));
@@ -216,19 +221,19 @@ export default function CourseAuditLogsPage() {
   // Mock stats data - replace with actual API call
   const mockStats = {
     total_logs: pagination?.total_records || 0,
-    recent_activity_24h: auditLogs.filter(log => {
+    recent_activity_24h: filteredAuditLogs.filter(log => {
       const logDate = new Date(log.action_timestamp);
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
       return logDate > yesterday;
     }).length,
     actions_breakdown: Object.entries(
-      auditLogs.reduce((acc, log) => {
+      filteredAuditLogs.reduce((acc, log) => {
         acc[log.action] = (acc[log.action] || 0) + 1;
         return acc;
       }, {} as Record<string, number>)
     ).map(([action, count]) => ({ action, count })),
     top_users: Object.entries(
-      auditLogs.reduce((acc, log) => {
+      filteredAuditLogs.reduce((acc, log) => {
         if (log.user_name) {
           acc[log.user_name] = (acc[log.user_name] || 0) + 1;
         }
@@ -275,7 +280,10 @@ export default function CourseAuditLogsPage() {
           </div>
         )}
 
-        {/* Statistics */}
+        {/* Filter Section */}
+     
+
+        {/* Stats Section */}
         {showStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
@@ -348,6 +356,53 @@ export default function CourseAuditLogsPage() {
         )}
 
 
+           <div className="mb-6 bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
+            >
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+            </button>
+          </div>
+
+          {showFilters && (
+            <div className="space-y-4">
+              <div className="grid gap-4">
+               
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Course Name
+                  </label>
+                  <input
+                    type="text"
+                    value={localFilters.course_name}
+                    onChange={(e) => setLocalFilters({ ...localFilters, course_name: e.target.value })}
+                    placeholder="Filter by course name..."
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  />
+                </div>
+
+              </div>
+
+              <div className="flex items-center gap-3 pt-4">
+                <button
+                  onClick={handleApplyFilters}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
+                >
+                  Apply Filters
+                </button>
+                <button
+                  onClick={handleClearFilters}
+                  className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Audit Logs Table */}
         <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -362,7 +417,7 @@ export default function CourseAuditLogsPage() {
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
-            ) : auditLogs.length > 0 ? (
+            ) : filteredAuditLogs.length > 0 ? (
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
@@ -390,7 +445,7 @@ export default function CourseAuditLogsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-transparent divide-y divide-gray-200 dark:divide-gray-700">
-                  {auditLogs.map((log) => {
+                  {filteredAuditLogs.map((log) => {
                     const actionColor = getActionColor(log.action);
                     return (
                       <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
