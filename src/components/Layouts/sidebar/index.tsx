@@ -131,8 +131,8 @@ export function Sidebar() {
 
                 <nav role="navigation" aria-label={section.label}>
                   <ul className="fvdg space-y-2">
-                    {section.items.map((item) => (
-                      <li key={item.title}>
+                    {section.items.map((item : any , index :number) => (
+                      <li key={index}>
                         {item.items && item.items.length > 0 ? (
                           <div>
                             <MenuItem

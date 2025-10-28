@@ -551,43 +551,7 @@ export default function AdminUsersPage() {
         )}
 
         {/* Footer Summary */}
-        {admins.length > 0 && (
-          <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
-            <div className="flex flex-col items-center justify-between gap-5 text-sm sm:flex-row">
-              <div className="flex items-center space-x-6">
-                <div>
-                  <span className="font-semibold text-gray-600 dark:text-white">
-                    Total:{" "}
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {totalCount}
-                  </span>
-                </div>
-                <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
-                <div>
-                  <span className="font-semibold text-gray-600 dark:text-white">
-                    Verified:{" "}
-                  </span>
-                  <span className="font-bold text-green-600 dark:text-green-500">
-                    {verifiedCount}
-                  </span>
-                </div>
-                <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
-                <div>
-                  <span className="font-semibold text-gray-600 dark:text-white">
-                    Rejected:{" "}
-                  </span>
-                  <span className="font-bold text-yellow-600 dark:text-yellow-500">
-                    {rejectedCount}
-                  </span>
-                </div>
-              </div>
-              <div className="text-xs font-semibold text-gray-500 dark:text-white">
-                Last updated: {new Date().toLocaleTimeString()}
-              </div>
-            </div>
-          </div>
-        )}
+    
       </div>
     </div>
   );

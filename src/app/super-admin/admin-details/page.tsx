@@ -366,7 +366,11 @@ export default function UserCoursesPage() {
                         {/* Actions */}
                         <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                           <button
-                            onClick={() => handleViewCourse(course.id)}
+                           onClick={() =>
+                  router.push(
+                    `/super-admin/chapters?course=${course.title}&course_id=${course.id}`,
+                  )
+                }
                             className="inline-flex items-center rounded-lg border border-transparent bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-500/20 dark:text-blue-400 dark:hover:bg-blue-500/30"
                           >
                             <Eye className="mr-1 h-3 w-3" />
