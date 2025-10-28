@@ -72,7 +72,7 @@ export default function AuthChecker({
       }
 
       // 🎯 ALL OTHER CASES: Allow access
-      console.log("✅ Allowing access");
+     
       setLoading(false);
     };
 
