@@ -36,7 +36,7 @@ export const getUserById = createAsyncThunk(
   async (userId: string, { rejectWithValue }) => {
     try {
       const response = await reduxApiClient.get(`user/${userId}/getinfo`);
-      
+      console.log("apicall",response)
       if (!response.success) {
         return rejectWithValue(response.error?.message || 'Failed to fetch user');
       }

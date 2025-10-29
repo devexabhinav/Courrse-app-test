@@ -1,6 +1,5 @@
 "use client";
 
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { CameraIcon } from "./_components/icons";
@@ -9,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { getDecryptedItem } from "@/utils/storageHelper";
 import { useApiClient } from "@/lib/api";
 
-export default function Page() {
+export default function Editprofile() {
   const router = useRouter();
   const api = useApiClient();
 
@@ -95,28 +94,16 @@ export default function Page() {
   const isUser = role === "user";
 
   return (
-    <div className="mx-auto w-full max-w-[970px]">
-      <Breadcrumb pageName="Profile" />
-      <div className="overflow-hidden rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
+    <div className="mx-auto w-full overflow-hidden">
+
+      <div className="">
         {/* Cover Photo */}
-        <div className="relative z-20 h-35 md:h-65">
-          <div className="absolute bottom-1 right-1 z-10 xsm:bottom-4 xsm:right-4">
-            <label
-              htmlFor="coverPhoto"
-              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-[15px] py-[5px] text-body-sm font-medium text-white hover:bg-opacity-90"
-              onClick={() => router.push("/profile/edit-profile")}
-            >
-              <input className="sr-only" />
-              <CameraIcon />
-              <span>Edit</span>
-            </label>
-          </div>
-        </div>
+       
 
         {/* Profile Info */}
-        <div className="relative px-4 pb-6 text-center lg:pb-8 xl:pb-11.5">
+        <div className="relative ">
           {/* Profile Photo */}
-          <div className="relative z-30 mx-auto -mt-22 h-30 w-full max-w-30 rounded-full bg-white/20 p-1 backdrop-blur sm:h-44 sm:max-w-[176px] sm:p-3">
+          <div className="relative z-30 mx-auto  w-24 h-24 w-full rounded-full bg-white/20 p-1 backdrop-blur">
             <div className="relative h-full w-full rounded-[50%] drop-shadow-2">
               {data.profilePhoto && (
                 <>
@@ -151,27 +138,7 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Name and Position */}
-          <div className="mt-4">
-            <h3 className="mb-1 text-heading-6 font-bold text-dark dark:text-white">
-              {name || data.name}
-            </h3>
-
-            {/* Show "Trainee" for users, otherwise show position */}
-            {isUser ? (
-              <p className="font-medium">Trainee</p>
-            ) : (
-              <p className="font-medium">{position || data.position}</p>
-            )}
-
-            {/* About */}
-            <div className="mx-auto mt-6 max-w-[720px]">
-              <h4 className="font-medium text-dark dark:text-white">
-                About Me
-              </h4>
-              <p className="mt-4">{about || "No bio added yet."}</p>
-            </div>
-          </div>
+         
         </div>
       </div>
     </div>

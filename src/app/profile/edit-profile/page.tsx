@@ -3,56 +3,100 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from '@/store';
-import { getUserById, selectCurrentUser, selectUserLoading, selectUserError, updateUserProfile } from "@/store/slices/profile/profileinfo";
+import { 
+  fetchUserById, 
+  updateUserProfile,
+  clearUpdateError 
+} from "@/store/slices/profile/profileedit";
+import { 
+  selectCurrentUser,
+  selectUserLoading,
+  selectUserError,
+  selectUpdateLoading,
+  selectUpdateError
+} from "@/store/slices/profile/profileedit";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton1";
-import { ArrowLeft, Mail, Calendar, User, Shield, CheckCircle, XCircle, Edit, Save, RotateCcw, Upload, Camera } from "lucide-react";
+import { ArrowLeft, Mail, Calendar, User, Shield, CheckCircle, XCircle, Save, RotateCcw, Upload, Camera, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDecryptedItem } from "@/utils/storageHelper";
+import { toasterError, toasterSuccess } from "@/components/core/Toaster";
+import Editprofile from "../../profile/page";
 
 export default function EditProfilePage({ className }: any) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   
-  const user = useAppSelector(selectCurrentUser);
+  const currentUser = useAppSelector(selectCurrentUser);
   const loading = useAppSelector(selectUserLoading);
   const error = useAppSelector(selectUserError);
+  const updateLoading = useAppSelector(selectUpdateLoading);
+  const updateError = useAppSelector(selectUpdateError);
   
+  // Get user data from correct path
+  const userData = currentUser?.data;
+  console.log("object",userData)
   const userId = getDecryptedItem("userId");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Local state for editable fields
   const [formData, setFormData] = useState({
     username: "",
-    bio: ""
+    bio: "",
+    profile:"",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const [showResponse, setShowResponse] = useState(false);
+console.log("selectedFile",selectedFile)
+console.log("selectedFile",selectedFile)
+console.log("selectedFile",selectedFile)
+console.log("selectedFile",selectedFile)
+console.log("selectedFile",selectedFile)
+console.log("selectedFile",selectedFile)
+console.log("selectedFile",selectedFile)
+console.log("selectedFile",selectedFile)
 
+  // Fetch user data when component mounts
   useEffect(() => {
     if (userId) {
-      dispatch(getUserById(userId));
+      console.log("🟡 Fetching user with ID:", userId);
+      dispatch(fetchUserById(Number(userId)));
     }
   }, [dispatch, userId]);
 
+  // Clear update errors when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearUpdateError());
+    };
+  }, [dispatch]);
+
+  // Show toast for update errors
+  useEffect(() => {
+    if (updateError) {
+      toasterError(updateError, 3000);
+    }
+  }, [updateError]);
+
   // Initialize form data when user data is loaded
   useEffect(() => {
-    const userData = user?.data || user;
     if (userData) {
+      console.log("🔄 Initializing form with user data:", userData);
       setFormData({
         username: userData.username || "",
-        bio: userData.bio || ""
+        bio: userData.bio || "",
+     profile: selectedFile?.name|| "",
       });
       setProfileImage(userData.profileImage || null);
     }
-  }, [user]);
+  }, [userData]);
 
   const handleBack = () => {
     router.back();
@@ -73,87 +117,102 @@ export default function EditProfilePage({ className }: any) {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        toasterError("Please select a valid image file", 3000);
         return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image size should be less than 5MB');
+        toasterError("Image size must be less than 5MB", 3000);
         return;
       }
 
       setSelectedFile(file);
-      
-      // Create preview URL
       const previewUrl = URL.createObjectURL(file);
       setProfileImage(previewUrl);
       setIsEditing(true);
-    }
-  };
-
-  const uploadProfileImage = async (file: File): Promise<string> => {
-    // Simulate image upload - replace with your actual upload API
-    setImageLoading(true);
-    try {
-      // This is where you would call your file upload API
-      // For example: const response = await reduxApiClient.postFile('upload/profile-image', formData);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Return the uploaded image URL
-      // In real implementation, this would come from your API response
-      const mockImageUrl = `https://example.com/profiles/${Date.now()}_${file.name}`;
-      return mockImageUrl;
-    } catch (error) {
-      console.error('Failed to upload image:', error);
-      throw new Error('Failed to upload image');
-    } finally {
-      setImageLoading(false);
+      dispatch(clearUpdateError());
     }
   };
 
   const handleSave = async () => {
-    if (!userId) return;
+    if (!userId) {
+      toasterError("User ID not found", 3000);
+      return;
+    }
     
-    setSaveLoading(true);
     try {
-      const updates: any = { ...formData };
-
-      // Upload new profile image if selected
-      if (selectedFile) {
-        const imageUrl = await uploadProfileImage(selectedFile);
-        updates.profileImage = imageUrl;
+      // Validate inputs
+      if (formData.username.trim().length === 0) {
+        toasterError("Username cannot be empty", 3000);
+        return;
       }
 
-      await dispatch(updateUserProfile({
-        userId,
-        updates
-      })).unwrap();
+      if (formData.username.length < 3 || formData.username.length > 30) {
+        toasterError("Username must be between 3 and 30 characters", 3000);
+        return;
+      }
+
+      // Prepare update data
+      const updateData: any = {};
       
+      // Only include fields that have changed
+      if (formData.username.trim() !== userData?.username) {
+        updateData.username = formData.username.trim();
+      }
+      
+      if (formData.bio !== userData?.bio) {
+        updateData.bio = formData.bio;
+      }
+
+      // Add profile image file if selected
+      if (selectedFile) {
+        updateData.profileImage = selectedFile;
+      }
+
+      // Check if there are actual changes
+      if (Object.keys(updateData).length === 0) {
+        toasterError("No changes to save", 3000);
+        return;
+      }
+
+      console.log('🟡 Dispatching update with:', { userId: Number(userId), updateData });
+
+      const result = await dispatch(updateUserProfile({
+        userId: Number(userId),
+        updateData
+      })).unwrap();
+
+      console.log('✅ Update successful:', result);
+      
+      toasterSuccess("Profile updated successfully!", 3000);
+      
+      // Reset states
       setIsEditing(false);
       setSelectedFile(null);
-      // Optionally refetch user data
-      dispatch(getUserById(userId));
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-    } finally {
-      setSaveLoading(false);
+      
+      // Refresh user data
+      dispatch(fetchUserById(Number(userId)));
+      
+    } catch (error: any) {
+      console.error("❌ Update failed:", error);
     }
   };
 
+
+
+
   const handleReset = () => {
-    const userData = user?.data || user;
-    setFormData({
-      username: userData?.username || "",
-      bio: userData?.bio || ""
-    });
-    setProfileImage(userData?.profileImage || null);
+    if (userData) {
+      setFormData({
+        username: userData.username || "",
+        bio: userData.bio || ""
+      });
+      setProfileImage(userData.profileImage || null);
+    }
     setSelectedFile(null);
     setIsEditing(false);
+    dispatch(clearUpdateError());
   };
 
   const getStatusColor = (status: string) => {
@@ -175,9 +234,6 @@ export default function EditProfilePage({ className }: any) {
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
-
-  // Get user data from response
-  const userData = user?.data || user;
 
   if (loading) {
     return (
@@ -219,9 +275,9 @@ export default function EditProfilePage({ className }: any) {
             <div className="text-center text-red-600">
               <XCircle className="w-12 h-12 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Error Loading User</h3>
-              <p>{error}</p>
+              <p className="mb-4">{error}</p>
               <Button 
-                onClick={() => userId && dispatch(getUserById(userId))}
+                onClick={() => userId && dispatch(fetchUserById(Number(userId)))}
                 className="mt-4"
               >
                 Try Again
@@ -233,7 +289,7 @@ export default function EditProfilePage({ className }: any) {
     );
   }
 
-  if (!userData) {
+  if (!currentUser || !userData) {
     return (
       <div className={cn("p-6 max-w-4xl mx-auto", className)}>
         <Button 
@@ -249,7 +305,12 @@ export default function EditProfilePage({ className }: any) {
           <CardContent className="pt-6 text-center">
             <User className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <h3 className="text-lg font-semibold mb-2">User Not Found</h3>
-            <p className="text-gray-600">The requested user could not be found.</p>
+            <p className="text-gray-600 mb-4">The requested user could not be found.</p>
+            <Button 
+              onClick={() => userId && dispatch(fetchUserById(Number(userId)))}
+            >
+              Reload Data
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -258,7 +319,6 @@ export default function EditProfilePage({ className }: any) {
 
   return (
     <div className={cn("p-6 max-w-4xl mx-auto", className)}>
-      {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -267,7 +327,7 @@ export default function EditProfilePage({ className }: any) {
         className="hidden"
       />
 
-      {/* Header with Back Button and Save */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Button 
           variant="ghost" 
@@ -279,10 +339,20 @@ export default function EditProfilePage({ className }: any) {
         </Button>
         
         <div className="flex items-center gap-3">
+          {/* <Button 
+            variant="outline"
+            onClick={() => setShowResponse(!showResponse)}
+            className="flex items-center gap-2"
+          >
+            {showResponse ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showResponse ? "Hide Response" : "Show Response"}
+          </Button> */}
+
           {isEditing && (
             <Button 
               variant="outline"
               onClick={handleReset}
+              disabled={updateLoading}
               className="flex items-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
@@ -291,32 +361,85 @@ export default function EditProfilePage({ className }: any) {
           )}
           <Button 
             onClick={handleSave}
-            disabled={(!isEditing && !selectedFile) || saveLoading}
+            disabled={(!isEditing && !selectedFile) || updateLoading || imageLoading}
             className="flex items-center gap-2"
           >
-            <Save className="w-4 h-4" />
-            {saveLoading ? "Saving..." : "Save Changes"}
+            {updateLoading || imageLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                {imageLoading ? "Uploading..." : "Saving..."}
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save Changes
+              </>
+            )}
           </Button>
         </div>
       </div>
 
+      {/* API Response Viewer */}
+      {showResponse && (
+        <Card className="mb-6 border-blue-200 bg-blue-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              API Response Data
+            </CardTitle>
+            <CardDescription>
+              Current user data from fetchUserById API
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-white p-4 rounded border">
+              <pre className="text-sm overflow-auto max-h-60">
+                {JSON.stringify(currentUser, null, 2)}
+              </pre>
+            </div>
+            <div className="mt-3 text-sm text-gray-600 space-y-1">
+              <p><strong>Data Path:</strong> currentUser.data</p>
+              <p><strong>User ID:</strong> {userData.id}</p>
+              <p><strong>Username (original):</strong> {userData.username}</p>
+              <p><strong>Username (editing):</strong> {formData.username}</p>
+              <p><strong>Bio (original):</strong> {userData.bio || 'None'}</p>
+              <p><strong>Bio (editing):</strong> {formData.bio || 'None'}</p>
+              <p><strong>Is Editing:</strong> {isEditing ? 'Yes' : 'No'}</p>
+              <p><strong>Has New Image:</strong> {selectedFile ? 'Yes' : 'No'}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error Display */}
+      {updateError && (
+        <Card className="mb-6 border-red-200 bg-red-50">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2 text-red-700">
+              <XCircle className="w-4 h-4" />
+              <span className="font-medium">Update Error:</span>
+              <span>{updateError}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
+      
+
       {/* Main Profile Card */}
       <Card className="shadow-lg">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {/* Profile Image in Circle - Clickable for Upload */}
+          
+            <div className="flex justify-between items-center gap-6">
+              {/* Profile Image */}
               <div className="relative group">
                 <div 
-                  className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center cursor-pointer transition-all duration-200 group-hover:opacity-80"
-                  onClick={handleImageClick}
+                  className="w-24 h-24 rounded-full   flex items-center justify-center  "
+               
                 >
                   {profileImage ? (
-                    <img 
-                      src={profileImage} 
-                      alt={`${userData.username}'s profile`}
-                      className="w-full h-full object-cover"
-                    />
+              <Editprofile />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                       <span className="text-white text-2xl font-bold">
@@ -325,26 +448,22 @@ export default function EditProfilePage({ className }: any) {
                     </div>
                   )}
                   
-                  {/* Upload Overlay */}
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <Camera className="w-6 h-6 text-white" />
                   </div>
                 </div>
                 
-                {/* Upload Indicator */}
                 {imageLoading && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                   </div>
                 )}
                 
-                {/* Online Status Indicator */}
                 {userData.status === 'active' && (
                   <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                 )}
                 
-                {/* New Image Badge */}
-                {selectedFile && (
+                {selectedFile && !imageLoading && (
                   <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                     New
                   </div>
@@ -363,6 +482,7 @@ export default function EditProfilePage({ className }: any) {
                     onChange={(e) => handleInputChange('username', e.target.value)}
                     className="text-2xl font-bold max-w-md"
                     placeholder="Enter your username"
+                    disabled={updateLoading}
                   />
                 </div>
                 
@@ -371,33 +491,33 @@ export default function EditProfilePage({ className }: any) {
                   {userData.email}
                 </CardDescription>
                 
-                {/* Upload Button */}
-                <Button
+                {/* <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleImageClick}
+                  // onClick={handleImageClick}
+                  disabled={updateLoading || imageLoading}
                   className="mt-3 flex items-center gap-2"
                 >
                   <Upload className="w-4 h-4" />
                   Change Photo
-                </Button>
+                </Button> */}
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <Badge className={getStatusColor(userData.status)}>
                 {userData.status?.charAt(0).toUpperCase() + userData.status?.slice(1)}
               </Badge>
               <Badge className={getRoleColor(userData.role)}>
                 {userData.role?.charAt(0).toUpperCase() + userData.role?.slice(1)}
               </Badge>
-            </div>
-          </div>
+            </div> */}
+          
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Bio Section - Editable */}
+          {/* Bio Section */}
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -410,14 +530,15 @@ export default function EditProfilePage({ className }: any) {
                 placeholder="Tell us about yourself..."
                 className="min-h-[120px] resize-none border-0 bg-transparent focus:ring-0 text-gray-700 dark:text-gray-300 leading-relaxed"
                 rows={4}
+                disabled={updateLoading}
               />
             </div>
             <p className="text-sm text-gray-500 mt-2">
-              {formData.bio.length}/500 characters
+              {formData.bio?.length || 0}/500 characters
             </p>
           </div>
 
-          {/* User Details Grid - Read Only */}
+          {/* User Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <h4 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
@@ -496,7 +617,9 @@ export default function EditProfilePage({ className }: any) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-blue-800">New profile picture selected</p>
-                  <p className="text-sm text-blue-600">{selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+                  <p className="text-sm text-blue-600">
+                    {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
                 </div>
                 <Button
                   variant="outline"
@@ -505,6 +628,7 @@ export default function EditProfilePage({ className }: any) {
                     setSelectedFile(null);
                     setProfileImage(userData.profileImage || null);
                   }}
+                  disabled={imageLoading}
                 >
                   Remove
                 </Button>
@@ -518,6 +642,7 @@ export default function EditProfilePage({ className }: any) {
               <Button 
                 variant="outline"
                 onClick={handleReset}
+                disabled={updateLoading || imageLoading}
                 className="flex items-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -525,11 +650,20 @@ export default function EditProfilePage({ className }: any) {
               </Button>
               <Button 
                 onClick={handleSave}
-                disabled={saveLoading}
+                disabled={updateLoading || imageLoading}
                 className="flex items-center gap-2"
               >
-                <Save className="w-4 h-4" />
-                {saveLoading ? "Saving..." : "Save Changes"}
+                {updateLoading || imageLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    {imageLoading ? "Uploading..." : "Saving..."}
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Changes
+                  </>
+                )}
               </Button>
             </div>
           )}
