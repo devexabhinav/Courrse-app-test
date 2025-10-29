@@ -25,32 +25,35 @@ export default function ClientLayoutShell({ children }: PropsWithChildren) {
     const r = getDecryptedItem("role");
     setToken(t);
     setRole(r);
-  }, [pathname]); // Add pathname to dependency to update on route change
+  }, [pathname]);
 
-  // 🚨 FIX: Allow public pages (home) even without token
+  // Allow public pages (home) even without token
   if (!token && !isAuthPage && !isPublicPage) return null;
 
   const isAdmin = role === "admin";
   const isUser = role === "user";
-  const isSuperAdmin = role === "Super-Admin" || role === "super-admin"; // Fixed typo
+  const isSuperAdmin = role === "Super-Admin" || role === "super-admin";
   const isAuthenticated = !isAuthPage && (isAdmin || isUser || isSuperAdmin);
 
   const showUserDashboard =
     isUser && (pathname === "/" || pathname === "/user-dashboard");
 
+  // Determine if user is logged in (has token and is on a non-auth page)
+  const isLoggedIn = !!token && !isAuthPage;
+
   return (
     <>
       {!isAuthPage && <NextTopLoader color="#5750F1" showSpinner={false} />}
 
-      <div className="flex min-h-screen">
+      <div className={isLoggedIn ? "flex min-h-screen" : "min-h-screen"}>
         {/* Only show sidebar for authenticated users on protected pages */}
         {isAuthenticated && !isPublicPage && <Sidebar />}
 
-        <div className="w-full bg-gray-2 dark:bg-[#020d1a] md:w-[calc(100%-290px)]">
+        <div className="w-full bg-gray-2 dark:bg-[#020d1a] ">
           {/* Only show header for authenticated users on protected pages */}
           {isAuthenticated && !isPublicPage && <Header />}
 
-          <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
+          <main className="isolate mx-auto w-full  overflow-hidden ">
             {showUserDashboard ? <UserCoursesDashboard /> : children}
           </main>
         </div>
