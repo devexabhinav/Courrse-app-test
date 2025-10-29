@@ -107,14 +107,14 @@ export const NAV_DATA = [
       // Common items for all users
       {
         title: "Profile",
-        url: "/profile",
+        url: "/view-profile",
         icon: Icons.User,
         items: [],
         type: "both",
       },
 
       
-      ,
+      
 
       {
         title: "Courses",

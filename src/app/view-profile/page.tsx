@@ -202,7 +202,7 @@ export default function UserProfilePage({ className }: any) {
             <Button 
               variant="outline" 
               className="flex items-center gap-2"
-              onClick={() => router.push(`/profile/edit-profile?id=${userData.id}`)}
+              onClick={() => router.push(`/view-profile/edit-profile?id=${userData.id}`)}
             >
               <Edit className="w-4 h-4" />
               Edit Profile
