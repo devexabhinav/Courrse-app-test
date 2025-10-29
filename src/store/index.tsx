@@ -13,7 +13,11 @@ import userManagementReducer from './slices/adminslice/userManagement'
 import dashboardStatsReducer from './slices/adminslice/dashboardStatsSlice'
 import courseAuditLogReducer from './slices/adminslice/auditcourselog';
 import userReducer  from './slices/profile/profileinfo';
-import usereditReducer from './slices/profile/profileedit'
+import usereditReducer from './slices/profile/profileedit';
+import  homepageinfo from './slices/homepage/homepage';
+import ratingReducer from './slices/adminslice/ratinguser';
+
+
 
 const placeholderSlice = createSlice({
   name: "placeholder",
@@ -36,6 +40,8 @@ export const makeStore = () => {
       courseAuditLogs: courseAuditLogReducer,
       user: userReducer,
       useredit: usereditReducer,
+      homepage: homepageinfo,
+      ratings: ratingReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({

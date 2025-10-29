@@ -11,6 +11,24 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store';
+import {
+  fetchActiveCourses,
+  selectAllCourses,
+  selectCoursesLoading,
+  selectCoursesError,
+  selectCoursesCount,
+  clearError,
+} from '@/store/slices/homepage/homepage';
+import {
+  getAllRatings,
+  getRatingsByCourseId,
+  getRatingById,
+  selectRatings,
+
+} from "@/store/slices/adminslice/ratinguser";
+
 
 const testimonials = [
   {
@@ -35,60 +53,36 @@ const testimonials = [
   },
 ];
 
+
 const Home = () => {
+
+
+
+    const dispatch = useDispatch<AppDispatch>();
+  
+ // Selectors
+
+
+  // Fetch all active courses on mount
+  useEffect(() => {
+    dispatch(fetchActiveCourses());
+  }, [dispatch]);
+
+
+
+
   const [menuOpen, setMenuOpen] = useState(false);
+const courses = useSelector(selectAllCourses);
+  const loading = useSelector(selectCoursesLoading);
+  const error = useSelector(selectCoursesError);
+  const count = useSelector(selectCoursesCount);
+
+    // const ratings = useAppSelector(selectRatings);
   const router = useRouter();
-  const trendingCourses = [
-    {
-      id: 1,
-      title: "Complete React Developer Course",
-      instructor: "John Smith",
-      rating: "4.8",
-      image: "/images/react.jpg",
-    },
-    {
-      id: 2,
-      title: "Master Tailwind CSS in 2025",
-      instructor: "Jane Doe",
-      rating: "4.9",
-      image: "/images/tailwend.jpg",
-    },
-    {
-      id: 3,
-      title: "JavaScript for Beginners",
-      instructor: "Chris Lee",
-      rating: "4.7",
-      image: "/images/javascript.jpg",
-    },
-    {
-      id: 4,
-      title: "Full Stack Web Developer",
-      instructor: "Emma Brown",
-      rating: "4.6",
-      image: "/images/Full-Stack.png",
-    },
-    {
-      id: 5,
-      title: "Modern Web Design with HTML & CSS",
-      instructor: "Emma Brown",
-      rating: "4.6",
-      image: "/images/react.jpg",
-    },
-    {
-      id: 6,
-      title: "Modern Web Design with HTML & CSS",
-      instructor: "Emma Brown",
-      rating: "4.6",
-      image: "/images/tailwend.jpg",
-    },
-    {
-      id: 7,
-      title: "Modern Web Design with HTML & CSS",
-      instructor: "Emma Brown",
-      rating: "4.6",
-      image: "/images/tailwend.jpg",
-    },
-  ];
+
+    
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -381,8 +375,8 @@ const Home = () => {
                 1024: { slidesPerView: 3 },
               }}
             >
-              {trendingCourses.map((course) => (
-                <SwiperSlide key={course.id}>
+              {courses.map((course , index) => (
+                <SwiperSlide key={index}>
                   <div className="rounded-xl bg-white shadow-lg transition hover:scale-105 hover:shadow-2xl">
                     <img
                       src={course.image}
@@ -476,18 +470,18 @@ const Home = () => {
             <div>
               <div className="mt-6 flex space-x-4">
                 <a
-                  href="#"
+                  href="https://www.facebook.com/devexhub"
                   className="text-white transition hover:text-orange-500"
                 >
                   <FaFacebookF />
                 </a>
-                <a href="#" className="transition hover:text-orange-500">
+                <a href="https://x.com/devexhub" className="transition hover:text-orange-500">
                   <FaTwitter />
                 </a>
-                <a href="#" className="transition hover:text-orange-500">
+                <a href="https://www.instagram.com/devexhub/#" className="transition hover:text-orange-500">
                   <FaInstagram />
                 </a>
-                <a href="#" className="transition hover:text-orange-500">
+                <a href="https://www.linkedin.com/company/devex-hub" className="transition hover:text-orange-500">
                   <FaLinkedinIn />
                 </a>
               </div>
@@ -507,7 +501,7 @@ const Home = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-white transition">
+                  <a href="home#courses" className="text-white transition">
                     Courses
                   </a>
                 </li>

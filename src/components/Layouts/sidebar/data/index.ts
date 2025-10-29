@@ -131,6 +131,13 @@ export const NAV_DATA = [
         items: [],
         type: "Super-Admin",
       },
+       {
+        title: "rating",
+        url: "/super-admin/rating",
+        icon: Icons.Calendar,
+        items: [],
+        type: "Super-Admin",
+      },
 
     ],
   },

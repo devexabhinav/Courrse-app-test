@@ -86,7 +86,7 @@ export function UserInfo() {
 
         <figure className="flex size-10 items-center gap-3 overflow-hidden rounded-full">
           <Image
-            src={userImage}
+            src={userImage || ""}
             className="size-10"
             alt={`Avatar of ${USER.name}`}
             role="presentation"
