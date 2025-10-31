@@ -46,9 +46,9 @@ export function Sidebar() {
   const isSuperAdmin = role === "Super-Admin";
 
   const getFilteredNavData = () => {
-    return NAV_DATA.map((section) => ({
+    return NAV_DATA.map((section : any) => ({
       ...section,
-      items: section.items.filter((item) => {
+      items: section.items.filter((item : any) => {
         if (item.type === "both") {
           return true;
         }
@@ -67,7 +67,7 @@ export function Sidebar() {
 
         return false;
       }),
-    })).filter((section) => section.items.length > 0);
+    })).filter((section : any) => section.items.length > 0);
   };
 
   const filteredNavData = getFilteredNavData();
@@ -123,8 +123,8 @@ export function Sidebar() {
 
           {/* Navigation */}
           <div className="custom-scrollbar mt-2 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
-            {filteredNavData.map((section) => (
-              <div key={section.label} className="mb-6">
+            {filteredNavData.map((section : any , index: number) => (
+              <div key={index} className="mb-6">
                 <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
                   {section.label}
                 </h2>
@@ -137,7 +137,7 @@ export function Sidebar() {
                           <div>
                             <MenuItem
                               isActive={item.items.some(
-                                ({ url }) => url === pathname,
+                               ({ url }: { url: string }) => url === pathname,
                               )}
                               onClick={() => toggleExpanded(item.title)}
                             >
@@ -163,8 +163,8 @@ export function Sidebar() {
                                 className="ml-9 mr-0 space-y-1.5 pb-[15px] pr-0 pt-2"
                                 role="menu"
                               >
-                                {item.items.map((subItem) => (
-                                  <li key={subItem.title} role="none">
+                                {item.items.map((subItem :any , index: number) => (
+                                  <li key={index} role="none">
                                     <MenuItem
                                       as="link"
                                       href={subItem.url}

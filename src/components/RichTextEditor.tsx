@@ -81,7 +81,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     // Only update if the change came from outside (not user typing)
     if (value !== current && !editor.isFocused) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value);
     }
   }, [value, editor, isMounted]);
 

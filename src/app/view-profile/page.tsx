@@ -20,7 +20,9 @@ export default function UserProfilePage({ className }: any) {
   const loading = useAppSelector(selectUserLoading);
   const error = useAppSelector(selectUserError);
   
-  const userId = getDecryptedItem("userId");
+
+  
+  const userId:any =getDecryptedItem("userId");
 
   useEffect(() => {
     if (userId) {
@@ -53,7 +55,7 @@ export default function UserProfilePage({ className }: any) {
   };
 
   // Get user data from response
-  const userData = user?.data || user;
+  const userData = (user as any)?.data || user;
 
   if (loading) {
     return (

@@ -1,4 +1,4 @@
-import ShareModal from "@/components/Sharemodal";
+import ShareModal from "@/components/ShareModal";
 import { ArrowLeft, Heart, Share2, CheckCircle } from "lucide-react";
 import { useState } from "react";
 
