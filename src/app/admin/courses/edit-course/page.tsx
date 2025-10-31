@@ -32,7 +32,9 @@ interface Category {
 
 const EditCourse = () => {
   const api = useApiClient();
-
+  // const userNames: any = getDecryptedItem("name");
+  const naam: any = getDecryptedItem("name");
+  const userNames = naam.charAt(0).toUpperCase() + naam.slice(1).toLowerCase();
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("id");
@@ -361,7 +363,7 @@ const EditCourse = () => {
               name="creator"
               label="Creator Name"
               placeholder="Add Your Name Here"
-              value={formData?.creator}
+              value={userNames}
               disabled
               onChange={handleChange}
               icon={<UserIcon />}

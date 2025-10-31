@@ -46,7 +46,8 @@ export default function CourseResultsPage() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("course_id");
   const userId: any = getDecryptedItem("userId");
-  const userNames: any = getDecryptedItem("name");
+  const naam: any = getDecryptedItem("name");
+  const userNames = naam.charAt(0).toUpperCase() + naam.slice(1).toLowerCase();
   const userName: any = userNames
     ? userNames.charAt(0).toUpperCase() + userNames.slice(1)
     : "User"; // Get user name from cookies
@@ -345,29 +346,29 @@ export default function CourseResultsPage() {
       const averageScore =
         results.passed_chapters.length > 0
           ? Math.round(
-              results.passed_chapters.reduce(
-                (sum, ch) => sum + ch.percentage,
-                0,
-              ) / results.passed_chapters.length,
-            )
+            results.passed_chapters.reduce(
+              (sum, ch) => sum + ch.percentage,
+              0,
+            ) / results.passed_chapters.length,
+          )
           : 0;
 
       const completionDate =
         results.passed_chapters.length > 0
           ? new Date(
-              results.passed_chapters[
-                results.passed_chapters.length - 1
-              ].passed_at,
-            ).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
+            results.passed_chapters[
+              results.passed_chapters.length - 1
+            ].passed_at,
+          ).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
           : new Date().toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            });
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
 
       const certificateHTML = generateCertificate(
         userName,
@@ -618,11 +619,10 @@ export default function CourseResultsPage() {
 
                     <div className="mt-4 md:ml-4 md:mt-0">
                       <div
-                        className={`rounded-full px-3 py-1 text-sm font-medium ${
-                          chapter.percentage >= 75
+                        className={`rounded-full px-3 py-1 text-sm font-medium ${chapter.percentage >= 75
                             ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                             : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                        }`}
+                          }`}
                       >
                         {chapter.percentage >= 75 ? "Excellent" : "Passed"}
                       </div>
@@ -637,11 +637,10 @@ export default function CourseResultsPage() {
                     </div>
                     <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
                       <div
-                        className={`h-2 rounded-full ${
-                          chapter.percentage >= 75
+                        className={`h-2 rounded-full ${chapter.percentage >= 75
                             ? "bg-green-500"
                             : "bg-yellow-500"
-                        }`}
+                          }`}
                         style={{ width: `${chapter.percentage}%` }}
                       ></div>
                     </div>
@@ -674,11 +673,11 @@ export default function CourseResultsPage() {
                 <strong>Average Score:</strong>{" "}
                 {results.passed_chapters.length > 0
                   ? Math.round(
-                      results.passed_chapters.reduce(
-                        (sum, ch) => sum + ch.percentage,
-                        0,
-                      ) / results.passed_chapters.length,
-                    )
+                    results.passed_chapters.reduce(
+                      (sum, ch) => sum + ch.percentage,
+                      0,
+                    ) / results.passed_chapters.length,
+                  )
                   : 0}
                 %
               </p>

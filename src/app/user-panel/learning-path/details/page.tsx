@@ -1,3 +1,5 @@
+
+"use client";
 // // components/learning-paths/LearningPathDetail.tsx
 // "use client";
 
