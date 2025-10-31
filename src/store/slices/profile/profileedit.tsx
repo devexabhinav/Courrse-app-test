@@ -164,11 +164,19 @@ const userSlice = createSlice({
 export const { clearUser, clearUpdateError, clearError, updateUserLocal } = userSlice.actions;
 
 // Selectors
-export const selectCurrentUser = (state: { user: UserState }) => state.user.currentUser;
-export const selectUserLoading = (state: { user: UserState }) => state.user.loading;
-export const selectUserError = (state: { user: UserState }) => state.user.error;
-export const selectUpdateLoading = (state: { user: UserState }) => state.user.updateLoading;
-export const selectUpdateError = (state: { user: UserState }) => state.user.updateError;
+// export const selectCurrentUser = (state: { user: UserState }) => state.user.currentUser;
+// export const selectUserLoading = (state: { user: UserState }) => state.user.loading;
+// export const selectUserError = (state: { user: UserState }) => state.user.error;
+// export const selectUpdateLoading = (state: { user: UserState }) => state.user.updateLoading;
+// export const selectUpdateError = (state: { user: UserState }) => state.user.updateError;
+
+export const selectCurrentUser = (state: RootState) => state.user.currentUser;
+export const selectUserLoading = (state:RootState) => state.user.loading;
+export const selectUserError = (state:RootState) => state.user.error;
+export const selectUpdateLoading = (state:RootState) => state.user.updateLoading;
+export const selectUpdateError = (state:RootState) => state.user.updateError;
+
+
 
 // Export reducer
 export default userSlice.reducer;

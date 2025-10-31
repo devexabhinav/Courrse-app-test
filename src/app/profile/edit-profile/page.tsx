@@ -202,18 +202,34 @@ console.log("selectedFile",selectedFile)
 
 
 
+  // const handleReset = () => {
+  //   if (userData) {
+  //     setFormData({
+  //       username: userData.username || "",
+  //       bio: userData.bio || ""
+  //     });
+  //     setProfileImage(userData.profileImage || null);
+  //   }
+  //   setSelectedFile(null);
+  //   setIsEditing(false);
+  //   dispatch(clearUpdateError());
+  // };
+
+
+
   const handleReset = () => {
-    if (userData) {
-      setFormData({
-        username: userData.username || "",
-        bio: userData.bio || ""
-      });
-      setProfileImage(userData.profileImage || null);
-    }
-    setSelectedFile(null);
-    setIsEditing(false);
-    dispatch(clearUpdateError());
-  };
+  if (userData) {
+    setFormData({
+      username: userData.username || "",
+      bio: userData.bio || "",
+      profile: "" // Add this line to reset the profile field
+    });
+  }
+  setSelectedFile(null);
+  setIsEditing(false);
+  dispatch(clearUpdateError());
+};
+
 
   const getStatusColor = (status: string) => {
     switch (status) {

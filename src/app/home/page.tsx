@@ -402,7 +402,7 @@ const Home = () => {
                         {/* Instructor: {course.instructor} */}
                       </p>
                       <p className="text-sm font-medium text-yellow-500">
-                        Rating: {course.rating} ★
+                        {/* Rating: {course.rating} ★ */}
                       </p>
                       <button className="relative mt-4 w-full overflow-hidden rounded-full bg-gradient-to-r from-[#012d48] via-[#02517b] to-[#0388c7] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(2,81,123,0.6)]">
                         <span className="relative z-10">Enroll Now</span>

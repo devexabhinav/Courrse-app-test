@@ -181,7 +181,7 @@ const handleAddRating = async (ratingId: number) => {
   };
 
   // Filter ratings based on local filters
-  const filteredRatings = ratings.filter((rating) => {
+  const filteredRatings = ratings.filter((rating : any) => {
     const statusMatch = statusFilter === "all" || rating.status === statusFilter;
     const scoreMatch = scoreFilter === "all" || rating.score.toString() === scoreFilter;
     return statusMatch && scoreMatch;
@@ -382,7 +382,7 @@ const handleAddRating = async (ratingId: number) => {
                     </td>
                   </tr>
                 ) : (
-                  filteredRatings.map((rating) => (
+                  filteredRatings.map((rating: any) => (
                     <tr
                       key={rating.id}
                       className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/30"
