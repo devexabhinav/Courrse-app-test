@@ -40,7 +40,7 @@ const EditCourse = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isVideoUploading, setIsVideoUploading] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     title: "",
     description: "",
     category: "",
@@ -361,7 +361,7 @@ const EditCourse = () => {
               name="creator"
               label="Creator Name"
               placeholder="Add Your Name Here"
-              value={formData.creator}
+              value={formData?.creator}
               disabled
               onChange={handleChange}
               icon={<UserIcon />}
