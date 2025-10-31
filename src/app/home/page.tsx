@@ -12,77 +12,88 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/store';
+import { AppDispatch, RootState, useAppSelector, useAppDispatch } from '@/store';
+import {
+  getAllRatings,
+  selectRatings,
+} from "@/store/slices/adminslice/ratinguser";
 import {
   fetchActiveCourses,
   selectAllCourses,
   selectCoursesLoading,
   selectCoursesError,
   selectCoursesCount,
-  clearError,
+
 } from '@/store/slices/homepage/homepage';
-import {
-  getAllRatings,
-  getRatingsByCourseId,
-  getRatingById,
-  selectRatings,
-
-} from "@/store/slices/adminslice/ratinguser";
 
 
-const testimonials = [
-  {
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet ex labore id beatae molestiae, libero quis eum nam voluptates quidem.",
-    name: "Jane Doe",
-    role: "Land Broker",
-  },
-  {
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet ex labore id beatae molestiae, libero quis eum nam voluptates quidem.",
-    name: "John Smith",
-    role: "Real Estate Agent",
-  },
-  {
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet ex labore id beatae molestiae, libero quis eum nam voluptates quidem.",
-    name: "Alice Johnson",
-    role: "Property Consultant",
-  },
-  {
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet ex labore id beatae molestiae, libero quis eum nam voluptates quidem.",
-    name: "Bob Brown",
-    role: "Investor",
-  },
-];
+
+import { storeEmail, clearError, clearSuccess } from '@/store/slices/homepage/emailSlice';
+import {  selectEmailSuccess } from '@/store/slices/homepage/emailSlice';
+import { toast } from "react-toastify";
+import { toasterError } from "@/components/core/Toaster";
+
 
 
 const Home = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const courses = useSelector(selectAllCourses);
+  const loading = useSelector(selectCoursesLoading);
+  const error = useSelector(selectCoursesError);
+  const count = useSelector(selectCoursesCount);
+  const ratings = useAppSelector(selectRatings);
+
+  const [email, setEmail] = useState('');
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    } const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+
+    // Clear previous messages
+    dispatch(clearError());
+    dispatch(clearSuccess());
+
+    try {
+      await dispatch(storeEmail({ email: email.trim() })).unwrap();
+       toast.success('Thank you for subscribing! You have been added to our mailing list.');
+      setEmail("");
+    } catch (err) {
+      toast.error('This email is already subscribed!');
+      setEmail("");
+      // Error is already handled in the slice
+     
+    }
+  };
 
 
 
-    const dispatch = useDispatch<AppDispatch>();
-  
- // Selectors
 
 
+
+  const success = useAppSelector(selectEmailSuccess);
   // Fetch all active courses on mount
   useEffect(() => {
     dispatch(fetchActiveCourses());
   }, [dispatch]);
 
+  useEffect(() => {
+    dispatch(getAllRatings());
+  }, [dispatch]);
 
-
-
-  const [menuOpen, setMenuOpen] = useState(false);
-const courses = useSelector(selectAllCourses);
-  const loading = useSelector(selectCoursesLoading);
-  const error = useSelector(selectCoursesError);
-  const count = useSelector(selectCoursesCount);
-
-    // const ratings = useAppSelector(selectRatings);
-  const router = useRouter();
-
-    
-
-
+  console.log("Ratings data:", ratings);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -375,7 +386,7 @@ const courses = useSelector(selectAllCourses);
                 1024: { slidesPerView: 3 },
               }}
             >
-              {courses.map((course , index) => (
+              {courses.map((course, index) => (
                 <SwiperSlide key={index}>
                   <div className="rounded-xl bg-white shadow-lg transition hover:scale-105 hover:shadow-2xl">
                     <img
@@ -388,7 +399,7 @@ const courses = useSelector(selectAllCourses);
                         {course.title}
                       </h3>
                       <p className="mb-1 text-sm text-gray-500">
-                        Instructor: {course.instructor}
+                        {/* Instructor: {course.instructor} */}
                       </p>
                       <p className="text-sm font-medium text-yellow-500">
                         Rating: {course.rating} ★
@@ -452,7 +463,7 @@ const courses = useSelector(selectAllCourses);
             Skills
           </h1>
           <a
-            href="#"
+            onClick={() => router.push("/auth/register")}
             className="inline-block rounded-lg bg-[#02517b] px-6 py-3 font-medium text-white transition hover:bg-[#5687a1bf]"
           >
             Get started now →
@@ -460,7 +471,7 @@ const courses = useSelector(selectAllCourses);
         </div>
       </section>
 
-      <Testimonial />
+      <Testimonial ratings={ratings} />
 
       <footer className="bg-[#00537e] pb-8 pt-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -529,18 +540,28 @@ const courses = useSelector(selectAllCourses);
               <p className="mb-3 text-white">
                 Enter your email to get latest updates:
               </p>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="w-full rounded-l-md bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none"
-                />
-                <button className="rounded-r-md bg-[#dcdcdc] px-4 py-2 text-[#000] transition">
-                  Subscribe
-                </button>
-              </div>
+              <form onSubmit={handleSubmit} className="w-full">
+                <div className="flex">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    className="w-full rounded-l-md bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none disabled:opacity-50"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim()}
+                    className="rounded-r-md bg-[#dcdcdc] px-4 py-2 text-[#000] transition hover:bg-[#c8c8c8] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Subscribing...' : 'Subscribe'}
+                  </button>
+                </div>
+              </form>
 
-              <p className="mb-2 mt-4 text-white">Or search our site:</p>
+              {/* <p className="mb-2 mt-4 text-white">Or search our site:</p>
               <div className="flex">
                 <input
                   type="text"
@@ -550,7 +571,7 @@ const courses = useSelector(selectAllCourses);
                 <button className="rounded-r-md bg-[#dcdcdc] px-4 py-2 text-[#000] transition">
                   Go
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -577,22 +598,106 @@ const courses = useSelector(selectAllCourses);
   );
 };
 
-function Testimonial() {
+function Testimonial({ ratings }: { ratings: any[] }) {
+  // Render star rating
+  const renderStars = (score: number) => {
+    return (
+      <div className="flex items-center gap-1">
+        {[...Array(5)].map((_, index) => (
+          <span
+            key={index}
+            className={`text-lg ${index < score ? "text-yellow-400" : "text-gray-300"
+              }`}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <section className="bg-white py-20">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-6">
         {/* Section Title */}
         <div className="mb-16 text-center">
           <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
             Our{" "}
-            <span className="font-extrabold text-[#02517b]">Satisfied </span>{" "}
+            <span className="font-extrabold text-[#02517b]">Satisfied</span>{" "}
             Clients
           </h2>
-          <div className="mt-4 flex items-center justify-center space-x-2"></div>
         </div>
 
-        {/* Swiper */}
-        <Swiper
+        {/* Display Ratings if available */}
+        {ratings && ratings.length > 0 ? (
+          <div className="mb-12">
+            <h3 className="mb-6 text-center text-2xl font-bold text-gray-800">
+              Course Ratings & Reviews
+            </h3>
+            <Swiper
+              modules={[Pagination]}
+              slidesPerView={1}
+              spaceBetween={30}
+              loop={true}
+              pagination={{ clickable: true }}
+              breakpoints={{
+                640: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+              }}
+            >
+              {ratings.filter((ratings) => ratings.status === 'showtoeveryone').map((rating, index) => (
+                <SwiperSlide key={rating.id || index}>
+                  <div className="rounded-lg bg-gradient-to-br from-blue-50 to-white p-6 shadow-md transition hover:shadow-xl">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#02517b] text-white font-bold">
+                          {rating.user_id}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">
+                            {rating.user.username}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {rating.course.title}
+                          </p>
+                        </div>
+                      </div>
+                      {renderStars(rating.score)}
+                    </div>
+
+                    <div className="mb-3">
+                      <p className="text-sm text-gray-600 italic">
+                        {rating.review || "Great course! Highly recommended."}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">
+                        {rating.status}
+                      </span>
+                      <span>
+                        {rating.created_at
+                          ? new Date(rating.created_at).toLocaleDateString()
+                          : "Recently"}
+                      </span>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        ) : (
+          <div className="mb-12 text-center">
+            <p className="text-gray-500">Loading ratings...</p>
+          </div>
+        )}
+
+        {/* Static Testimonials */}
+        {/* <h3 className="mb-6 text-center text-2xl font-bold text-gray-800">
+          Client Testimonials
+        </h3> */}
+        {/* <Swiper
           modules={[Pagination]}
           slidesPerView={1}
           spaceBetween={30}
@@ -618,7 +723,7 @@ function Testimonial() {
               </div>
             </SwiperSlide>
           ))}
-        </Swiper>
+        </Swiper> */}
       </div>
     </section>
   );

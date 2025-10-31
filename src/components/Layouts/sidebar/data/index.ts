@@ -82,20 +82,7 @@ export const NAV_DATA = [
         items: [],
         type: "Super-Admin",
       },
-      // {
-      //   title: "System Settings",
-      //   url: "/super-admin/settings",
-      //   icon: Icons.Calendar,
-      //   items: [],
-      //   type: "Super-Admin",
-      // },
-      // {
-      //   title: "Log details",
-      //   url: "/super-admin/log-details",
-      //   icon: Icons.Alphabet,
-      //   items: [],
-      //   type: "Super-Admin",
-      // },
+    
       {
         title: "User",
         url: "/super-admin/all-user",
@@ -137,6 +124,22 @@ export const NAV_DATA = [
         icon: Icons.Calendar,
         items: [],
         type: "Super-Admin",
+      },
+
+       {
+        title: "mails",
+        url: "/super-admin/mails",
+        icon: Icons.Calendar,
+        items: [],
+        type: "Super-Admin",
+      },
+
+       {
+        title: "rating",
+        url: "/admin/rating",
+        icon: Icons.Calendar,
+        items: [],
+        type: "admin",
       },
 
     ],

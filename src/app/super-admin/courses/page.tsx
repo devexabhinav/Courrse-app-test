@@ -75,7 +75,7 @@ export default function Courses({ className }: any) {
     if (!confirmDelete) return;
 
     try {
-      const response = await api.delete(`admin/course/${id}`);
+      const response = await api.delete(`course/${id}`);
       if (response.success) {
         toasterSuccess("Course Deleted Successfully", 2000, "id");
 
@@ -232,7 +232,7 @@ export default function Courses({ className }: any) {
                 </TableCell>
 
                 {/* Creator */}
-                <TableCell className="py-2">{course.creator}</TableCell>
+                <TableCell className="py-2">{course.creator_name}</TableCell>
                 <TableCell className="py-2">
                   {course.image ? (
                     <img

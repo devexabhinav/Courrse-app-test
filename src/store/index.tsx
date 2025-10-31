@@ -16,7 +16,11 @@ import userReducer  from './slices/profile/profileinfo';
 import usereditReducer from './slices/profile/profileedit';
 import  homepageinfo from './slices/homepage/homepage';
 import ratingReducer from './slices/adminslice/ratinguser';
-
+import emailReducer from './slices/homepage/emailSlice';
+import bulkEmailReducer from "./slices/adminslice/emailsent";
+import ratingshowhide from "./slices/adminslice/ratinghideshow";
+import softdeleteratings from "./slices/adminslice/ratingsoftdelete";
+import admminratings from "./slices/adminslice/reviewhideadmin";
 
 
 const placeholderSlice = createSlice({
@@ -42,6 +46,11 @@ export const makeStore = () => {
       useredit: usereditReducer,
       homepage: homepageinfo,
       ratings: ratingReducer,
+       email: emailReducer,
+       bulkEmail: bulkEmailReducer,
+       ratingsuperadmin:ratingshowhide,
+       ratingsoftdelete:softdeleteratings,
+       ratingadmin:admminratings,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({

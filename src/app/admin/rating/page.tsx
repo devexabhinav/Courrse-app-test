@@ -32,9 +32,9 @@ import {
 } from "@/store/slices/adminslice/ratinguser";
 
 import {
-  hideRatingBySuperAdmin,
-  unhideRatingBySuperAdmin,
-} from "@/store/slices/adminslice/ratinghideshow";
+  hideRatingByAdmin,
+  unhideRatingByAdmin,
+} from "@/store/slices/adminslice/reviewhideadmin";
 
 import {
   softDeleteRating,
@@ -148,7 +148,7 @@ const handleAddRating = async (ratingId: number) => {
   const handleHideRating = async (ratingId: number) => {
     setActionLoading(ratingId);
     try {
-      await dispatch(hideRatingBySuperAdmin(ratingId)).unwrap();
+      await dispatch(hideRatingByAdmin(ratingId)).unwrap();
       // Refresh the ratings list after successful hide
       await dispatch(getAllRatings());
       // Optional: Add success notification
@@ -166,7 +166,7 @@ const handleAddRating = async (ratingId: number) => {
   const handleUnhideRating = async (ratingId: number) => {
     setActionLoading(ratingId);
     try {
-      await dispatch(unhideRatingBySuperAdmin(ratingId)).unwrap();
+      await dispatch(unhideRatingByAdmin(ratingId)).unwrap();
       // Refresh the ratings list after successful unhide
       await dispatch(getAllRatings());
       // Optional: Add success notification
@@ -512,33 +512,7 @@ const handleAddRating = async (ratingId: number) => {
 
 
 
-                        {rating.isactive ? (
-                          <button
-                            onClick={() => handleSoftDeleteRating(rating.id)}
-                            disabled={actionLoading === rating.id}
-                            className="inline-flex items-center rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {actionLoading === rating.id ? (
-                              <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1"></div>
-                            ) : (
-                              <X className="mr-1 h-3.5 w-3.5" />
-                            )}
-                            {actionLoading === rating.id ? 'Deactivating...' : 'Deactivate'}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleAddRating(rating.id)}
-                            disabled={actionLoading === rating.id}
-                            className="inline-flex items-center rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {actionLoading === rating.id ? (
-                              <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1"></div>
-                            ) : (
-                              <Check className="mr-1 h-3.5 w-3.5" />
-                            )}
-                            {actionLoading === rating.id ? 'Activating...' : 'Activate'}
-                          </button>
-                        )}
+                      
                       </td>
                     </tr>
                   ))

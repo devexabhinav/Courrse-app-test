@@ -316,7 +316,7 @@ export default function Courses({ className }: any) {
                   </TableCell>
 
                   {/* Creator */}
-                  <TableCell className="py-2">{course.creator}</TableCell>
+                  <TableCell className="py-2">{course.creator_name}</TableCell>
 
                   <TableCell className="py-2">
                     {course.image ? (

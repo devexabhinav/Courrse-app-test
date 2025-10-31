@@ -37,7 +37,7 @@ const AddCourse = () => {
   const api = useApiClient();
 
   const router = useRouter();
-  const name = getDecryptedItem("name");
+  const name = getDecryptedItem("userId");
   const [formData, setFormData] = useState<any>({
     title: "",
     description: "",
