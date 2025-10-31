@@ -15,12 +15,14 @@ import { toasterSuccess } from "@/components/core/Toaster";
 import { trackLogoutActivity } from "../../../../store/slices/adminslice/adminlogout";
 import { RootState, AppDispatch } from "../../../../store";
 import { useDispatch, useSelector } from "react-redux";
-import { getDecryptedItem, removeEncryptedItem } from "@/utils/storageHelper";
+import { getDecryptedItem, removeEncryptedItem ,updateEncryptedItem } from "@/utils/storageHelper";
 import { useApiClient } from "@/lib/api";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
   const name = getDecryptedItem("name");
+
+  
   const email = getDecryptedItem("email");
   const [userImage, setUserImage] = useState("/images/user2.png");
   const api = useApiClient();

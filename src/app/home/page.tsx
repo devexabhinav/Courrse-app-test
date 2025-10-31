@@ -362,8 +362,8 @@ const Home = () => {
           </div>
         </section>
 
-        {/* --- Courses Slider Section --- */}
-        <section id="courses" className="my-20 px-6 md:px-20">
+
+{courses.length > 0 && (  <section id="courses" className="my-20 px-6 md:px-20">
           <div className="container">
             <h2 className="trending-text mb-2 text-center text-3xl font-extrabold md:text-4xl">
               Explore My Courses
@@ -414,7 +414,9 @@ const Home = () => {
               ))}
             </Swiper>
           </div>
-        </section>
+        </section>) }
+        {/* --- Courses Slider Section --- */}
+      
       </div>
 
       {/* --- Courses Slider end --- */}
@@ -617,7 +619,11 @@ function Testimonial({ ratings }: { ratings: any[] }) {
   };
 
   return (
-    <section className="bg-white py-20">
+   
+
+
+  <div> {ratings.filter((ratings) => ratings.status === 'showtoeveryone').length > 0 && (
+       <section className="bg-white py-20">
       <div className="container mx-auto px-6">
         {/* Section Title */}
         <div className="mb-16 text-center">
@@ -692,40 +698,9 @@ function Testimonial({ ratings }: { ratings: any[] }) {
             <p className="text-gray-500">Loading ratings...</p>
           </div>
         )}
-
-        {/* Static Testimonials */}
-        {/* <h3 className="mb-6 text-center text-2xl font-bold text-gray-800">
-          Client Testimonials
-        </h3> */}
-        {/* <Swiper
-          modules={[Pagination]}
-          slidesPerView={1}
-          spaceBetween={30}
-          loop={true}
-          pagination={{ clickable: true }}
-          breakpoints={{
-            640: { slidesPerView: 1 },
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 2 },
-          }}
-        >
-          {testimonials.map((t, index) => (
-            <SwiperSlide key={index}>
-              <div className="relative rounded-lg bg-gray-50 p-8 pl-20 italic shadow-md">
-                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl text-green-600">
-                  <i className="fas fa-quote-left"></i>
-                </span>
-                <p className="mb-4">{t.text}</p>
-                <h3 className="text-lg font-bold text-[#02517b]">
-                  {t.name}{" "}
-                  <span className="block text-sm font-normal">{t.role}</span>
-                </h3>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper> */}
       </div>
     </section>
+    )}</div>
   );
 }
 

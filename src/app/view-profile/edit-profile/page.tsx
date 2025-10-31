@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton1";
 import { ArrowLeft, Mail, Calendar, User, Shield, CheckCircle, XCircle, Save, RotateCcw, Upload, Camera, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getDecryptedItem } from "@/utils/storageHelper";
+import { getDecryptedItem ,updateEncryptedItem } from "@/utils/storageHelper";
 import { toasterError, toasterSuccess } from "@/components/core/Toaster";
 import Editprofile from "../../profile/page";
 
@@ -187,6 +187,7 @@ console.log("selectedFile",selectedFile)
       
       toasterSuccess("Profile updated successfully!", 3000);
        router.push(`/view-profile`,);
+       updateEncryptedItem("name", () => formData.username);
       // Reset states
       setIsEditing(false);
       setSelectedFile(null);
