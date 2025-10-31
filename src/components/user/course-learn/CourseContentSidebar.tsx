@@ -1,15 +1,14 @@
 // components/course-learn/CourseContentSidebar.tsx
 import React from "react";
-import { Course, CourseProgressData, Chapter, Lesson } from "@/types/course";
 import ChapterAccordion from "./ChapterAccordion";
 import { BookOpen, Clock, CheckCircle2, Target } from "lucide-react";
 
 interface CourseContentSidebarProps {
-  course: Course;
-  courseProgress: CourseProgressData | null;
-  onLessonClick: (chapter: Chapter, lesson: Lesson) => void;
-  onStartMCQ: (chapter: Chapter) => void;
-  selectedLesson: { chapter: Chapter; lesson: Lesson } | null;
+  course: any;
+  courseProgress: any | null;
+  onLessonClick: (chapter: any, lesson: any) => void;
+  onStartMCQ: (chapter: any) => void;
+  selectedLesson: { chapter: any; lesson: any } | null;
 }
 
 const CourseContentSidebar: React.FC<CourseContentSidebarProps> = ({
@@ -19,25 +18,28 @@ const CourseContentSidebar: React.FC<CourseContentSidebarProps> = ({
   onStartMCQ,
   selectedLesson,
 }) => {
-  const getChapterProgress = (chapter: Chapter) => {
+  const getChapterProgress = (chapter: any) => {
     if (!courseProgress) return null;
     const progressChapter = courseProgress.chapters.find(
-      (ch) => ch.id === chapter.id,
+      (ch: any) => ch.id === chapter.id,
     );
     return progressChapter?.progress || null;
   };
 
   const totalLessons = course.chapters.reduce(
-    (total, chapter) => total + chapter.lessons.length,
+    (total: any, chapter: any) => total + chapter.lessons.length,
     0,
   );
 
-  const completedLessons = course.chapters.reduce((total, chapter) => {
-    const progress: any = getChapterProgress(chapter);
-    return total + (progress?.completed_lessons || 0);
-  }, 0);
+  const completedLessons = course.chapters.reduce(
+    (total: any, chapter: any) => {
+      const progress: any = getChapterProgress(chapter);
+      return total + (progress?.completed_lessons || 0);
+    },
+    0,
+  );
 
-  const totalDuration = course.chapters.reduce((total, chapter) => {
+  const totalDuration = course.chapters.reduce((total: any, chapter: any) => {
     return total + (chapter.duration || 0);
   }, 0);
 
@@ -109,8 +111,8 @@ const CourseContentSidebar: React.FC<CourseContentSidebarProps> = ({
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
             {course.chapters
-              .sort((a, b) => a.order - b.order)
-              .map((chapter, index) => (
+              .sort((a: any, b: any) => a.order - b.order)
+              .map((chapter: any, index: any) => (
                 <ChapterAccordion
                   key={chapter.id}
                   chapter={chapter}

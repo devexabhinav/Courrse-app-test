@@ -1,10 +1,9 @@
 // components/course-learn/OverviewTab.tsx
 import React from "react";
-import { Course, CourseProgressData } from "@/types/course";
 
 interface OverviewTabProps {
-  course: Course;
-  courseProgress: CourseProgressData | null;
+  course: any;
+  courseProgress: any | null;
 }
 
 const OverviewTab: React.FC<OverviewTabProps> = ({

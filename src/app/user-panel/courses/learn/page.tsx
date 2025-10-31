@@ -8,12 +8,7 @@ import { getDecryptedItem } from "@/utils/storageHelper";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 
 // Import types
-import type {
-  Course,
-  CourseProgressData,
-  Chapter,
-  Lesson,
-} from "@/types/course";
+
 import CourseHeader from "../../../../components/user/course-learn/CourseHeader";
 import CourseTabs from "@/components/user/course-learn/CourseTabs";
 import CourseContentSidebar from "@/components/user/course-learn/CourseContentSidebar";
@@ -26,15 +21,15 @@ export default function CourseLearnPage() {
   const courseId = searchParams.get("id");
   const api = useApiClient();
 
-  const [course, setCourse] = useState<Course | null>(null);
+  const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Updated state management
   const [selectedLesson, setSelectedLesson] = useState<{
-    chapter: Chapter;
-    lesson: Lesson;
+    chapter: any;
+    lesson: any;
   } | null>(null);
 
   // Use the hook for all progress-related state
@@ -81,7 +76,7 @@ export default function CourseLearnPage() {
         throw new Error(courseResponse?.error?.message || "Course not found");
       }
 
-      const courseData: Course = courseResponse.data.data.course;
+      const courseData: any = courseResponse.data.data.course;
 
       // 2. Load user progress
       const progressResponse = await api.get(
@@ -113,7 +108,7 @@ export default function CourseLearnPage() {
   };
 
   // In your handleLessonClick function - add debugging
-  const handleLessonClick = async (chapter: Chapter, lesson: Lesson) => {
+  const handleLessonClick = async (chapter: any, lesson: any) => {
     if (chapter.locked) {
       alert("This chapter is locked. Complete previous chapters first.");
       return;
@@ -149,14 +144,14 @@ export default function CourseLearnPage() {
     if (!selectedLesson || !course)
       return { chapterIndex: -1, lessonIndex: -1 };
 
-    const chapterIndex = course.chapters.findIndex(
-      (c) => c.id === selectedLesson.chapter.id,
+    const chapterIndex: any = course?.chapters.findIndex(
+      (c: any) => c.id === selectedLesson.chapter.id,
     );
 
     if (chapterIndex === -1) return { chapterIndex: -1, lessonIndex: -1 };
 
     const lessonIndex = course.chapters[chapterIndex].lessons.findIndex(
-      (l) => l.id === selectedLesson.lesson.id,
+      (l: any) => l.id === selectedLesson.lesson.id,
     );
 
     return { chapterIndex, lessonIndex };
@@ -168,7 +163,7 @@ export default function CourseLearnPage() {
     const { chapterIndex, lessonIndex } = getCurrentLessonIndices();
     if (chapterIndex === -1 || lessonIndex === -1) return;
 
-    const currentChapter = course.chapters[chapterIndex];
+    const currentChapter = course?.chapters[chapterIndex];
     const nextLessonIndex = lessonIndex + 1;
 
     if (nextLessonIndex < currentChapter.lessons.length) {
@@ -200,7 +195,7 @@ export default function CourseLearnPage() {
 
     if (prevLessonIndex >= 0) {
       // Previous lesson in same chapter
-      const currentChapter = course.chapters[chapterIndex];
+      const currentChapter = course?.chapters[chapterIndex];
       const prevLesson = currentChapter.lessons[prevLessonIndex];
       setSelectedLesson({ chapter: currentChapter, lesson: prevLesson });
     } else {
@@ -225,15 +220,15 @@ export default function CourseLearnPage() {
     const { chapterIndex, lessonIndex } = getCurrentLessonIndices();
     if (chapterIndex === -1 || lessonIndex === -1) return false;
 
-    const currentChapter = course.chapters[chapterIndex];
+    const currentChapter = course?.chapters[chapterIndex];
     const hasNextInChapter = lessonIndex < currentChapter.lessons.length - 1;
 
     if (hasNextInChapter) return true;
 
     // Check if there's a next chapter that's not locked and has lessons
     const nextChapterIndex = chapterIndex + 1;
-    if (nextChapterIndex < course.chapters.length) {
-      const nextChapter = course.chapters[nextChapterIndex];
+    if (nextChapterIndex < course?.chapters.length) {
+      const nextChapter = course?.chapters[nextChapterIndex];
       return !nextChapter.locked && nextChapter.lessons.length > 0;
     }
 
@@ -252,14 +247,14 @@ export default function CourseLearnPage() {
     // Check if there's a previous chapter that's not locked and has lessons
     const prevChapterIndex = chapterIndex - 1;
     if (prevChapterIndex >= 0) {
-      const prevChapter = course.chapters[prevChapterIndex];
+      const prevChapter = course?.chapters[prevChapterIndex];
       return !prevChapter.locked && prevChapter.lessons.length > 0;
     }
 
     return false;
   };
 
-  const enhancedHandleStartMCQ = (chapter: Chapter) => {
+  const enhancedHandleStartMCQ = (chapter: any) => {
     handleStartMCQ(chapter);
   };
 

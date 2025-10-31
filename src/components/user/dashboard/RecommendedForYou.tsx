@@ -78,7 +78,7 @@ export function RecommendedForYou() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {recommendedCourses.map((course) => (
+        {recommendedCourses.map((course: any) => (
           <CourseCard key={course.id} course={course} />
         ))}
       </div>

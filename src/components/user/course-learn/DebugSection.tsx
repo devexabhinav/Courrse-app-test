@@ -1,13 +1,12 @@
 // components/course-learn/DebugSection.tsx
 import React from "react";
-import { Course, CourseProgressData } from "@/types/course";
 
 interface DebugSectionProps {
   userId: string | null;
   courseId: string | null;
-  courseProgress: CourseProgressData | null;
+  courseProgress: any | null;
   initializeProgress: () => void;
-  course: Course | null;
+  course: any | null;
   handleLessonComplete: (lessonId: number, chapterId: number) => void;
 }
 

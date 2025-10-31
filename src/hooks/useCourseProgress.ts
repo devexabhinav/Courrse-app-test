@@ -2,14 +2,13 @@
 import { useState, useCallback } from 'react';
 import { useApiClient } from '@/lib/api';
 import { getDecryptedItem } from '@/utils/storageHelper';
-import type { Course, CourseProgressData, Chapter } from '@/types/course';
 
-export const useCourseProgress = (courseId: string | null, setCourse: React.Dispatch<React.SetStateAction<Course | null>>) => {
+export const useCourseProgress = (courseId: string | null, setCourse: React.Dispatch<React.SetStateAction<any | null>>) => {
     const api = useApiClient();
-    const [courseProgress, setCourseProgress] = useState<CourseProgressData | null>(null);
+    const [courseProgress, setCourseProgress] = useState<any | null>(null);
     const [userAnswers, setUserAnswers] = useState<Record<string, number>>({});
     const [submittingMCQ, setSubmittingMCQ] = useState(false);
-    const [currentMCQChapter, setCurrentMCQChapter] = useState<Chapter | null>(null);
+    const [currentMCQChapter, setCurrentMCQChapter] = useState<any | null>(null);
 
     const getUserId = useCallback(() => {
         const user = getDecryptedItem('userId');
@@ -41,16 +40,16 @@ export const useCourseProgress = (courseId: string | null, setCourse: React.Disp
 
             if (response.success) {
                 // Update local state
-                setCourse(prev => {
+                setCourse((prev: any) => {
                     if (!prev) return prev;
 
                     return {
                         ...prev,
-                        chapters: prev.chapters.map(chapter => {
+                        chapters: prev.chapters.map((chapter: any) => {
                             if (chapter.id === chapterId) {
                                 return {
                                     ...chapter,
-                                    lessons: chapter.lessons.map(lesson =>
+                                    lessons: chapter.lessons.map((lesson: any) =>
                                         lesson.id === lessonId
                                             ? { ...lesson, completed: true }
                                             : lesson
@@ -110,11 +109,11 @@ export const useCourseProgress = (courseId: string | null, setCourse: React.Disp
                 console.log('MCQ submitted successfully:', response.data);
 
                 // Update local state
-                setCourse(prev => {
+                setCourse((prev: any) => {
                     if (!prev) return prev;
                     return {
                         ...prev,
-                        chapters: prev.chapters.map(chapter =>
+                        chapters: prev.chapters.map((chapter: any) =>
                             chapter.id === currentMCQChapter.id
                                 ? { ...chapter, mcq_passed: true }
                                 : chapter
@@ -146,7 +145,7 @@ export const useCourseProgress = (courseId: string | null, setCourse: React.Disp
     }, [currentMCQChapter, courseId, userAnswers, getUserId, api, setCourse, setCourseProgress]);
 
 
-    const handleStartMCQ = useCallback((chapter: Chapter) => {
+    const handleStartMCQ = useCallback((chapter: any) => {
         setCurrentMCQChapter(chapter);
         setUserAnswers({});
     }, []);
@@ -156,7 +155,7 @@ export const useCourseProgress = (courseId: string | null, setCourse: React.Disp
         setUserAnswers({});
     }, []);
 
-    const initializeProgress = useCallback((progress: CourseProgressData) => {
+    const initializeProgress = useCallback((progress: any) => {
         setCourseProgress(progress);
     }, []);
 
