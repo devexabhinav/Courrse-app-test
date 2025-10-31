@@ -37,6 +37,7 @@ const AddCourse = () => {
 
   const router = useRouter();
   const name = getDecryptedItem("userId");
+  const userNames: any = getDecryptedItem("name");
   const [formData, setFormData] = useState<any>({
     title: "",
     description: "",
@@ -336,7 +337,7 @@ const AddCourse = () => {
               name="creator"
               label="Creator Name"
               placeholder="Add Your Name Here"
-              value={formData.creator}
+              value={userNames}
               disabled
               onChange={handleChange}
               icon={<UserIcon />}
