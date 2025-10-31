@@ -1,6 +1,5 @@
 // components/course-learn/LessonItem.tsx
 import React from "react";
-import { Lesson } from "@/types/course";
 import {
   PlayCircle,
   CheckCircle2,
@@ -11,7 +10,7 @@ import {
 } from "lucide-react";
 
 interface LessonItemProps {
-  lesson: Lesson;
+  lesson: any;
   locked: boolean;
   completed?: boolean;
   isSelected?: boolean;

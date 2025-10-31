@@ -1,6 +1,5 @@
 // components/course-learn/VideoSection.tsx
 import React, { useState, useRef } from "react";
-import { Lesson, Chapter } from "@/types/course";
 import {
   Play,
   Pause,
@@ -13,16 +12,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-interface VideoSectionProps {
-  chapter: Chapter;
-  lesson: Lesson;
-  onNextLesson: () => void;
-  onPreviousLesson: () => void;
-  hasNextLesson: boolean;
-  hasPreviousLesson: boolean;
-}
-
-const VideoSection: React.FC<VideoSectionProps> = ({
+const VideoSection: React.FC<any> = ({
   chapter,
   lesson,
   onNextLesson,
@@ -205,7 +195,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({
       return (
         <div className="w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
           <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
-            {lesson.images!.map((image, index) => (
+            {lesson.images!.map((image: any, index: any) => (
               <div key={index} className="flex flex-col items-center">
                 <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-gray-700">
                   <img

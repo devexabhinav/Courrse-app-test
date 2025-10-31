@@ -1,6 +1,5 @@
 // components/course-learn/ChapterAccordion.tsx
 import React, { useState } from "react";
-import { Chapter, Lesson, ChapterProgress } from "@/types/course";
 import {
   ChevronDown,
   ChevronUp,
@@ -14,16 +13,7 @@ import {
 import LessonItem from "./LessonItem";
 import MCQSection from "./MCQSection";
 
-interface ChapterAccordionProps {
-  chapter: Chapter;
-  chapterProgress: ChapterProgress | null;
-  onLessonClick: (chapter: Chapter, lesson: Lesson) => void;
-  onStartMCQ: (chapter: Chapter) => void;
-  defaultOpen?: boolean;
-  selectedLesson: { chapter: Chapter; lesson: Lesson } | null;
-}
-
-const ChapterAccordion: React.FC<ChapterAccordionProps> = ({
+const ChapterAccordion: React.FC<any> = ({
   chapter,
   chapterProgress,
   onLessonClick,
@@ -162,12 +152,12 @@ const ChapterAccordion: React.FC<ChapterAccordionProps> = ({
             </h4>
             <div className="space-y-2">
               {chapter.lessons
-                .sort((a, b) => a.order - b.order)
-                .map((lesson) => (
+                .sort((a: any, b: any) => a.order - b.order)
+                .map((lesson: any) => (
                   <LessonItem
                     key={lesson.id}
                     lesson={lesson}
-                    locked={locked} // ✅ FIXED: Use chapter's locked status
+                    locked={locked}
                     completed={lesson.completed}
                     isSelected={selectedLesson?.lesson.id === lesson.id}
                     onLessonClick={() => onLessonClick(chapter, lesson)}

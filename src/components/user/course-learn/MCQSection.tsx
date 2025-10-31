@@ -1,15 +1,7 @@
-// components/course-learn/MCQSection.tsx
 import React from "react";
-import { Chapter, ChapterProgress } from "@/types/course";
 import { CheckCircle2, PlayCircle, Lock } from "lucide-react";
 
-interface MCQSectionProps {
-  chapter: Chapter;
-  chapterProgress: ChapterProgress | null;
-  onStartMCQ: (chapter: Chapter) => void;
-}
-
-const MCQSection: React.FC<MCQSectionProps> = ({
+const MCQSection: React.FC<any> = ({
   chapter,
   chapterProgress,
   onStartMCQ,

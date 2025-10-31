@@ -1,11 +1,10 @@
 // components/course-learn/MCQModal.tsx
 import React, { useState, useEffect } from "react";
-import { Chapter } from "@/types/course";
 import { X, Clock, CheckCircle2, AlertCircle, Shuffle } from "lucide-react";
 
 interface MCQModalProps {
   show: boolean;
-  chapter: Chapter | null;
+  chapter: any | null;
   userAnswers: { [mcqId: number]: number };
   submittingMCQ: boolean;
   onAnswerSelect: (mcqId: number, optionIndex: number) => void;

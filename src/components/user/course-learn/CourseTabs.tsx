@@ -1,6 +1,5 @@
 // components/course-learn/CourseTabs.tsx
 import React from "react";
-import { Course, CourseProgressData } from "@/types/course";
 import OverviewTab from "./OverviewTab";
 
 interface CourseTabsProps {
@@ -10,8 +9,8 @@ interface CourseTabsProps {
 
 interface CourseTabsContentProps {
   activeTab: string;
-  course: Course;
-  courseProgress: CourseProgressData | null;
+  course: any;
+  courseProgress: any | null;
   selectedLesson: { chapter: any; lesson: any } | null; // Add this
 }
 
