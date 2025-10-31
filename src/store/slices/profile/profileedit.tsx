@@ -104,7 +104,7 @@ export const fetchUserById = createAsyncThunk(
     }
   }
 );
-console.log("updateUserProfileupdateUserProfileupdateUserProfileupdateUserProfileupdateUserProfile",fetchUserById)
+
 // Create user slice
 const userSlice = createSlice({
   name: 'user',
