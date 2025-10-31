@@ -12,6 +12,7 @@ interface CourseTabsContentProps {
   activeTab: string;
   course: Course;
   courseProgress: CourseProgressData | null;
+  selectedLesson: { chapter: any; lesson: any } | null; // Add this
 }
 
 const tabs = [
