@@ -105,7 +105,7 @@ export default function BulkEmailPage({ className }: any) {
                       <details className="mt-2">
                         <summary className="cursor-pointer font-medium">View failed emails</summary>
                         <ul className="mt-2 ml-4 list-disc">
-                          {result.failedEmails.map((email, idx) => (
+                          {result.failedEmails.map((email : any , idx : number) => (
                             <li key={idx}>{email}</li>
                           ))}
                         </ul>
