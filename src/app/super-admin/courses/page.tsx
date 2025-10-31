@@ -17,9 +17,12 @@ import { ToggleRight } from "lucide-react";
 import { ToggleLeft } from "lucide-react";
 import { useApiClient } from "@/lib/api";
 import SafeHtmlRenderer from "@/components/SafeHtmlRenderer";
+import { getDecryptedItem } from "@/utils/storageHelper";
 
 export default function Courses({ className }: any) {
   const router = useRouter();
+  const naam: any = getDecryptedItem("name");
+  const userNames = naam.charAt(0).toUpperCase() + naam.slice(1).toLowerCase();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -232,7 +235,7 @@ export default function Courses({ className }: any) {
                 </TableCell>
 
                 {/* Creator */}
-                <TableCell className="py-2">{course.creator_name}</TableCell>
+                <TableCell className="py-2">{course.creator_name.charAt(0).toUpperCase() + course.creator_name.slice(1).toLowerCase() }</TableCell>
                 <TableCell className="py-2">
                   {course.image ? (
                     <img

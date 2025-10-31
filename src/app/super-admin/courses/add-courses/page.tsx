@@ -37,7 +37,8 @@ const AddCourse = () => {
 
   const router = useRouter();
   const name = getDecryptedItem("userId");
-  const userNames: any = getDecryptedItem("name");
+  const naam: any = getDecryptedItem("name");
+  const userNames = naam.charAt(0).toUpperCase() + naam.slice(1).toLowerCase();
   const [formData, setFormData] = useState<any>({
     title: "",
     description: "",
@@ -320,8 +321,8 @@ const AddCourse = () => {
   // Filter categories based on search input - show all when no search term
   const filteredCategories = formData.category.trim()
     ? categories.filter((category) =>
-        category.name.toLowerCase().includes(formData.category.toLowerCase()),
-      )
+      category.name.toLowerCase().includes(formData.category.toLowerCase()),
+    )
     : categories;
 
   return (

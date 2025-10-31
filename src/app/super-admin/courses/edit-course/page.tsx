@@ -31,7 +31,8 @@ interface Category {
 
 const EditCourse = () => {
   const api = useApiClient();
-
+  const naam: any = getDecryptedItem("name");
+  const userNames = naam.charAt(0).toUpperCase() + naam.slice(1).toLowerCase();
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("id");
@@ -338,8 +339,8 @@ const EditCourse = () => {
   // Filter categories based on search input - show all when no search term
   const filteredCategories = formData.category.trim()
     ? categories.filter((category) =>
-        category.name.toLowerCase().includes(formData.category.toLowerCase()),
-      )
+      category.name.toLowerCase().includes(formData.category.toLowerCase()),
+    )
     : categories;
 
   return (
@@ -355,7 +356,7 @@ const EditCourse = () => {
               name="creator"
               label="Creator Name"
               placeholder="Add Your Name Here"
-              value={formData.creator}
+              value={userNames}
               disabled
               onChange={handleChange}
               icon={<UserIcon />}
