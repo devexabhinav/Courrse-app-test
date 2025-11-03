@@ -11,7 +11,7 @@ import ChartPageClient from "@/app/users/ChartPageClient";
 import { OverviewCardsSkeleton } from "./overview-cards/skeleton";
 
 interface HomeContentProps {
-  initialTimeFrame?: string;
+  initialTimeFrame?: string; 
 }
 
 export default function HomeContent({ initialTimeFrame }: HomeContentProps) {
